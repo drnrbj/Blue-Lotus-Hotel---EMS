@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EvaluationController;
+use App\Http\Controllers\RecruitmentController;
+use App\Http\Controllers\TrainingController;
 
 // ── Root ────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -84,6 +86,31 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{evaluation}',           [EvaluationController::class, 'destroy']) ->name('destroy');
         Route::get('/analytics',                 [EvaluationController::class, 'analytics'])->name('analytics');
     });
-    Route::view('/recruitment', 'recruitment.index')->name('recruitment.index');
+    // ── Recruitment ──────────────────────────────────────────
+    Route::prefix('recruitment')->name('recruitment.')->group(function () {
+        Route::get('/',                                    [RecruitmentController::class, 'index'])                ->name('index');
+        Route::post('/postings',                           [RecruitmentController::class, 'storePosting'])         ->name('postings.store');
+        Route::put('/postings/{posting}',                  [RecruitmentController::class, 'updatePosting'])        ->name('postings.update');
+        Route::delete('/postings/{posting}',               [RecruitmentController::class, 'destroyPosting'])       ->name('postings.destroy');
+        Route::get('/applicants',                          [RecruitmentController::class, 'applicants'])           ->name('applicants');
+        Route::post('/applicants',                         [RecruitmentController::class, 'storeApplicant'])       ->name('applicants.store');
+        Route::post('/applicants/{applicant}/status',      [RecruitmentController::class, 'updateApplicantStatus'])->name('applicants.status');
+        Route::delete('/applicants/{applicant}',           [RecruitmentController::class, 'destroyApplicant'])     ->name('applicants.destroy');
+        Route::get('/interviews',                          [RecruitmentController::class, 'interviews'])           ->name('interviews');
+        Route::post('/interviews',                         [RecruitmentController::class, 'storeInterview'])       ->name('interviews.store');
+        Route::post('/interviews/{interview}/status',      [RecruitmentController::class, 'updateInterviewStatus'])->name('interviews.status');
+    });
+
+    // ── Training ─────────────────────────────────────────────
+    Route::prefix('training')->name('training.')->group(function () {
+        Route::get('/',                                    [TrainingController::class, 'index'])           ->name('index');
+        Route::post('/',                                   [TrainingController::class, 'store'])           ->name('store');
+        Route::put('/{program}',                           [TrainingController::class, 'update'])          ->name('update');
+        Route::delete('/{program}',                        [TrainingController::class, 'destroy'])         ->name('destroy');
+        Route::get('/participants',                        [TrainingController::class, 'participants'])    ->name('participants');
+        Route::post('/enroll',                             [TrainingController::class, 'enroll'])          ->name('enroll');
+        Route::post('/participants/{participant}/complete',[TrainingController::class, 'markComplete'])    ->name('participants.complete');
+        Route::delete('/participants/{participant}',       [TrainingController::class, 'removeParticipant'])->name('participants.remove');
+    });
 
 });

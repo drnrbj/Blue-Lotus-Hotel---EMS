@@ -127,7 +127,7 @@
                 Performance
             </a>
 
-            <a href="#"
+            <a href="{{ route('recruitment.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('recruitment.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
@@ -135,6 +135,17 @@
                     <path d="M5.5 5.5h6M5.5 8.5h6M5.5 11.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
                 Recruitment
+            </a>
+
+            <a href="{{ route('training.index') }}"
+               class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
+                      {{ request()->routeIs('training.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+                <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                    <rect x="2" y="3" width="13" height="9.5" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M5.5 15.5h6M8.5 12.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M6 7l2 1.5L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Training
             </a>
 
         </nav>
