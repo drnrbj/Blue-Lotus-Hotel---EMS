@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\EvaluationController;
 
 // ── Root ────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -59,12 +61,29 @@ Route::middleware('auth')->group(function () {
     // Resource routes (index, create, store, show, edit, update, destroy)
     Route::resource('employees', EmployeeController::class);
 
-    // ── Attendance ───────────────────────────────────────────
-    Route::resource('attendance', App\Http\Controllers\AttendanceController::class);
+    // ── Attendance / Timekeeping ─────────────────────────────
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/',                          [AttendanceController::class, 'index'])         ->name('index');
+        Route::post('/fetch',                    [AttendanceController::class, 'fetch'])         ->name('fetch');
+        Route::get('/schedules',                 [AttendanceController::class, 'schedules'])     ->name('schedules');
+        Route::post('/schedules',                [AttendanceController::class, 'storeSchedule']) ->name('schedules.store');
+        Route::put('/schedules/{schedule}',      [AttendanceController::class, 'updateSchedule'])->name('schedules.update');
+        Route::get('/leaves',                    [AttendanceController::class, 'leaves'])        ->name('leaves');
+        Route::post('/leaves',                   [AttendanceController::class, 'storeLeave'])    ->name('leaves.store');
+        Route::post('/leaves/{leave}/approve',   [AttendanceController::class, 'approveLeave']) ->name('leaves.approve');
+        Route::post('/leaves/{leave}/reject',    [AttendanceController::class, 'rejectLeave'])  ->name('leaves.reject');
+    });
 
     // ── Placeholders (swap for real controllers later) ───────
     Route::view('/payroll',     'payroll.index')    ->name('payroll.index');
-    Route::view('/performance', 'performance.index')->name('performance.index');
+    // ── Performance Evaluation ───────────────────────────────
+    Route::prefix('performance')->name('performance.')->group(function () {
+        Route::get('/',                          [EvaluationController::class, 'index'])    ->name('index');
+        Route::post('/',                         [EvaluationController::class, 'store'])    ->name('store');
+        Route::post('/{evaluation}/score',       [EvaluationController::class, 'score'])   ->name('score');
+        Route::delete('/{evaluation}',           [EvaluationController::class, 'destroy']) ->name('destroy');
+        Route::get('/analytics',                 [EvaluationController::class, 'analytics'])->name('analytics');
+    });
     Route::view('/recruitment', 'recruitment.index')->name('recruitment.index');
 
 });
