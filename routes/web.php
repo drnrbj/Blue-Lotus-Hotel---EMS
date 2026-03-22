@@ -7,6 +7,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\RecruitmentController;
 use App\Http\Controllers\TrainingController;
+use App\Http\Controllers\PayrollController;
 
 // ── Root ────────────────────────────────────────────────────
 Route::get('/', function () {
@@ -77,7 +78,17 @@ Route::middleware('auth')->group(function () {
     });
 
     // ── Placeholders (swap for real controllers later) ───────
-    Route::view('/payroll',     'payroll.index')    ->name('payroll.index');
+    // ── Payroll / Accounting ─────────────────────────────────
+    Route::prefix('payroll')->name('payroll.')->group(function () {
+        Route::get('/',                                   [PayrollController::class, 'index'])             ->name('index');
+        Route::get('/run',                                [PayrollController::class, 'run'])               ->name('run');
+        Route::post('/process',                           [PayrollController::class, 'process'])           ->name('process');
+        Route::post('/{payroll}/release',                 [PayrollController::class, 'release'])           ->name('release');
+        Route::post('/release-all',                       [PayrollController::class, 'releaseAll'])        ->name('release-all');
+        Route::post('/{payroll}/adjustments',             [PayrollController::class, 'storeAdjustment'])   ->name('adjustments.store');
+        Route::delete('/adjustments/{adjustment}',        [PayrollController::class, 'destroyAdjustment']) ->name('adjustments.destroy');
+        Route::get('/reports',                            [PayrollController::class, 'reports'])           ->name('reports');
+    });
     // ── Performance Evaluation ───────────────────────────────
     Route::prefix('performance')->name('performance.')->group(function () {
         Route::get('/',                          [EvaluationController::class, 'index'])    ->name('index');
