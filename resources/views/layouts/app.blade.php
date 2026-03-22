@@ -75,7 +75,7 @@
                 Employee Management
             </p>
 
-            <a href="#"
+            <a href="{{ route('employees.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('employees.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
@@ -86,7 +86,7 @@
                 Employee List
             </a>
 
-            <a href="#"
+            <a href="{{ route('attendance.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('attendance.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
@@ -102,7 +102,7 @@
                 Finance
             </p>
 
-            <a href="#"
+            <a href="{{ route('payroll.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('payroll.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
@@ -118,7 +118,7 @@
                 HR
             </p>
 
-            <a href="#"
+            <a href="{{ route('performance.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('performance.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
@@ -127,7 +127,7 @@
                 Performance
             </a>
 
-            <a href="#"
+            <a href="{{ route('recruitment.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('recruitment.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">

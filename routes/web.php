@@ -1,17 +1,22 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\EmployeeController;
 
-// public login form
+// ── Root ────────────────────────────────────────────────────
+Route::get('/', function () {
+    return Auth::check() ? redirect()->route('dashboard') : redirect()->route('login');
+});
+
+// ── Auth ─────────────────────────────────────────────────────
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-// handle login submit (example with manual auth)
 Route::post('/login', function (Illuminate\Http\Request $request) {
     $credentials = $request->validate([
-        'email'    => ['required','email'],
+        'email'    => ['required', 'email'],
         'password' => ['required'],
     ]);
 
@@ -21,11 +26,10 @@ Route::post('/login', function (Illuminate\Http\Request $request) {
     }
 
     return back()->withErrors([
-         'email' => 'The provided credentials do not match our records.',
+        'email' => 'The provided credentials do not match our records.',
     ]);
 });
 
-// logout
 Route::post('/logout', function (Illuminate\Http\Request $request) {
     Auth::logout();
     $request->session()->invalidate();
@@ -33,47 +37,34 @@ Route::post('/logout', function (Illuminate\Http\Request $request) {
     return redirect()->route('login');
 })->name('logout');
 
-// dashboard page (protected)
+// ── Protected ────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
+    // Dashboard
     Route::get('/dashboard', function () {
-        // provide data to view here (or use controller)
         return view('dashboard', [
             'totalEmployees' => 248,
-            // ... etc
         ]);
     })->name('dashboard');
 
-    // optional /app route if you have one
-    Route::view('/app', 'app')->name('app');
-});
+    // ── Employee Management ──────────────────────────────────
+    // IMPORTANT: static paths (new-hires) must come BEFORE the resource routes
+    // to prevent Laravel matching "new-hires" as an {employee} wildcard.
+    Route::prefix('employees')->name('employees.')->group(function () {
+        Route::get('/new-hires',                                   [EmployeeController::class, 'newHires'])     ->name('new-hires');
+        Route::post('/new-hires/{applicant}/create-profile',       [EmployeeController::class, 'createProfile'])->name('create-profile');
+        Route::post('/{employee}/terminate',                       [EmployeeController::class, 'terminate'])   ->name('terminate');
+    });
 
-Route::middleware('auth')->group(function () {
-    Route::resource('employees', App\Http\Controllers\EmployeeController::class);
+    // Resource routes (index, create, store, show, edit, update, destroy)
+    Route::resource('employees', EmployeeController::class);
+
+    // ── Attendance ───────────────────────────────────────────
     Route::resource('attendance', App\Http\Controllers\AttendanceController::class);
-});
 
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+    // ── Placeholders (swap for real controllers later) ───────
+    Route::view('/payroll',     'payroll.index')    ->name('payroll.index');
+    Route::view('/performance', 'performance.index')->name('performance.index');
+    Route::view('/recruitment', 'recruitment.index')->name('recruitment.index');
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
 });
-
-// Dashboard
-Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
- 
-// Employee Management
-Route::prefix('employees')->name('employees.')->group(function () {
- 
-    Route::get('/',                                   [EmployeeController::class, 'index'])         ->name('index');
-    Route::put('/{employee}',                         [EmployeeController::class, 'update'])        ->name('update');
-    Route::post('/{employee}/terminate',              [EmployeeController::class, 'terminate'])     ->name('terminate');
- 
-    // New Hires
-    Route::get('/new-hires',                          [EmployeeController::class, 'newHires'])      ->name('new-hires');
-    Route::post('/new-hires/{applicant}/create-profile', [EmployeeController::class, 'createProfile'])->name('create-profile');
- 
-});
- 
