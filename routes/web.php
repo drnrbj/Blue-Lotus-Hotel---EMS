@@ -1,6 +1,7 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\EmployeeController;
 
 // public login form
 Route::get('/login', function () {
@@ -59,3 +60,20 @@ Route::get('/', function () {
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+// Dashboard
+Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+ 
+// Employee Management
+Route::prefix('employees')->name('employees.')->group(function () {
+ 
+    Route::get('/',                                   [EmployeeController::class, 'index'])         ->name('index');
+    Route::put('/{employee}',                         [EmployeeController::class, 'update'])        ->name('update');
+    Route::post('/{employee}/terminate',              [EmployeeController::class, 'terminate'])     ->name('terminate');
+ 
+    // New Hires
+    Route::get('/new-hires',                          [EmployeeController::class, 'newHires'])      ->name('new-hires');
+    Route::post('/new-hires/{applicant}/create-profile', [EmployeeController::class, 'createProfile'])->name('create-profile');
+ 
+});
+ 
