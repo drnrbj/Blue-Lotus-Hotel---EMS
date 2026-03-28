@@ -52,14 +52,13 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('dashboard');
 
-    // ── Employee Management ──────────────────────────────────
-    // IMPORTANT: static paths (new-hires) must come BEFORE the resource routes
-    // to prevent Laravel matching "new-hires" as an {employee} wildcard.
     Route::prefix('employees')->name('employees.')->group(function () {
-        Route::get('/new-hires',                                   [EmployeeController::class, 'newHires'])     ->name('new-hires');
-        Route::post('/new-hires/{applicant}/create-profile',       [EmployeeController::class, 'createProfile'])->name('create-profile');
-        Route::post('/{employee}/terminate',                       [EmployeeController::class, 'terminate'])   ->name('terminate');
+        Route::get('/new-hires', [EmployeeController::class, 'newHires'])->name('new-hires');
+        Route::post('/new-hires/{applicant}/create-profile', [EmployeeController::class, 'createProfile'])->name('create-profile');
+        Route::post('/{employee}/terminate', [EmployeeController::class, 'terminate'])->name('terminate');
     });
+
+    Route::resource('employees', EmployeeController::class);
 
     // Resource routes (index, create, store, show, edit, update, destroy)
     Route::resource('employees', EmployeeController::class);

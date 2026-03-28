@@ -75,7 +75,7 @@
                 Employee Management
             </p>
 
-            <a href="#"
+            <a href="{{ route('employees.index') }}"
                class="flex items-center gap-3 px-5 py-2.5 text-[13.5px] font-medium transition-colors
                       {{ request()->routeIs('employees.*') ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
