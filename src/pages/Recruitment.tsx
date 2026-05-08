@@ -877,7 +877,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
                   </td>
                   <td className="px-4 py-3">
                     <Badge className={cn("text-xs border-0", statusColors[a.status])}>
-                      {a.status === "in_progress" ? "In Progress" : a.status}
+                      {a.status === "in_progress" ? "In Progress" : a.status.charAt(0).toUpperCase() + a.status.slice(1)}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
