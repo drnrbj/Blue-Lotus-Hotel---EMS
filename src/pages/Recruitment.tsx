@@ -278,7 +278,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
                   <td className="px-4 py-3 text-center">{job.applicants_count ?? 0}</td>
                   <td className="px-4 py-3 text-center">
                     <Badge className={cn("text-xs border-0", job.status === "open" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
-                      {job.status}
+                      {job.status === "open" ? "Open" : "Closed"}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -750,7 +750,9 @@ function ScheduledInterviewsTab() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{iv.interviewer?.name ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <Badge className={cn("text-xs border-0", statusStyles[iv.status])}>{iv.status}</Badge>
+                    <Badge className={cn("text-xs border-0", statusStyles[iv.status])}>
+                      {iv.status.charAt(0).toUpperCase() + iv.status.slice(1)}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     {iv.status === "scheduled" && (
