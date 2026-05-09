@@ -1,4 +1,4 @@
-# HR Harmony Suite - Employee Management System
+# Blue Lotus Hotel - Employee Management System
 
 ## 📋 Overview
 
