@@ -44,20 +44,25 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
-    // ── Employees — HR only ──────────────────────────────────────────
+    // ── Employees — Admin (read only) + HR (full) ──────────────────
+    Route::middleware('role:Admin,HR')->prefix('employees')->group(function () {
+        // Read — both roles
+        Route::get('/departments',    [EmployeeController::class, 'getDepartments']);
+        Route::get('/job-categories', [EmployeeController::class, 'getJobCategories']);
+        Route::get('/salary-mapping', [EmployeeController::class, 'getSalaryMapping']);
+        Route::get('/archived',       [EmployeeController::class, 'archived']);
+        Route::get('/',               [EmployeeController::class, 'index']);
+        Route::get('/{employee}',     [EmployeeController::class, 'show']);
+        Route::get('/{id}/export',    [EmployeeController::class, 'export']);
+    });
+
     Route::middleware('role:HR')->prefix('employees')->group(function () {
-        Route::get('/departments',         [EmployeeController::class, 'getDepartments']);
-        Route::get('/job-categories',      [EmployeeController::class, 'getJobCategories']);
-        Route::get('/salary-mapping',      [EmployeeController::class, 'getSalaryMapping']);
-        Route::get('/archived',            [EmployeeController::class, 'archived']);
-        Route::get('/',                    [EmployeeController::class, 'index']);
+        // Write — HR only
         Route::post('/',                   [EmployeeController::class, 'store']);
-        Route::get('/{employee}',          [EmployeeController::class, 'show']);
         Route::put('/{employee}',          [EmployeeController::class, 'update']);
         Route::delete('/{employee}',       [EmployeeController::class, 'destroy']);
         Route::patch('/{employee}/status', [EmployeeController::class, 'updateStatus']);
         Route::patch('/{employee}/role',   [EmployeeController::class, 'updateRole']);
-        Route::get('/{id}/export',         [EmployeeController::class, 'export']);
         Route::post('/{id}/restore',       [EmployeeController::class, 'restore']);
         Route::delete('/{id}/purge',       [EmployeeController::class, 'purge']);
     });
