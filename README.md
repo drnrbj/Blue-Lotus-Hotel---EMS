@@ -1,4 +1,4 @@
-# Blue Lotus Hotel - Employee Management System
+# Blue Lotus Hotel: Employee Management System
 
 ## 📋 Overview
 
