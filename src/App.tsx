@@ -46,14 +46,22 @@ const App = () => (
           {/* Public */}
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
 
-          {/* All authenticated roles */}
-          <Route path="/"           element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />
-          <Route path="/leave"      element={<PrivateRoute><Leave /></PrivateRoute>} />
+          // REPLACE all routes after the public ones with this:
 
-          {/* Admin + HR only */}
+          {/* Dashboard — all authenticated */}
+          <Route path="/"  element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+
+          {/* HR only */}
           <Route path="/employees" element={
-            <RoleRoute roles={["Admin", "HR"]}><Employees /></RoleRoute>
+            <RoleRoute roles={["HR"]}><Employees /></RoleRoute>
+          } />
+
+          {/* Admin + HR */}
+          <Route path="/attendance" element={
+            <RoleRoute roles={["Admin", "HR"]}><Attendance /></RoleRoute>
+          } />
+          <Route path="/leave" element={
+            <RoleRoute roles={["Admin", "HR"]}><Leave /></RoleRoute>
           } />
           <Route path="/recruitment" element={
             <RoleRoute roles={["Admin", "HR"]}><Recruitment /></RoleRoute>
@@ -62,17 +70,18 @@ const App = () => (
             <RoleRoute roles={["Admin", "HR"]}><ArchivedEmployees /></RoleRoute>
           } />
 
-          {/* Admin + HR + Manager */}
+          {/* Admin + HR */}
           <Route path="/performance" element={
-            <RoleRoute roles={["Admin", "HR", "Manager"]}><Performance /></RoleRoute>
-          } />
-          <Route path="/training" element={
-            <RoleRoute roles={["Admin", "HR", "Manager"]}><Training /></RoleRoute>
+            <RoleRoute roles={["Admin", "HR"]}><Performance /></RoleRoute>
           } />
 
-          {/* Admin + Accountant only */}
+          {/* Accountant only */}
           <Route path="/payroll" element={
-            <RoleRoute roles={["Admin", "Accountant"]}><Accounting /></RoleRoute>
+            <RoleRoute roles={["Accountant"]}><Accounting /></RoleRoute>
+          } />
+
+          <Route path="/training" element={
+            <RoleRoute roles={["Admin", "HR"]}><Training /></RoleRoute>
           } />
 
           <Route path="*" element={<NotFound />} />
