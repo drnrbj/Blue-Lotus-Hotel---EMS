@@ -23,7 +23,6 @@ Route::prefix('auth')->group(function () {
 // ─── Protected ────────────────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Auth
     Route::prefix('auth')->group(function () {
         Route::post('/logout',          [AuthController::class, 'logout']);
         Route::get('/me',               [AuthController::class, 'me']);
@@ -45,8 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     });
 
-    // ── Employees ─────────────────────────────────────────────────────────────
-    Route::prefix('employees')->group(function () {
+    // ── Employees — HR only ──────────────────────────────────────────
+    Route::middleware('role:HR')->prefix('employees')->group(function () {
         Route::get('/departments',         [EmployeeController::class, 'getDepartments']);
         Route::get('/job-categories',      [EmployeeController::class, 'getJobCategories']);
         Route::get('/salary-mapping',      [EmployeeController::class, 'getSalaryMapping']);
@@ -63,19 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{id}/purge',       [EmployeeController::class, 'purge']);
     });
 
-    // ── New Hires ─────────────────────────────────────────────────────────────
-    Route::prefix('new-hires')->group(function () {
-        Route::get('/',                               [NewHireController::class, 'index']);
-        Route::post('/',                              [NewHireController::class, 'store']);
-        Route::get('/{id}',                           [NewHireController::class, 'show']);
-        Route::put('/{id}',                           [NewHireController::class, 'update']);
-        Route::delete('/{id}',                        [NewHireController::class, 'destroy']);
-        Route::post('/{id}/complete-details',         [NewHireController::class, 'completeDetails']);
-        Route::post('/{id}/transfer',                 [NewHireController::class, 'transfer']);
-    });
-
-    // ── Attendance ────────────────────────────────────────────────────────────
-    Route::prefix('attendance')->group(function () {
+    // ── Attendance — Admin + HR ──────────────────────────────────────
+    Route::middleware('role:Admin,HR')->prefix('attendance')->group(function () {
         Route::get('/',              [AttendanceController::class, 'index']);
         Route::get('/live-status',   [AttendanceController::class, 'liveStatus']);
         Route::get('/monthly-stats', [AttendanceController::class, 'monthlyStats']);
@@ -84,8 +72,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/manual',       [AttendanceController::class, 'manual']);
     });
 
-    // ── Leave Requests ────────────────────────────────────────────────────────
-    Route::prefix('leave-requests')->group(function () {
+    // ── Leave — Admin + HR ───────────────────────────────────────────
+    Route::middleware('role:Admin,HR')->prefix('leave-requests')->group(function () {
         Route::get('/',              [LeaveController::class, 'index']);
         Route::post('/',             [LeaveController::class, 'store']);
         Route::get('/pending',       [LeaveController::class, 'pending']);
@@ -93,42 +81,39 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/reject',  [LeaveController::class, 'reject']);
         Route::post('/{id}/cancel',  [LeaveController::class, 'cancel']);
     });
-
-    // ── Leave Balances ────────────────────────────────────────────────────────
-    // GET / uses LeaveController::balances — filters to logged-in user only
-    Route::prefix('leave-balances')->group(function () {
-        Route::get('/',            [LeaveController::class, 'balances']);
-        Route::post('/seed',       [LeaveController::class, 'seedBalances']);
-        Route::post('/accrue',     [LeaveController::class, 'accrue']);
+    Route::middleware('role:Admin,HR')->prefix('leave-balances')->group(function () {
+        Route::get('/',        [LeaveController::class, 'balances']);
+        Route::post('/seed',   [LeaveController::class, 'seedBalances']);
+        Route::post('/accrue', [LeaveController::class, 'accrue']);
     });
 
-    // ── Payroll Periods ───────────────────────────────────────────────────────
-    Route::prefix('payroll-periods')->group(function () {
-        Route::get('/',                       [PayslipController::class, 'listPeriods']);
-        Route::post('/',                      [PayslipController::class, 'createPeriod']);
-        Route::post('/generate-next',         [PayslipController::class, 'generateNextPeriod']);
-        Route::get('/{periodId}/summary-pdf', [PayslipController::class, 'summaryPdf']);
+    // ── Payroll — Accountant only ────────────────────────────────────
+    Route::middleware('role:Accountant')->group(function () {
+        Route::prefix('payroll-periods')->group(function () {
+            Route::get('/',                       [PayslipController::class, 'listPeriods']);
+            Route::post('/',                      [PayslipController::class, 'createPeriod']);
+            Route::post('/generate-next',         [PayslipController::class, 'generateNextPeriod']);
+            Route::get('/{periodId}/summary-pdf', [PayslipController::class, 'summaryPdf']);
+        });
+        Route::prefix('payslips')->group(function () {
+            Route::get('/',                      [PayslipController::class, 'index']);
+            Route::get('/summary',               [PayslipController::class, 'summary']);
+            Route::get('/audit-trail',           [PayslipController::class, 'auditTrail']);
+            Route::post('/compute',              [PayslipController::class, 'computeSingle']);
+            Route::post('/compute-all',          [PayslipController::class, 'computeAll']);
+            Route::post('/bulk-send-email',      [PayslipController::class, 'bulkSendEmail']);
+            Route::post('/approve-all/{period}', [PayslipController::class, 'approveAll']);
+            Route::get('/{payslip}',             [PayslipController::class, 'show']);
+            Route::post('/{payslip}/adjust',     [PayslipController::class, 'adjust']);
+            Route::post('/{payslip}/approve',    [PayslipController::class, 'approve']);
+            Route::post('/{payslip}/pay',        [PayslipController::class, 'markPaid']);
+            Route::post('/{payslip}/send-email', [PayslipController::class, 'sendEmail']);
+            Route::get('/{payslip}/pdf',         [PayslipController::class, 'downloadPdf']);
+        });
     });
 
-    // ── Payslips ──────────────────────────────────────────────────────────────
-    Route::prefix('payslips')->group(function () {
-        Route::get('/',                      [PayslipController::class, 'index']);
-        Route::get('/summary',               [PayslipController::class, 'summary']);
-        Route::get('/audit-trail',           [PayslipController::class, 'auditTrail']);
-        Route::post('/compute',              [PayslipController::class, 'computeSingle']);
-        Route::post('/compute-all',          [PayslipController::class, 'computeAll']);
-        Route::post('/bulk-send-email',      [PayslipController::class, 'bulkSendEmail']);
-        Route::post('/approve-all/{period}', [PayslipController::class, 'approveAll']);
-        Route::get('/{payslip}',             [PayslipController::class, 'show']);
-        Route::post('/{payslip}/adjust',     [PayslipController::class, 'adjust']);
-        Route::post('/{payslip}/approve',    [PayslipController::class, 'approve']);
-        Route::post('/{payslip}/pay',        [PayslipController::class, 'markPaid']);
-        Route::post('/{payslip}/send-email', [PayslipController::class, 'sendEmail']);
-        Route::get('/{payslip}/pdf',         [PayslipController::class, 'downloadPdf']);
-    });
-
-    // ── Evaluations ───────────────────────────────────────────────────────────
-    Route::prefix('evaluations')->group(function () {
+    // ── Performance — Admin + HR ─────────────────────────────────────
+    Route::middleware('role:Admin,HR')->prefix('evaluations')->group(function () {
         Route::get('/my-assignments',                   [EvaluationFormController::class, 'myAssignments']);
         Route::get('/assignments/{assignment}',         [EvaluationFormController::class, 'getAssignment']);
         Route::post('/assignments/{assignment}/submit', [EvaluationFormController::class, 'submitAssignment']);
@@ -140,6 +125,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{form}',                        [EvaluationFormController::class, 'destroy']);
         Route::post('/{form}/close',                    [EvaluationFormController::class, 'close']);
         Route::post('/{form}/send',                     [EvaluationFormController::class, 'send']);
+    });
+    Route::middleware('role:Admin,HR')->prefix('performance')->group(function () {
+        Route::get('/kpis',            [KpiController::class, 'index']);
+        Route::post('/kpis',           [KpiController::class, 'store']);
+        Route::get('/kpis/{kpi}',      [KpiController::class, 'show']);
+        Route::put('/kpis/{kpi}',      [KpiController::class, 'update']);
+        Route::delete('/kpis/{kpi}',   [KpiController::class, 'destroy']);
+        Route::get('/goals',           [GoalController::class, 'index']);
+        Route::post('/goals',          [GoalController::class, 'store']);
+        Route::get('/goals/{goal}',    [GoalController::class, 'show']);
+        Route::put('/goals/{goal}',    [GoalController::class, 'update']);
+        Route::delete('/goals/{goal}', [GoalController::class, 'destroy']);
     });
 
     // ── Recruitment ───────────────────────────────────────────────────────────
@@ -172,21 +169,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/new-hires',                                     [RecruitmentController::class, 'getNewHires']);
         Route::post('/new-hires/{id}/complete-details',              [RecruitmentController::class, 'completeNewHireDetails']);
         Route::post('/new-hires/{id}/transfer',                      [RecruitmentController::class, 'transferToEmployee']);
-    });
-
-    // ── Performance ───────────────────────────────────────────────────────────
-    Route::prefix('performance')->group(function () {
-        Route::get('/kpis',            [KpiController::class, 'index']);
-        Route::post('/kpis',           [KpiController::class, 'store']);
-        Route::get('/kpis/{kpi}',      [KpiController::class, 'show']);
-        Route::put('/kpis/{kpi}',      [KpiController::class, 'update']);
-        Route::delete('/kpis/{kpi}',   [KpiController::class, 'destroy']);
-
-        Route::get('/goals',           [GoalController::class, 'index']);
-        Route::post('/goals',          [GoalController::class, 'store']);
-        Route::get('/goals/{goal}',    [GoalController::class, 'show']);
-        Route::put('/goals/{goal}',    [GoalController::class, 'update']);
-        Route::delete('/goals/{goal}', [GoalController::class, 'destroy']);
     });
 
 });
