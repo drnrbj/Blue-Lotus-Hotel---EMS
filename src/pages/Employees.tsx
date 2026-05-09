@@ -22,8 +22,8 @@ import type { Employee } from "@/types/employee";
 export default function Employees() {
   const { toast } = useToast();
   const { user }  = useAuth();
-  const isAdmin   = user?.role === "Admin";
-  const isHR      = user?.role === "HR";
+  const isAdmin   = user?.role === "HR";
+  const isHR      = user?.role === "Admin";
   const canEdit   = isHR; // only HR can add/edit/archive/delete
 
   const {
