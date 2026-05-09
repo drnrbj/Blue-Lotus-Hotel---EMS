@@ -48,9 +48,7 @@ Blue Lotus Hotel EMS is a comprehensive Human Resource Management System designe
 ### 🔐 Security & Roles
 - **Admin**: Full system access
 - **HR**: Recruitment, attendance, leave management, evaluations
-- **Manager**: Team attendance, leave approvals
 - **Accountant**: Payroll processing
-- **Employee**: Self-service (attendance, leave requests, payslips)
 
 ## 🛠️ Tech Stack
 
