@@ -285,7 +285,7 @@ This project is proprietary and confidential. Unauthorized copying, distribution
 ## 🆘 Support
 
 For issues or questions:
-1. Check the [Issues](https://github.com/your-repo/issues) page
+1. Check the [Issues]([https://github.com/drnrbj/Blue-Lotus-Hotel-EMS.git/issues) page
 2. Contact the development team
 3. Refer to API documentation in `/backend/docs`
 
