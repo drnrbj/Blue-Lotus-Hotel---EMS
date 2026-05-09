@@ -107,14 +107,14 @@ hr-harmony-suite/
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd hr-harmony-suite/backend
+git clone [<your-repo-url>](https://github.com/drnrbj/Blue-Lotus-Hotel-EMS.git)
+cd backend
 
 # Install PHP dependencies
 composer install
 
 # Copy environment file
-cp .env.example .env
+copy .env.example .env
 
 # Generate application key
 php artisan key:generate
