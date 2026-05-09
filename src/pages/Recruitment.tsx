@@ -337,7 +337,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
 // TAB 2 — APPLICANT MANAGEMENT
 // ═══════════════════════════════════════════════════════════════════════
 
-function ApplicantManagementTab({ canManage }: { canManage: boolean }) {
+function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; isAdmin: boolean }) {
   const { toast } = useToast();
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [jobs, setJobs] = useState<JobPosting[]>([]);
@@ -594,16 +594,20 @@ const fetchInterviewers = async () => {
                       {acting !== app.id && app.pipeline_stage === "interview_scheduled" && (
                         <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => updateStage(app, "interviewed")}>Mark Interviewed</Button>
                       )}
-                      {acting !== app.id && app.pipeline_stage === "interviewed" && (
-                        <>
+                     {acting !== app.id && app.pipeline_stage === "interviewed" && (
+                      <>
+                        {isAdmin && (
                           <Button size="sm" className="text-xs h-7 bg-green-600 hover:bg-green-700" onClick={() => hireApplicant(app)}>
                             <UserCheck className="h-3 w-3 mr-1" /> Hire
                           </Button>
+                        )}
+                        {isAdmin && (
                           <Button size="sm" variant="destructive" className="text-xs h-7" onClick={() => rejectApplicant(app)}>
                             <UserX className="h-3 w-3 mr-1" /> Reject
                           </Button>
-                        </>
-                      )}
+                        )}
+                      </>
+                    )}
                       {(app.pipeline_stage === "hired" || app.pipeline_stage === "rejected") && (
                         <span className="text-xs text-muted-foreground capitalize">{app.pipeline_stage}</span>
                       )}
@@ -938,7 +942,8 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
 
 export default function Recruitment() {
   const { user } = useAuth();
-  const canManage = user?.role === "Admin" || user?.role === "HR";
+  const isHR    = user?.role === "HR";
+  const isAdmin = user?.role === "Admin";
 
   return (
     <DashboardLayout>
@@ -955,10 +960,10 @@ export default function Recruitment() {
           <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" /> Training</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="vacancies" className="mt-6"><JobVacanciesTab canManage={canManage} /></TabsContent>
-        <TabsContent value="applicants" className="mt-6"><ApplicantManagementTab canManage={canManage} /></TabsContent>
-        <TabsContent value="interviews" className="mt-6"><ScheduledInterviewsTab /></TabsContent>
-        <TabsContent value="training" className="mt-6"><TrainingProgramsTab canManage={canManage} /></TabsContent>
+        <TabsContent value="vacancies"   className="mt-6"><JobVacanciesTab    canManage={isHR} /></TabsContent>
+        <TabsContent value="applicants"  className="mt-6"><ApplicantManagementTab canManage={isHR} isAdmin={isAdmin} /></TabsContent>
+        <TabsContent value="interviews"  className="mt-6"><ScheduledInterviewsTab /></TabsContent>
+        <TabsContent value="training"    className="mt-6"><TrainingProgramsTab canManage={isHR} /></TabsContent>
       </Tabs>
     </DashboardLayout>
   );
