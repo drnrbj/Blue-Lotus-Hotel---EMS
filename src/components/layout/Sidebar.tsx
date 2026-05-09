@@ -34,7 +34,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard",   path: "/",           icon: LayoutDashboard },
-  { label: "Employee",    path: "/employees",  icon: Users,      roles: ["HR"] },
+  { label: "Employee", path: "/employees", icon: Users, roles: ["Admin", "HR"] },
   { label: "Attendance",  path: "/attendance", icon: Clock,      roles: ["Admin", "HR"] },
   { label: "Payroll",     path: "/payroll",    icon: DollarSign, roles: ["Accountant"] },
   { label: "Performance", path: "/performance",icon: BarChart3,  roles: ["Admin", "HR"] },
