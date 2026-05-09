@@ -51,9 +51,9 @@ const App = () => (
           {/* Dashboard — all authenticated */}
           <Route path="/"  element={<PrivateRoute><Dashboard /></PrivateRoute>} />
 
-          {/* HR only */}
+          {/* HR + Admin */}
           <Route path="/employees" element={
-            <RoleRoute roles={["HR"]}><Employees /></RoleRoute>
+            <RoleRoute roles={["Admin", "HR"]}><Employees /></RoleRoute>
           } />
 
           {/* Admin + HR */}
