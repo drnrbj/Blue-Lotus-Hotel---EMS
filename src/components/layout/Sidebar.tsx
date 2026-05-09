@@ -33,12 +33,12 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard },
-  { label: "Employee", path: "/employees", icon: Users, roles: ["Admin", "HR Manager", "Manager"] },
-  { label: "Attendance", path: "/attendance", icon: Clock },
-  { label: "Payroll", path: "/payroll", icon: DollarSign, roles: ["Admin", "Accountant", "HR Manager"] },
-  { label: "Performance", path: "/performance", icon: BarChart3 },
-  { label: "Recruitment", path: "/recruitment", icon: Briefcase, roles: ["Admin", "HR Manager"] },
+  { label: "Dashboard",   path: "/",           icon: LayoutDashboard },
+  { label: "Employee",    path: "/employees",  icon: Users,      roles: ["HR"] },
+  { label: "Attendance",  path: "/attendance", icon: Clock,      roles: ["Admin", "HR"] },
+  { label: "Payroll",     path: "/payroll",    icon: DollarSign, roles: ["Accountant"] },
+  { label: "Performance", path: "/performance",icon: BarChart3,  roles: ["Admin", "HR"] },
+  { label: "Recruitment", path: "/recruitment",icon: Briefcase,  roles: ["Admin", "HR"] },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
