@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // ✅ CORS must run first, before auth middleware
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
 
+        $middleware->alias([
+        'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
         // Sanctum stateful middleware for API routes
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
