@@ -687,7 +687,7 @@ const fetchInterviewers = async () => {
 // TAB 3 — SCHEDULED INTERVIEWS
 // ═══════════════════════════════════════════════════════════════════════
 
-function ScheduledInterviewsTab() {
+function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
   const { toast } = useToast();
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -758,16 +758,16 @@ function ScheduledInterviewsTab() {
                       {iv.status.charAt(0).toUpperCase() + iv.status.slice(1)}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    {iv.status === "scheduled" && (
-                      <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
-                        disabled={completing === iv.id}
-                        onClick={() => complete(iv.id)}>
-                        {completing === iv.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
-                        Complete
-                      </Button>
-                    )}
-                  </td>
+                 <td className="px-4 py-3 text-right">
+                  {iv.status === "scheduled" && canComplete && (
+                    <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
+                      disabled={completing === iv.id}
+                      onClick={() => complete(iv.id)}>
+                      {completing === iv.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                      Complete
+                    </Button>
+                  )}
+                </td>
                 </tr>
               ))}
             </tbody>
@@ -952,18 +952,18 @@ export default function Recruitment() {
         <p className="text-muted-foreground mt-1">Job postings, applicant pipeline, interviews, and training</p>
       </div>
 
-      <Tabs defaultValue="vacancies">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="vacancies"><Briefcase className="h-4 w-4 mr-2" /> Job Vacancies</TabsTrigger>
+      <Tabs defaultValue={isAdmin ? "applicants" : "vacancies"}>
+        <TabsList className="grid w-full" style={{ gridTemplateColumns: isAdmin ? "1fr 1fr" : "repeat(4, 1fr)" }}>
+          {isHR && <TabsTrigger value="vacancies"><Briefcase className="h-4 w-4 mr-2" /> Job Vacancies</TabsTrigger>}
           <TabsTrigger value="applicants"><Users className="h-4 w-4 mr-2" /> Applicants</TabsTrigger>
           <TabsTrigger value="interviews"><Calendar className="h-4 w-4 mr-2" /> Interviews</TabsTrigger>
-          <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" /> Training</TabsTrigger>
+          {isHR && <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" /> Training</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="vacancies"   className="mt-6"><JobVacanciesTab    canManage={isHR} /></TabsContent>
-        <TabsContent value="applicants"  className="mt-6"><ApplicantManagementTab canManage={isHR} isAdmin={isAdmin} /></TabsContent>
-        <TabsContent value="interviews"  className="mt-6"><ScheduledInterviewsTab /></TabsContent>
-        <TabsContent value="training"    className="mt-6"><TrainingProgramsTab canManage={isHR} /></TabsContent>
+        {isHR && <TabsContent value="vacancies"  className="mt-6"><JobVacanciesTab canManage={isHR} /></TabsContent>}
+        <TabsContent value="applicants" className="mt-6"><ApplicantManagementTab canManage={isHR} isAdmin={isAdmin} /></TabsContent>
+        <TabsContent value="interviews" className="mt-6"><ScheduledInterviewsTab canComplete={isHR} /></TabsContent>
+        {isHR && <TabsContent value="training"   className="mt-6"><TrainingProgramsTab canManage={isHR} /></TabsContent>}
       </Tabs>
     </DashboardLayout>
   );
