@@ -64,7 +64,7 @@ export default function Training() {
           <h1 className="text-2xl font-bold text-gray-900">Training Management</h1>
           <p className="text-sm text-gray-600">Manage training courses and employee development programs</p>
         </div>
-        {["Admin", "HR Manager"].includes(user?.role ?? "") && (
+        {user?.role === "HR" && (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-yellow-500 text-blue-900 hover:bg-yellow-600">
