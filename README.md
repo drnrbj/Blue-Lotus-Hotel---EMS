@@ -10,7 +10,7 @@ Blue Lotus Hotel EMS is a comprehensive Human Resource Management System designe
 - Complete employee directory with search and filters
 - Employee profiles with personal, employment, and contact information
 - Archive and restore functionality
-- Role-based access control (Admin, HR, Manager, Accountant, Employee)
+- Role-based access control (Admin, HR, Accountant)
 - Export employee data
 
 ### 📋 Recruitment Pipeline
