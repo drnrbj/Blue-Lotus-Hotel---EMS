@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-HR Harmony Suite is a comprehensive Human Resource Management System designed for hotel and hospitality businesses. It provides tools for employee management, recruitment, attendance tracking, payroll processing, and performance evaluation.
+Blue Lotus Hotel EMS is a comprehensive Human Resource Management System designed for hotel and hospitality businesses. It provides tools for employee management, recruitment, attendance tracking, payroll processing, and performance evaluation.
 
 ## ✨ Features
 
