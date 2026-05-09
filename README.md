@@ -267,12 +267,6 @@ php artisan view:cache
 
 This project is proprietary and confidential. Unauthorized copying, distribution, or use is strictly prohibited.
 
-## 👨‍💻 Developer
-
-**Annika Lois Dumalogdog**
-- Email: [your-email@example.com]
-- GitHub: [@your-username]
-
 ## 🙏 Acknowledgments
 
 - Laravel community
