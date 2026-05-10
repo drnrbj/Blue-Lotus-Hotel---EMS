@@ -213,12 +213,20 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
             className="flex items-center gap-2 rounded-lg px-2 py-2"
             style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
           >
+            {/* Avatar */}
+            <div
+              className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+              style={{ backgroundColor: "#2B3588", color: "#FFFFFF" }}
+            >
+              {user?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "SA"}
+            </div>
+
             {/* Name + Role */}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">
                 {user?.name || "System Admin"}
               </p>
-              <p className="text-xs truncate" style={{ color: "#FAEC1D", opacity: 0.8 }}>
+              <p className="text-xs truncate" style={{ color: "#FFFFFF", opacity: 0.8 }}>
                 {user?.role || "Admin"}
               </p>
             </div>
