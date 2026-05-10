@@ -14,8 +14,14 @@ use Illuminate\Support\Facades\DB;
 class LeaveController extends Controller
 {
     private const LEAVE_TYPES = [
-        'vacation','sick','emergency','maternity',
-        'paternity','bereavement','solo_parent','unpaid',
+        'vacation',
+        'sick',
+        'emergency',
+        'maternity',
+        'paternity',
+        'bereavement',
+        'solo_parent',
+        'unpaid',
     ];
 
     // ─── GET /api/leave-requests ──────────────────────────────────────────────
@@ -33,24 +39,27 @@ class LeaveController extends Controller
             }
         }
 
-        if ($request->filled('employee_id')) $query->where('employee_id', $request->employee_id);
-        if ($request->filled('status'))      $query->where('status',      $request->status);
-        if ($request->filled('leave_type'))  $query->where('leave_type',  $request->leave_type);
+        if ($request->filled('employee_id'))
+            $query->where('employee_id', $request->employee_id);
+        if ($request->filled('status'))
+            $query->where('status', $request->status);
+        if ($request->filled('leave_type'))
+            $query->where('leave_type', $request->leave_type);
 
         $requests = $query->get()->map(fn($r) => [
-            'id'              => $r->id,
-            'employee_id'     => $r->employee_id,
-            'employee_name'   => $r->employee ? trim("{$r->employee->first_name} {$r->employee->last_name}") : null,
-            'department'      => $r->employee?->department,
-            'leave_type'      => $r->leave_type,
-            'start_date'      => $r->start_date?->toDateString(),
-            'end_date'        => $r->end_date?->toDateString(),
-            'days_requested'  => (float) ($r->days_requested ?? $r->number_of_days ?? 0),
-            'reason'          => $r->reason,
-            'status'          => $r->status,
+            'id' => $r->id,
+            'employee_id' => $r->employee_id,
+            'employee_name' => $r->employee ? trim("{$r->employee->first_name} {$r->employee->last_name}") : null,
+            'department' => $r->employee?->department,
+            'leave_type' => $r->leave_type,
+            'start_date' => $r->start_date?->toDateString(),
+            'end_date' => $r->end_date?->toDateString(),
+            'days_requested' => (float) ($r->days_requested ?? $r->number_of_days ?? 0),
+            'reason' => $r->reason,
+            'status' => $r->status,
             'rejected_reason' => $r->rejected_reason ?? $r->approval_reason ?? null,
-            'created_at'      => $r->created_at?->toDateTimeString(),
-            'approved_at'     => $r->approved_at?->toDateTimeString(),
+            'created_at' => $r->created_at?->toDateTimeString(),
+            'approved_at' => $r->approved_at?->toDateTimeString(),
         ]);
 
         return response()->json(['success' => true, 'data' => $requests]);
@@ -59,43 +68,43 @@ class LeaveController extends Controller
     // ─── GET /api/leave-balances ──────────────────────────────────────────────
     // FIX #2: Only return balances for the logged-in user
     // ─── GET /api/leave-balances ──────────────────────────────────────────────
-public function balances(Request $request): JsonResponse
-{
-    $user = Auth::user();
-    $year = $request->input('year', now()->year);
-    
-    // Get the employee linked to the current user
-    $employee = Employee::where('email', $user->email)->first();
-    
-    if (!$employee) {
-        return response()->json([
-            'success' => true, 
-            'data' => []
-        ]);
-    }
-    
-    // IMPORTANT: Filter by employee_id - only show current user's balances
-    $query = LeaveBalance::where('employee_id', $employee->id)
-        ->where('year', $year);
-    
-    // Optional: Add employee relation for name
-    $query->with('employee:id,first_name,last_name');
-    
-    $balances = $query->get()->map(fn($b) => [
-        'id'             => $b->id,
-        'employee_id'    => $b->employee_id,
-        'employee_name'  => $b->employee ? trim("{$b->employee->first_name} {$b->employee->last_name}") : null,
-        'leave_type'     => $b->leave_type,
-        'entitled_days'  => (float) $b->entitled_days,
-        'used_days'      => (float) $b->used_days,
-        'carried_over'   => (float) $b->carried_over,
-        'pending_days'   => (float) ($b->pending_days ?? 0),
-        'remaining_days' => max(0, (float) $b->entitled_days + (float) $b->carried_over - (float) $b->used_days),
-        'year'           => (int) $b->year,
-    ]);
+    public function balances(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $year = $request->input('year', now()->year);
 
-    return response()->json(['success' => true, 'data' => $balances]);
-}
+        // Get the employee linked to the current user
+        $employee = Employee::where('email', $user->email)->first();
+
+        if (!$employee) {
+            return response()->json([
+                'success' => true,
+                'data' => []
+            ]);
+        }
+
+        // IMPORTANT: Filter by employee_id - only show current user's balances
+        $query = LeaveBalance::where('employee_id', $employee->id)
+            ->where('year', $year);
+
+        // Optional: Add employee relation for name
+        $query->with('employee:id,first_name,last_name');
+
+        $balances = $query->get()->map(fn($b) => [
+            'id' => $b->id,
+            'employee_id' => $b->employee_id,
+            'employee_name' => $b->employee ? trim("{$b->employee->first_name} {$b->employee->last_name}") : null,
+            'leave_type' => $b->leave_type,
+            'entitled_days' => (float) $b->entitled_days,
+            'used_days' => (float) $b->used_days,
+            'carried_over' => (float) $b->carried_over,
+            'pending_days' => (float) ($b->pending_days ?? 0),
+            'remaining_days' => max(0, (float) $b->entitled_days + (float) $b->carried_over - (float) $b->used_days),
+            'year' => (int) $b->year,
+        ]);
+
+        return response()->json(['success' => true, 'data' => $balances]);
+    }
 
     // ─── GET /api/leave-balances/summary ──────────────────────────────────────
     // Get formatted summary for dashboard
@@ -103,7 +112,7 @@ public function balances(Request $request): JsonResponse
     {
         $user = Auth::user();
         $employee = Employee::where('email', $user->email)->first();
-        
+
         if (!$employee) {
             return response()->json([
                 'success' => true,
@@ -114,29 +123,29 @@ public function balances(Request $request): JsonResponse
                 ]
             ]);
         }
-        
+
         $year = now()->year;
         $balances = LeaveBalance::where('employee_id', $employee->id)
             ->where('year', $year)
             ->get()
             ->keyBy('leave_type');
-        
+
         $summary = [];
         $leaveTypes = ['vacation' => 0, 'sick' => 0, 'emergency' => 3];
-        
+
         foreach ($leaveTypes as $type => $defaultTotal) {
             $balance = $balances->get($type);
             $entitled = (float) ($balance?->entitled_days ?? 0);
             $carried = (float) ($balance?->carried_over ?? 0);
             $used = (float) ($balance?->used_days ?? 0);
-            
+
             $summary[$type] = [
                 'total' => $entitled + $carried,
                 'used' => $used,
                 'remaining' => max(0, $entitled + $carried - $used),
             ];
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $summary
@@ -147,14 +156,14 @@ public function balances(Request $request): JsonResponse
     public function store(Request $request): JsonResponse
     {
         $v = $request->validate([
-            'leave_type'  => 'required|in:' . implode(',', self::LEAVE_TYPES),
-            'start_date'  => 'required|date',
-            'end_date'    => 'required|date|after_or_equal:start_date',
-            'reason'      => 'required|string|max:500',
+            'leave_type' => 'required|in:' . implode(',', self::LEAVE_TYPES),
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'reason' => 'required|string|max:500',
             'employee_id' => 'nullable|exists:employees,id',
         ]);
 
-        $user       = Auth::user();
+        $user = Auth::user();
         $employeeId = $v['employee_id'] ?? null;
 
         if (!$employeeId) {
@@ -174,8 +183,8 @@ public function balances(Request $request): JsonResponse
         if ($v['leave_type'] !== 'unpaid') {
             $balance = LeaveBalance::where([
                 'employee_id' => $employeeId,
-                'leave_type'  => $v['leave_type'],
-                'year'        => now()->year,
+                'leave_type' => $v['leave_type'],
+                'year' => now()->year,
             ])->first();
 
             if ($balance) {
@@ -191,18 +200,18 @@ public function balances(Request $request): JsonResponse
 
         $base = [
             'employee_id' => $employeeId,
-            'leave_type'  => $v['leave_type'],
-            'start_date'  => $v['start_date'],
-            'end_date'    => $v['end_date'],
-            'reason'      => $v['reason'],
-            'status'      => 'pending',
+            'leave_type' => $v['leave_type'],
+            'start_date' => $v['start_date'],
+            'end_date' => $v['end_date'],
+            'reason' => $v['reason'],
+            'status' => 'pending',
         ];
 
         try {
             $req = LeaveRequest::create(array_merge($base, ['days_requested' => $days]));
         } catch (\Throwable) {
             $req = LeaveRequest::create(array_merge($base, [
-                'number_of_days'  => (int) $days,
+                'number_of_days' => (int) $days,
                 'hours_requested' => $days * 8,
             ]));
         }
@@ -225,7 +234,7 @@ public function balances(Request $request): JsonResponse
 
         DB::transaction(function () use ($req) {
             $days = (float) ($req->days_requested ?? $req->number_of_days ?? 0);
-            
+
             // Remove the problematic columns - only update what exists
             $req->update([
                 'status' => 'approved',
@@ -236,22 +245,33 @@ public function balances(Request $request): JsonResponse
             if ($req->leave_type !== 'unpaid' && $days > 0) {
                 LeaveBalance::where([
                     'employee_id' => $req->employee_id,
-                    'leave_type'  => $req->leave_type,
-                    'year'        => now()->year,
+                    'leave_type' => $req->leave_type,
+                    'year' => now()->year,
                 ])->increment('used_days', $days);
             }
 
             // Stamp attendance records as on_leave for each business day
-            $cur = new \DateTime($req->start_date instanceof \Carbon\Carbon
-                ? $req->start_date->toDateString() : (string) $req->start_date);
-            $end = new \DateTime($req->end_date instanceof \Carbon\Carbon
-                ? $req->end_date->toDateString() : (string) $req->end_date);
+            $startDate = $req->start_date instanceof \Carbon\Carbon
+                ? $req->start_date->toDateString()
+                : \Carbon\Carbon::parse($req->start_date)->toDateString();
+
+            $endDate = $req->end_date instanceof \Carbon\Carbon
+                ? $req->end_date->toDateString()
+                : \Carbon\Carbon::parse($req->end_date)->toDateString();
+
+            $cur = new \DateTime($startDate);
+            $end = new \DateTime($endDate);
 
             while ($cur <= $end) {
                 if (!in_array((int) $cur->format('N'), [6, 7])) {
                     Attendance::updateOrCreate(
                         ['employee_id' => $req->employee_id, 'date' => $cur->format('Y-m-d')],
-                        ['status' => 'on_leave', 'recorded_by' => Auth::id()]
+                        [
+                            'status' => 'on_leave',
+                            'recorded_by' => Auth::id(),
+                            'time_in' => null,
+                            'time_out' => null,
+                        ]
                     );
                 }
                 $cur->modify('+1 day');
@@ -297,9 +317,9 @@ public function balances(Request $request): JsonResponse
     // ─── POST /api/leave-balances/seed ────────────────────────────────────────
     public function seedBalances(): JsonResponse
     {
-        $year      = now()->year;
+        $year = now()->year;
         $employees = Employee::where('status', 'active')->get();
-        $created   = 0;
+        $created = 0;
 
         DB::transaction(function () use ($employees, $year, &$created) {
             $upfront = ['emergency' => 3, 'maternity' => 105, 'paternity' => 7, 'bereavement' => 3, 'solo_parent' => 7];
@@ -308,13 +328,15 @@ public function balances(Request $request): JsonResponse
                     LeaveBalance::firstOrCreate(
                         ['employee_id' => $emp->id, 'leave_type' => $type, 'year' => $year],
                         ['entitled_days' => $days, 'used_days' => 0, 'carried_over' => 0]
-                    ); $created++;
+                    );
+                    $created++;
                 }
                 foreach (['vacation', 'sick'] as $type) {
                     LeaveBalance::firstOrCreate(
                         ['employee_id' => $emp->id, 'leave_type' => $type, 'year' => $year],
                         ['entitled_days' => 5, 'used_days' => 0, 'carried_over' => 0]
-                    ); $created++;
+                    );
+                    $created++;
                 }
             }
         });
@@ -325,7 +347,8 @@ public function balances(Request $request): JsonResponse
     // ─── POST /api/leave-balances/accrue ──────────────────────────────────────
     public function accrue(): JsonResponse
     {
-        $year = now()->year; $updated = 0;
+        $year = now()->year;
+        $updated = 0;
         DB::transaction(function () use ($year, &$updated) {
             Employee::where('status', 'active')->each(function ($emp) use ($year, &$updated) {
                 foreach (['vacation', 'sick'] as $type) {
@@ -347,10 +370,11 @@ public function balances(Request $request): JsonResponse
     private function countBusinessDays(string $start, string $end): float
     {
         $count = 0;
-        $cur   = new \DateTime($start);
-        $fin   = new \DateTime($end);
+        $cur = new \DateTime($start);
+        $fin = new \DateTime($end);
         while ($cur <= $fin) {
-            if (!in_array((int) $cur->format('N'), [6, 7])) $count++;
+            if (!in_array((int) $cur->format('N'), [6, 7]))
+                $count++;
             $cur->modify('+1 day');
         }
         return (float) $count;
