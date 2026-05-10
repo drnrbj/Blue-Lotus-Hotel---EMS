@@ -885,10 +885,12 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
 
 export default function Attendance() {
   const { user } = useAuth();
-  const role      = user?.role ?? "";
-  const canManage = ["Admin", "HR", "Manager"].includes(role);
-  // FIX #9: only Admin can approve/reject
-  const canApprove = role === "Admin";
+  const role     = user?.role ?? "";
+  const isHR     = role === "HR";
+  const isAdmin  = role === "Admin";
+
+  const canManage  = isHR;        // HR only: History + Import + manual entry
+  const canApprove = isAdmin;     // Admin only: approve/reject leave
 
   const [currentEmployeeId, setCurrentEmployeeId] = useState<number | undefined>();
   useEffect(() => {
@@ -906,19 +908,19 @@ export default function Attendance() {
       </div>
 
       <Tabs defaultValue="dashboard">
-        <TabsList className={`grid w-full ${canManage ? "grid-cols-4" : "grid-cols-2"}`}>
+        <TabsList className={`grid w-full ${isHR ? "grid-cols-4" : "grid-cols-3"}`}>
           <TabsTrigger value="dashboard"><Clock className="h-4 w-4 mr-2" />Live Dashboard</TabsTrigger>
-          {canManage && <TabsTrigger value="history">History</TabsTrigger>}
-          {canManage && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-2" />Import</TabsTrigger>}
+          {(isHR || isAdmin) && <TabsTrigger value="history">History</TabsTrigger>}
+          {isHR && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-2" />Import</TabsTrigger>}
           <TabsTrigger value="leave"><Calendar className="h-4 w-4 mr-2" />Leave Requests</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6"><LiveDashboard /></TabsContent>
-        {canManage && <TabsContent value="history" className="mt-6"><AttendanceHistory canManage={canManage} /></TabsContent>}
-        {canManage && <TabsContent value="import"  className="mt-6"><AttendanceImport /></TabsContent>}
+        {(isHR || isAdmin) && <TabsContent value="history" className="mt-6"><AttendanceHistory canManage={isHR} /></TabsContent>}
+        {isHR && <TabsContent value="import"  className="mt-6"><AttendanceImport /></TabsContent>}
         <TabsContent value="leave" className="mt-6">
           <LeaveManagement
-            canManage={canManage}
+            canManage={isAdmin || isHR}
             canApprove={canApprove}
             currentEmployeeId={currentEmployeeId}
           />
