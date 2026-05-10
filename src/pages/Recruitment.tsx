@@ -949,7 +949,6 @@ export default function Recruitment() {
     <DashboardLayout>
       <div className="mb-6">
         <h1 className="font-display text-3xl font-semibold text-foreground">Recruitment</h1>
-        <p className="text-muted-foreground mt-1">Job postings, applicant pipeline, interviews, and training</p>
       </div>
 
       <Tabs defaultValue={isAdmin ? "applicants" : "vacancies"}>
