@@ -249,8 +249,7 @@ export default function Performance() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Performance Management</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Evaluation forms and analytics</p>
+            <h1 className="text-3xl font-bold text-foreground">Performance Management</h1>
           </div>
           {isAdmin && (
             <Button onClick={() => setView("create")} className="gap-2">
