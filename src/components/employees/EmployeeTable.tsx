@@ -17,25 +17,25 @@ interface Props {
   employees: Employee[];
   isLoading: boolean;
   isAdmin: boolean;
-  onView:    (emp: Employee) => void;
-  onEdit:    (emp: Employee) => void;
+  onView: (emp: Employee) => void;
+  onEdit: (emp: Employee) => void;
   onArchive: (emp: Employee) => void;
-  onSearch:  (value: string) => void;
-  onFilter:  (status: string) => void;
+  onSearch: (value: string) => void;
+  onFilter: (status: string) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active:     "bg-green-100 text-green-700",
-  on_leave:   "bg-yellow-100 text-yellow-700",
+  active: "bg-green-100 text-green-700",
+  on_leave: "bg-yellow-100 text-yellow-700",
   onboarding: "bg-purple-100 text-purple-700",
-  suspended:  "bg-orange-100 text-orange-700",
+  suspended: "bg-orange-100 text-orange-700",
   terminated: "bg-red-100 text-red-700",
 };
 
 const SHIFT_COLORS: Record<string, string> = {
-  morning:   "bg-sky-100 text-sky-700",
+  morning: "bg-sky-100 text-sky-700",
   afternoon: "bg-amber-100 text-amber-700",
-  night:     "bg-indigo-100 text-indigo-700",
+  night: "bg-indigo-100 text-indigo-700",
 };
 
 export function EmployeeTable({
@@ -101,9 +101,6 @@ export function EmployeeTable({
                 <tr key={emp.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm shrink-0">
-                        {emp.first_name?.[0]}{emp.last_name?.[0]}
-                      </div>
                       <div>
                         <p className="font-medium">
                           {emp.first_name} {emp.last_name}
