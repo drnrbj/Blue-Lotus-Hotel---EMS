@@ -1,4 +1,5 @@
 // src/components/layout/Sidebar.tsx
+import logo from "@/assets/logo.png";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -70,7 +71,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       >
         {/* Logo image — replace src with your actual logo path */}
         <img
-          src="../../logo.png"
+          src={logo}
           alt="Blue Lotus Hotel"
           style={{ width: 81, height: 48 }}
           className="shrink-0 object-contain"
