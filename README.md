@@ -105,7 +105,7 @@ hr-harmony-suite/
 
 ```bash
 # Clone the repository
-git clone [<your-repo-url>](https://github.com/drnrbj/Blue-Lotus-Hotel-EMS.git)
+git clone https://github.com/drnrbj/Blue-Lotus-Hotel-EMS.git
 cd backend
 
 # Install PHP dependencies
