@@ -55,7 +55,7 @@ function Section({ title, icon: Icon, to, children }: {
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium text-foreground">{title}</h3>
+          <h3 className="text-sm font-normal text-foreground">{title}</h3>
         </div>
         {to && (
           <Link to={to} className="text-xs text-blue-600 hover:underline flex items-center gap-0.5">
@@ -176,7 +176,7 @@ export default function Dashboard() {
               ))
             ) : (
               <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                No pending leave requests 🎉
+                No pending leave requests.
               </div>
             )}
           </Section>
@@ -211,7 +211,7 @@ export default function Dashboard() {
         {/* Dept headcount */}
         {data.dept_headcount && data.dept_headcount.length > 0 && (
           <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="text-sm font-medium mb-4">Headcount by Department</h3>
+            <h3 className="text-sm font-normal mb-4">Headcount by Department</h3>
             <div className="space-y-2">
               {data.dept_headcount.map(dept => {
                 const max = Math.max(...data.dept_headcount.map(d => d.count));
