@@ -30,12 +30,12 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard",   path: "/",            icon: LayoutDashboard },
-  { label: "Employee",    path: "/employees",   icon: Users,      roles: ["Admin", "HR"] },
-  { label: "Attendance",  path: "/attendance",  icon: Clock,      roles: ["Admin", "HR"] },
-  { label: "Payroll",     path: "/payroll",     icon: DollarSign, roles: ["Accountant"] },
-  { label: "Performance", path: "/performance", icon: BarChart3,  roles: ["Admin", "HR"] },
-  { label: "Recruitment", path: "/recruitment", icon: Briefcase,  roles: ["Admin", "HR"] },
+  { label: "Dashboard", path: "/", icon: LayoutDashboard },
+  { label: "Employee", path: "/employees", icon: Users, roles: ["Admin", "HR"] },
+  { label: "Attendance", path: "/attendance", icon: Clock, roles: ["Admin", "HR"] },
+  { label: "Payroll", path: "/payroll", icon: DollarSign, roles: ["Accountant"] },
+  { label: "Performance", path: "/performance", icon: BarChart3, roles: ["Admin", "HR"] },
+  { label: "Recruitment", path: "/recruitment", icon: Briefcase, roles: ["Admin", "HR"] },
 ];
 
 interface SidebarProps {
@@ -64,7 +64,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       {/* ── Logo ── */}
       <div
         className={cn(
-          "flex h-20 items-center px-4 flex-shrink-0 border-b",
+          "flex h-16 items-center px-4 flex-shrink-0 border-b",
           collapsed ? "justify-center" : "gap-3"
         )}
         style={{ borderColor: "rgba(250,236,29,0.15)" }}
@@ -73,18 +73,32 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
         <img
           src={logo}
           alt="Blue Lotus Hotel"
-          style={{ width: 81, height: 48 }}
+          style={{ width: 52, height: 32 }}
           className="shrink-0 object-contain"
         />
 
         {!collapsed && (
           <div className="leading-tight">
-            <p className="font-extrabold text-white tracking-wide"
-               style={{ fontSize: "15px", lineHeight: "1.2" }}>
+            {/* Changed: Using Playfair Display for hotel name */}
+            <p
+              className="font-extrabold text-white tracking-wide"
+              style={{
+                fontSize: "15px",
+                lineHeight: "1.2",
+                fontFamily: "'Playfair Display', serif"  // ← Added
+              }}
+            >
               BLUE LOTUS HOTEL
             </p>
-            <p className="font-medium text-white/60"
-               style={{ fontSize: "10px", letterSpacing: "0.04em" }}>
+            {/* Changed: Using Inter for subtitle */}
+            <p
+              className="font-medium text-white/60"
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.04em",
+                fontFamily: "'Inter', system-ui, sans-serif"  // ← Added
+              }}
+            >
               Employee Management System
             </p>
           </div>
