@@ -20,9 +20,9 @@ import { LEAVE_LABEL, LEAVE_POLICIES } from "@/types/leave";
 
 function StatusBadge({ status }: { status: LeaveStatus }) {
   const map: Record<LeaveStatus, string> = {
-    pending:   "bg-amber-50 text-amber-700 border-amber-200",
-    approved:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-    rejected:  "bg-red-50 text-red-600 border-red-200",
+    pending: "bg-amber-50 text-amber-700 border-amber-200",
+    approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    rejected: "bg-red-50 text-red-600 border-red-200",
     cancelled: "bg-gray-100 text-gray-500 border-gray-200",
   };
   return (
@@ -38,9 +38,9 @@ function formatDate(d: string) {
 
 function formatDateTime(d: string | null | undefined) {
   if (!d) return "";
-  return new Date(d).toLocaleDateString("en-PH", { 
-    month: "short", 
-    day: "numeric", 
+  return new Date(d).toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit"
@@ -49,11 +49,11 @@ function formatDateTime(d: string | null | undefined) {
 
 // Helper to safely get approval date from various possible field names
 function getApprovalDate(req: LeaveRequest): string | null {
-  return (req as any).approved_at || 
-         (req as any).approval_date || 
-         (req as any).processed_at || 
-         (req as any).approved_on ||
-         null;
+  return (req as any).approved_at ||
+    (req as any).approval_date ||
+    (req as any).processed_at ||
+    (req as any).approved_on ||
+    null;
 }
 
 // ── Reject dialog ─────────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ interface LeaveRequestsTableProps {
 }
 
 type FilterStatus = LeaveStatus | "all";
-type FilterType   = LeaveType   | "all";
+type FilterType = LeaveType | "all";
 
 export default function LeaveRequestsTable({
   requests, isLoading, canManage,
@@ -129,13 +129,13 @@ export default function LeaveRequestsTable({
 }: LeaveRequestsTableProps) {
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
-  const [typeFilter,   setTypeFilter]   = useState<FilterType>("all");
+  const [typeFilter, setTypeFilter] = useState<FilterType>("all");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
-  const [rejectingId,   setRejectingId]   = useState<number | null>(null);
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
 
   const filtered = requests.filter((r) =>
     (statusFilter === "all" || r.status === statusFilter) &&
-    (typeFilter   === "all" || r.leave_type === typeFilter)
+    (typeFilter === "all" || r.leave_type === typeFilter)
   );
 
   const pendingCount = requests.filter((r) => r.status === "pending").length;
@@ -177,11 +177,10 @@ export default function LeaveRequestsTable({
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-all capitalize ${
-                statusFilter === s
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-all capitalize ${statusFilter === s
                   ? "bg-background shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               {s}
             </button>
@@ -288,17 +287,17 @@ export default function LeaveRequestsTable({
                       {req.status === "pending" && canManage && (
                         <div className="flex items-center justify-end gap-1">
                           <Button
-                            size="sm" variant="ghost"
-                            className="h-7 px-2 text-emerald-600 hover:bg-emerald-50"
+                            size="sm"
+                            className="h-8 px-3 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs"
                             disabled={actionLoading === req.id}
                             onClick={() => handleApprove(req.id)}
                           >
                             <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                            Approve
+                            Approveders
                           </Button>
                           <Button
-                            size="sm" variant="ghost"
-                            className="h-7 px-2 text-red-500 hover:bg-red-50"
+                            size="sm"
+                            className="h-8 px-3 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs"
                             disabled={actionLoading === req.id}
                             onClick={() => setRejectingId(req.id)}
                           >

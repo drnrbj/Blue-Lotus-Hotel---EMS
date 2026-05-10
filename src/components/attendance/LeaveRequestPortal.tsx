@@ -454,20 +454,19 @@ export function LeaveRequestPortal({
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => handleApprovalAction("reject", request.id)}
+                          className="h-8 px-3 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs"
+                          onClick={() => handleApprovalAction("approve", request.id)}
                         >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
+                          <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                          Approve
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => handleApprovalAction("approve", request.id)}
+                          className="h-8 px-3 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs"
+                          onClick={() => handleApprovalAction("reject", request.id)}
                         >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
+                          <XCircle className="h-3.5 w-3.5 mr-1" />
+                          Reject
                         </Button>
                       </div>
                     </div>
@@ -586,7 +585,9 @@ export function LeaveRequestPortal({
             <AlertDialogAction
               onClick={confirmApprovalAction}
               className={
-                approvalDialog.action === "approve" ? "bg-green-600" : "bg-red-600"
+                approvalDialog.action === "approve"
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-red-500 hover:bg-red-600 text-white"
               }
             >
               {approvalDialog.action === "approve" ? "Approve" : "Reject"}
