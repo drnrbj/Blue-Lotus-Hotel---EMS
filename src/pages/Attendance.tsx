@@ -910,7 +910,7 @@ export default function Attendance() {
 
       <Tabs defaultValue="dashboard">
         <TabsList className={`grid w-full ${isHR ? "grid-cols-4" : "grid-cols-3"}`}>
-          <TabsTrigger value="dashboard"><Clock className="h-4 w-4 mr-2" />Live Dashboard</TabsTrigger>
+          <TabsTrigger value="dashboard"><Clock className="h-4 w-4 mr-2" />Live Attendance</TabsTrigger>
           {(isHR || isAdmin) && <TabsTrigger value="history">History</TabsTrigger>}
           {isHR && <TabsTrigger value="import"><Upload className="h-4 w-4 mr-2" />Import</TabsTrigger>}
           <TabsTrigger value="leave"><Calendar className="h-4 w-4 mr-2" />Leave Requests</TabsTrigger>
