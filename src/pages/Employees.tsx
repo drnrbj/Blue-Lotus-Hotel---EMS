@@ -25,6 +25,7 @@ export default function Employees() {
   const isAdmin   = user?.role === "HR";
   const isHR      = user?.role === "Admin";
   const canEdit   = isHR; // only HR can add/edit/archive/delete
+  
 
   const {
     employees, archivedEmployees, isLoading,
@@ -40,7 +41,7 @@ export default function Employees() {
   const [purgeTarget,   setPurgeTarget]   = useState<Employee | null>(null);
   const [formOpen,      setFormOpen]      = useState(false);
   const [saving,        setSaving]        = useState(false);
-  const [filters,       setFilters]       = useState({ search: "", status: "" });
+  const [filters, setFilters] = useState({ search: "", status: "", department: "" });
 
   useEffect(() => { fetchEmployees(); }, []);
   useEffect(() => { if (tab === "archived") fetchArchived(); }, [tab]);
@@ -142,6 +143,7 @@ export default function Employees() {
             onArchive={setArchiveTarget}
             onSearch={s => applyFilters({ search: s })}
             onFilter={status => applyFilters({ status })}
+            onDeptFilter={dept => applyFilters({ department: dept })}
           />
         </TabsContent>
 
