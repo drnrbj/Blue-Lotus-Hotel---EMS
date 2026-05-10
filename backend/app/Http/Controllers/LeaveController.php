@@ -264,15 +264,13 @@ class LeaveController extends Controller
 
             while ($cur <= $end) {
                 if (!in_array((int) $cur->format('N'), [6, 7])) {
-                    Attendance::updateOrCreate(
-                        ['employee_id' => $req->employee_id, 'date' => $cur->format('Y-m-d')],
-                        [
-                            'status' => 'on_leave',
-                            'recorded_by' => Auth::id(),
-                            'time_in' => null,
-                            'time_out' => null,
-                        ]
-                    );
+                    $dateStr = $cur->format('Y-m-d');
+
+                    DB::statement("
+    INSERT INTO attendances (employee_id, date, status, recorded_by, time_in, time_out, created_at, updated_at)
+    VALUES (?, ?, 'on_leave', ?, null, null, datetime('now'), datetime('now'))
+    ON CONFLICT(employee_id, date) DO UPDATE SET status = 'on_leave', recorded_by = excluded.recorded_by, updated_at = datetime('now')
+", [$req->employee_id, $dateStr, Auth::id()]);
                 }
                 $cur->modify('+1 day');
             }
