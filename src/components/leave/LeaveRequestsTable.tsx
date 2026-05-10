@@ -293,7 +293,7 @@ export default function LeaveRequestsTable({
                             onClick={() => handleApprove(req.id)}
                           >
                             <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                            Approveders
+                            Approve
                           </Button>
                           <Button
                             size="sm"
@@ -315,11 +315,6 @@ export default function LeaveRequestsTable({
                         >
                           Cancel
                         </Button>
-                      )}
-                      {req.status === "approved" && (
-                        <span className="text-xs text-muted-foreground">
-                          {approvalDate ? formatDateTime(approvalDate) : "Approved"}
-                        </span>
                       )}
                     </TableCell>
                   </TableRow>
