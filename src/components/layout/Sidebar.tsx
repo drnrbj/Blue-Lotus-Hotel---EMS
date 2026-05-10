@@ -10,8 +10,6 @@ import {
   Briefcase,
   ChevronLeft,
   LogOut,
-  Settings,
-  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,8 +21,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// ── Nav item definition ───────────────────────────────────────────────────────
-
 interface NavItem {
   label: string;
   path: string;
@@ -33,15 +29,13 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard",   path: "/",           icon: LayoutDashboard },
-  { label: "Employee", path: "/employees", icon: Users, roles: ["Admin", "HR"] },
-  { label: "Attendance",  path: "/attendance", icon: Clock,      roles: ["Admin", "HR"] },
-  { label: "Payroll",     path: "/payroll",    icon: DollarSign, roles: ["Accountant"] },
-  { label: "Performance", path: "/performance",icon: BarChart3,  roles: ["Admin", "HR"] },
-  { label: "Recruitment", path: "/recruitment",icon: Briefcase,  roles: ["Admin", "HR"] },
+  { label: "Dashboard",   path: "/",            icon: LayoutDashboard },
+  { label: "Employee",    path: "/employees",   icon: Users,      roles: ["Admin", "HR"] },
+  { label: "Attendance",  path: "/attendance",  icon: Clock,      roles: ["Admin", "HR"] },
+  { label: "Payroll",     path: "/payroll",     icon: DollarSign, roles: ["Accountant"] },
+  { label: "Performance", path: "/performance", icon: BarChart3,  roles: ["Admin", "HR"] },
+  { label: "Recruitment", path: "/recruitment", icon: Briefcase,  roles: ["Admin", "HR"] },
 ];
-
-// ── Component ─────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
   onNavigate?: (path: string) => void;
@@ -50,61 +44,54 @@ interface SidebarProps {
 export function Sidebar({ onNavigate }: SidebarProps = {}) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const role = user?.role ?? "";
-  const userInitials = user?.name
-    ?.split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) || "SA";
 
   const visibleItems = NAV_ITEMS.filter(
-    (item: NavItem) => !item.roles || item.roles.includes(role)
+    (item) => !item.roles || item.roles.includes(role)
   );
-
-  const handleLinkClick = (path: string) => {
-    if (onNavigate) onNavigate(path);
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
 
   return (
     <aside
+      style={{ backgroundColor: "#2B3588" }}
       className={cn(
-        "flex flex-col bg-blue-900 transition-all duration-300 h-screen sticky top-0 shadow-xl",
+        "flex flex-col transition-all duration-300 h-screen sticky top-0 shadow-xl",
         collapsed ? "w-20" : "w-64"
       )}
     >
-      {/* Logo Section - Blue Lotus Hotel */}
+      {/* ── Logo ── */}
       <div
         className={cn(
-          "flex h-24 items-center px-5 border-b border-yellow-500/20 flex-shrink-0",
-          collapsed ? "justify-center" : "justify-start"
+          "flex h-20 items-center px-4 flex-shrink-0 border-b",
+          collapsed ? "justify-center" : "gap-3"
         )}
+        style={{ borderColor: "rgba(250,236,29,0.15)" }}
       >
-        {!collapsed ? (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
+        {/* Logo image — replace src with your actual logo path */}
+        <img
+          src="/logo.png"
+          alt="Blue Lotus Hotel"
+          style={{ width: 81, height: 48 }}
+          className="shrink-0 object-contain"
+        />
 
-              <div>
-               <p className="font-bold text-white text-base">BLUE LOTUS HOTEL</p>
-<p className="text-[11px] text-white/70 font-medium tracking-wide">Employee Management System</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center">
-
+        {!collapsed && (
+          <div className="leading-tight">
+            <p className="font-extrabold text-white tracking-wide"
+               style={{ fontSize: "15px", lineHeight: "1.2" }}>
+              BLUE LOTUS HOTEL
+            </p>
+            <p className="font-medium text-white/60"
+               style={{ fontSize: "10px", letterSpacing: "0.04em" }}>
+              Employee Management System
+            </p>
           </div>
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-8 px-3">
+      {/* ── Navigation ── */}
+      <nav className="flex-1 overflow-y-auto py-6 px-3">
         <TooltipProvider delayDuration={300}>
           <div className="space-y-1">
             {visibleItems.map((item) => {
@@ -116,18 +103,27 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
               const NavLink = () => (
                 <Link
                   to={item.path}
-                  onClick={() => handleLinkClick(item.path)}
+                  onClick={() => onNavigate?.(item.path)}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-yellow-500 text-blue-900 shadow-md"
-                      : "text-white/70 hover:bg-blue-800 hover:text-white",
+                      ? "text-white shadow-md"
+                      : "text-white/60 hover:text-white",
                     collapsed && "justify-center px-2"
                   )}
+                  style={isActive ? { backgroundColor: "#44AFE4" } : undefined}
+                  onMouseEnter={e => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(68,175,228,0.15)";
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLElement).style.backgroundColor = "";
+                  }}
                 >
                   <Icon className={cn(
-                    "h-5 w-5 shrink-0 transition-all",
-                    isActive ? "text-blue-900" : "text-yellow-400/80"
+                    "h-5 w-5 shrink-0",
+                    isActive ? "text-white" : "text-white/50"
                   )} />
                   {!collapsed && <span>{item.label}</span>}
                 </Link>
@@ -136,10 +132,12 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
               if (collapsed) {
                 return (
                   <Tooltip key={item.path}>
-                    <TooltipTrigger asChild>
-                      <NavLink />
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="bg-yellow-500 text-blue-900 font-medium border-none">
+                    <TooltipTrigger asChild><NavLink /></TooltipTrigger>
+                    <TooltipContent
+                      side="right"
+                      className="font-medium border-none"
+                      style={{ backgroundColor: "#44AFE4", color: "#fff" }}
+                    >
                       {item.label}
                     </TooltipContent>
                   </Tooltip>
@@ -152,130 +150,99 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
         </TooltipProvider>
       </nav>
 
-      {/* Bottom Section - User & Actions */}
-      <div className="border-t border-yellow-500/20 p-3 space-y-3">
-        {/* User Profile */}
-        <div
-          className={cn(
-            "rounded-lg transition-all duration-200",
-            !collapsed ? "bg-blue-800/50 p-2" : "p-1"
-          )}
-        >
-          <div className={cn(
-            "flex items-center gap-3",
-            collapsed && "justify-center"
-          )}>
-            <div className="h-9 w-9 rounded-full bg-yellow-500 flex items-center justify-center shadow-md">
-              <span className="text-sm font-bold text-blue-900">
-                {userInitials}
-              </span>
-            </div>
-            
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">
-                  {user?.name || "System Admin"}
-                </p>
-                <p className="text-xs text-yellow-500/70">
-                  {user?.role || "Admin"}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Settings & Help & Logout */}
-        {!collapsed && (
-          <div className="flex items-center justify-between px-2 py-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-white/60 hover:text-yellow-400 hover:bg-blue-800"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-white/60 hover:text-yellow-400 hover:bg-blue-800"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </Button>
-            <div className="w-px h-4 bg-yellow-500/20" />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-white/60 hover:text-red-400 hover:bg-red-500/10"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Collapsed version of actions */}
-        {collapsed && (
-          <div className="flex flex-col items-center gap-2">
+      {/* ── Bottom: User info + collapse + logout ── */}
+      <div
+        className="flex-shrink-0 px-3 py-4 border-t"
+        style={{ borderColor: "rgba(250,236,29,0.15)" }}
+      >
+        {collapsed ? (
+          /* Collapsed state */
+          <div className="flex flex-col items-center gap-3">
+            {/* Collapse toggle */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-white/60 hover:text-yellow-400 hover:bg-blue-800"
+                  variant="ghost" size="sm"
+                  className="h-8 w-8 p-0 text-white/50 hover:text-white rotate-180"
+                  style={{ backgroundColor: "transparent" }}
+                  onClick={() => setCollapsed(false)}
                 >
-                  <Settings className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-yellow-500 text-blue-900 border-none">
-                Settings
+              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
+                Expand
               </TooltipContent>
             </Tooltip>
+
+            {/* Logout */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-white/60 hover:text-yellow-400 hover:bg-blue-800"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="bg-yellow-500 text-blue-900 border-none">
-                Help
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 text-white/60 hover:text-red-400 hover:bg-red-500/10"
-                  onClick={handleLogout}
+                  variant="ghost" size="sm"
+                  className="h-8 w-8 p-0 text-white/50 hover:text-red-400"
+                  style={{ backgroundColor: "transparent" }}
+                  onClick={logout}
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-yellow-500 text-blue-900 border-none">
+              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
+                Logout
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        ) : (
+          /* Expanded state */
+          <div
+            className="flex items-center gap-2 rounded-lg px-2 py-2"
+            style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+          >
+            {/* Name + Role */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">
+                {user?.name || "System Admin"}
+              </p>
+              <p className="text-xs truncate" style={{ color: "#FAEC1D", opacity: 0.8 }}>
+                {user?.role || "Admin"}
+              </p>
+            </div>
+
+            {/* Collapse toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost" size="sm"
+                  className="h-7 w-7 p-0 shrink-0 text-white/40 hover:text-white"
+                  style={{ backgroundColor: "transparent" }}
+                  onClick={() => setCollapsed(true)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
+                Collapse
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Logout */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost" size="sm"
+                  className="h-7 w-7 p-0 shrink-0 text-white/40 hover:text-red-400"
+                  style={{ backgroundColor: "transparent" }}
+                  onClick={logout}
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
                 Logout
               </TooltipContent>
             </Tooltip>
           </div>
         )}
-
-        {/* Collapse Toggle Button */}
-        <div className="flex justify-center pt-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "h-7 w-7 p-0 text-white/60 hover:text-yellow-400 hover:bg-blue-800",
-              collapsed && "rotate-180"
-            )}
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
     </aside>
   );
