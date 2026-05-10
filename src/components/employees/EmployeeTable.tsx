@@ -1,5 +1,4 @@
 // src/components/employees/EmployeeTable.tsx
-// FIX #5: No "permanent delete" option in the active directory — only Archive
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,35 +13,38 @@ import { cn } from "@/lib/utils";
 import type { Employee } from "@/types/employee";
 
 interface Props {
-  employees: Employee[];
-  isLoading: boolean;
-  isAdmin: boolean;
-  onView: (emp: Employee) => void;
-  onEdit: (emp: Employee) => void;
-  onArchive: (emp: Employee) => void;
-  onSearch: (value: string) => void;
-  onFilter: (status: string) => void;
+  employees:    Employee[];
+  isLoading:    boolean;
+  isAdmin:      boolean;
+  onView:       (emp: Employee) => void;
+  onEdit:       (emp: Employee) => void;
+  onArchive:    (emp: Employee) => void;
+  onSearch:     (value: string) => void;
+  onFilter:     (status: string) => void;
+  onDeptFilter: (dept: string) => void;   // ← added
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-100 text-green-700",
-  on_leave: "bg-yellow-100 text-yellow-700",
+  active:     "bg-green-100 text-green-700",
+  on_leave:   "bg-yellow-100 text-yellow-700",
   onboarding: "bg-purple-100 text-purple-700",
-  suspended: "bg-orange-100 text-orange-700",
+  suspended:  "bg-orange-100 text-orange-700",
   terminated: "bg-red-100 text-red-700",
 };
 
 const SHIFT_COLORS: Record<string, string> = {
-  morning: "bg-sky-100 text-sky-700",
+  morning:   "bg-sky-100 text-sky-700",
   afternoon: "bg-amber-100 text-amber-700",
-  night: "bg-indigo-100 text-indigo-700",
+  night:     "bg-indigo-100 text-indigo-700",
 };
 
 export function EmployeeTable({
   employees, isLoading, isAdmin,
-  onView, onEdit, onArchive, onSearch, onFilter,
+  onView, onEdit, onArchive, onSearch, onFilter, onDeptFilter,
 }: Props) {
   const [search, setSearch] = useState("");
+
+  const departments = [...new Set(employees.map(e => e.department).filter(Boolean))].sort();
 
   return (
     <div className="space-y-4">
@@ -57,6 +59,7 @@ export function EmployeeTable({
             className="pl-9"
           />
         </div>
+
         <Select onValueChange={v => onFilter(v === "all" ? "" : v)}>
           <SelectTrigger className="w-44">
             <SelectValue placeholder="All statuses" />
@@ -68,6 +71,18 @@ export function EmployeeTable({
             <SelectItem value="on_leave">On Leave</SelectItem>
             <SelectItem value="suspended">Suspended</SelectItem>
             <SelectItem value="terminated">Terminated</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select onValueChange={v => onDeptFilter(v === "all" ? "" : v)}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="All departments" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All departments</SelectItem>
+            {departments.map(dept => (
+              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -100,15 +115,11 @@ export function EmployeeTable({
               {employees.map(emp => (
                 <tr key={emp.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="font-medium">
-                          {emp.first_name} {emp.last_name}
-                          {emp.name_extension ? ` ${emp.name_extension}` : ""}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{emp.email}</p>
-                      </div>
-                    </div>
+                    <p className="font-medium">
+                      {emp.first_name} {emp.last_name}
+                      {emp.name_extension ? ` ${emp.name_extension}` : ""}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{emp.email}</p>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{emp.department}</td>
                   <td className="px-4 py-3 text-muted-foreground text-xs">{emp.job_category}</td>
@@ -128,8 +139,6 @@ export function EmployeeTable({
                         onClick={() => onView(emp)} title="View profile">
                         <Eye className="h-4 w-4" />
                       </Button>
-
-                      {/* FIX #5: Admin dropdown shows Edit + Archive ONLY — no Delete in active directory */}
                       {isAdmin && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -148,7 +157,6 @@ export function EmployeeTable({
                             >
                               <Archive className="mr-2 h-4 w-4" /> Archive
                             </DropdownMenuItem>
-                            {/* NOTE: No "Permanently Delete" here — only in the Archived tab */}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
