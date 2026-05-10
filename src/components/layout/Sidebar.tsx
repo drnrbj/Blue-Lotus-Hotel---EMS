@@ -70,7 +70,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
       >
         {/* Logo image — replace src with your actual logo path */}
         <img
-          src="/logo.png"
+          src="../../logo.png"
           alt="Blue Lotus Hotel"
           style={{ width: 81, height: 48 }}
           className="shrink-0 object-contain"
