@@ -33,7 +33,7 @@ type View = "list" | "create" | "edit" | "analytics";
 
 const statusStyles: Record<string, string> = {
   active: "bg-green-100 text-green-700",
-  draft:  "bg-amber-100 text-amber-700",
+  draft: "bg-amber-100 text-amber-700",
   closed: "bg-gray-100 text-gray-600",
 };
 
@@ -49,7 +49,7 @@ function FillFormDialog({
 }) {
   const { toast } = useToast();
   const [responses, setResponses] = useState<Record<number, QuestionResponse>>({});
-  const [saving, setSaving]       = useState(false);
+  const [saving, setSaving] = useState(false);
 
   if (!assignment) return null;
 
@@ -87,7 +87,7 @@ function FillFormDialog({
               </div>
 
               {section.type === "likert" && (section.questions ?? []).map((q, qi) => {
-                const qid     = q.id ?? (si * 1000 + qi);
+                const qid = q.id ?? (si * 1000 + qi);
                 const current = responses[qid]?.rating;
                 return (
                   <div key={qi} className="space-y-2">
@@ -95,7 +95,7 @@ function FillFormDialog({
                     <div className="flex gap-2 flex-wrap">
                       {(section.likert_options?.length
                         ? section.likert_options
-                        : [5,4,3,2,1].map((v,i) => ({ value: v, label: ["Excellent","Very Good","Good","Fair","Poor"][i] }))
+                        : [5, 4, 3, 2, 1].map((v, i) => ({ value: v, label: ["Excellent", "Very Good", "Good", "Fair", "Poor"][i] }))
                       ).map(opt => (
                         <button key={opt.value} onClick={() => setRating(qid, opt.value)}
                           className={cn(
@@ -142,11 +142,11 @@ function FillFormDialog({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Performance() {
-  const { toast }  = useToast();
-  const { user }   = useAuth();
-  const role       = user?.role ?? "";
-  const isAdmin    = role === "Admin" || role === "Manager";
-  const isHR       = role === "HR";
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const role = user?.role ?? "";
+  const isAdmin = role === "Admin" || role === "Manager";
+  const isHR = role === "HR";
 
   const {
     forms, analytics, myAssignments, isLoading,
@@ -155,16 +155,16 @@ export default function Performance() {
     clearError,
   } = useEvaluation();
 
-  const [view,         setView]         = useState<View>("list");
-  const [search,       setSearch]       = useState("");
-  const [editingForm,  setEditingForm]  = useState<EvaluationForm | null>(null);
-  const [fillTarget,   setFillTarget]   = useState<{
+  const [view, setView] = useState<View>("list");
+  const [search, setSearch] = useState("");
+  const [editingForm, setEditingForm] = useState<EvaluationForm | null>(null);
+  const [fillTarget, setFillTarget] = useState<{
     id: number; form: { title: string; department: string; sections: EvaluationSection[] };
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<EvaluationForm | null>(null);
-  const [sendingId,    setSendingId]    = useState<number | null>(null);
-  const [closingId,    setClosingId]    = useState<number | null>(null);
-  const [page,         setPage]         = useState(1);
+  const [sendingId, setSendingId] = useState<number | null>(null);
+  const [closingId, setClosingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
   const PER_PAGE = 5;
 
   useEffect(() => {
@@ -177,7 +177,7 @@ export default function Performance() {
     const now = new Date();
     forms.filter(f => f.status === "active" && f.deadline && new Date(f.deadline) < now)
       .forEach(f => {
-        closeForm(f.id).catch(() => {/* silent — might already be closed */});
+        closeForm(f.id).catch(() => {/* silent — might already be closed */ });
       });
   }, [forms]);
 
@@ -225,18 +225,18 @@ export default function Performance() {
   }
 
   const activeForms = forms.filter(f => f.status === "active");
-  const draftForms  = forms.filter(f => f.status === "draft");
+  const draftForms = forms.filter(f => f.status === "draft");
   const closedForms = forms.filter(f => f.status === "closed");
 
   const filteredActive = activeForms.filter(f =>
     f.title.toLowerCase().includes(search.toLowerCase()) ||
     f.department.toLowerCase().includes(search.toLowerCase())
   );
-  const pages    = Math.ceil(filteredActive.length / PER_PAGE);
-  const paginated= filteredActive.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const pages = Math.ceil(filteredActive.length / PER_PAGE);
+  const paginated = filteredActive.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const fmtDate = (d: string | null) =>
-    d ? new Date(d).toLocaleDateString("en-PH", { month:"short", day:"numeric", year:"numeric" }) : "—";
+    d ? new Date(d).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
   // FIX #14: check if a form is past deadline
   const isPastDeadline = (f: EvaluationForm) =>
@@ -251,11 +251,12 @@ export default function Performance() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Performance Management</h1>
           </div>
-          {isAdmin && (
-            <Button onClick={() => setView("create")} className="gap-2">
-              <Plus className="h-4 w-4" /> New Evaluation
-            </Button>
-          )}
+          <Button
+            onClick={() => setView("create")}
+            className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white"
+          >
+            <Plus className="h-4 w-4" /> New Evaluation
+          </Button>
         </div>
 
         {/* ── HR: My Assignments ───────────────────────────────────────────── */}
@@ -348,8 +349,8 @@ export default function Performance() {
                   <tbody className="divide-y divide-border">
                     {paginated.map(form => {
                       const total = form.assignments_count ?? 0;
-                      const done  = form.responses_count   ?? 0;
-                      const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+                      const done = form.responses_count ?? 0;
+                      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
                       const overdue = isPastDeadline(form);
                       return (
                         <tr key={form.id} className={cn("hover:bg-muted/20", overdue && "bg-red-50/40")}>
@@ -383,7 +384,7 @@ export default function Performance() {
                                 onClick={async () => {
                                   setClosingId(form.id);
                                   try { await closeForm(form.id); toast({ title: "Form closed" }); fetchForms(); }
-                                  catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant:"destructive"}); }
+                                  catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
                                   finally { setClosingId(null); }
                                 }}>
                                 {closingId === form.id
@@ -454,7 +455,7 @@ export default function Performance() {
                               onClick={async () => {
                                 setSendingId(form.id);
                                 try { await sendForm(form.id); toast({ title: "Sent to HR evaluators" }); fetchForms(); }
-                                catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant:"destructive"}); }
+                                catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
                                 finally { setSendingId(null); }
                               }}>
                               {sendingId === form.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
