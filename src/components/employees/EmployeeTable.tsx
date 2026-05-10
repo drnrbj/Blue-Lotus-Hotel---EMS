@@ -55,7 +55,7 @@ export function EmployeeTable({
           <Input
             value={search}
             onChange={e => { setSearch(e.target.value); onSearch(e.target.value); }}
-            placeholder="Search name, email, department..."
+            placeholder="Search name, email..."
             className="pl-9"
           />
         </div>
