@@ -906,7 +906,6 @@ export default function Attendance() {
     <DashboardLayout>
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Attendance & Timekeeping</h1>
-        <p className="text-muted-foreground mt-1">Track workforce attendance, import RFID data, manage leave</p>
       </div>
 
       <Tabs defaultValue="dashboard">
