@@ -23,7 +23,7 @@ interface AttendanceRecord {
   id: number;
   employee_id: number;
   date: string;
-  time_in:  string | null;
+  time_in: string | null;
   time_out: string | null;
   status: "present" | "late" | "absent" | "on_leave" | "half_day";
   minutes_late: number;
@@ -36,10 +36,10 @@ interface LeaveRequest {
   id: number;
   employee_id: number;
   employee_name: string | null;
-  department:    string | null;
-  leave_type:    string;
-  start_date:    string;
-  end_date:      string;
+  department: string | null;
+  leave_type: string;
+  start_date: string;
+  end_date: string;
   days_requested: number;
   reason: string;
   status: "pending" | "approved" | "rejected" | "cancelled";
@@ -49,47 +49,47 @@ interface LeaveRequest {
 
 interface LeaveBalance {
   id: number;
-  leave_type:    string;
+  leave_type: string;
   entitled_days: number;
-  used_days:     number;
-  carried_over:  number;
-  remaining_days:number;
+  used_days: number;
+  carried_over: number;
+  remaining_days: number;
 }
 
 interface LiveStatus {
   total_employees: number;
-  present:  number;
-  late:     number;
-  absent:   number;
+  present: number;
+  late: number;
+  absent: number;
   on_leave: number;
-  date:     string;
+  date: string;
   recent_clockins: { id: number; name: string; department: string; time: string; status: string }[];
-  dept_breakdown:  { department: string; clocked_in: number; total: number }[];
+  dept_breakdown: { department: string; clocked_in: number; total: number }[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  present:  "bg-green-100 text-green-700",
-  late:     "bg-amber-100 text-amber-700",
-  absent:   "bg-red-100 text-red-700",
+  present: "bg-green-100 text-green-700",
+  late: "bg-amber-100 text-amber-700",
+  absent: "bg-red-100 text-red-700",
   on_leave: "bg-blue-100 text-blue-700",
   half_day: "bg-orange-100 text-orange-700",
 };
 
 const LEAVE_LABELS: Record<string, string> = {
-  vacation:    "Vacation",
-  sick:        "Sick Leave",
-  emergency:   "Emergency",
-  maternity:   "Maternity",
-  paternity:   "Paternity",
+  vacation: "Vacation",
+  sick: "Sick Leave",
+  emergency: "Emergency",
+  maternity: "Maternity",
+  paternity: "Paternity",
   bereavement: "Bereavement",
   solo_parent: "Solo Parent",
-  unpaid:      "Unpaid",
+  unpaid: "Unpaid",
 };
 
 // ─── API helper ───────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
-  const res  = await authFetch(url, options);
+  const res = await authFetch(url, options);
   const body = await res.json();
   if (!res.ok) throw new Error(body.message ?? "Request failed");
   return (body.data ?? body) as T;
@@ -100,10 +100,10 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function LiveDashboard() {
-  const { toast }             = useToast();
-  const [status, setStatus]   = useState<LiveStatus | null>(null);
+  const { toast } = useToast();
+  const [status, setStatus] = useState<LiveStatus | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -138,10 +138,10 @@ function LiveDashboard() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Employees", value: status.total_employees, Icon: Users,     color: "bg-blue-100 text-blue-600" },
-          { label: "Present Today",   value: status.present + status.late, Icon: UserCheck, color: "bg-green-100 text-green-600" },
-          { label: "On Leave",        value: status.on_leave,        Icon: Calendar,  color: "bg-blue-100 text-blue-600" },
-          { label: "Absent",          value: status.absent,          Icon: UserX,     color: "bg-red-100 text-red-600" },
+          { label: "Total Employees", value: status.total_employees, Icon: Users, color: "bg-blue-100 text-blue-600" },
+          { label: "Present Today", value: status.present + status.late, Icon: UserCheck, color: "bg-green-100 text-green-600" },
+          { label: "On Leave", value: status.on_leave, Icon: Calendar, color: "bg-blue-100 text-blue-600" },
+          { label: "Absent", value: status.absent, Icon: UserX, color: "bg-red-100 text-red-600" },
         ].map(({ label, value, Icon, color }) => (
           <div key={label} className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
             <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center shrink-0", color)}>
@@ -171,9 +171,9 @@ function LiveDashboard() {
         <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
           {[
             { label: "Present", count: status.present, color: "bg-green-500" },
-            { label: "Late",    count: status.late,    color: "bg-amber-400" },
-            { label: "On Leave",count: status.on_leave,color: "bg-blue-400" },
-            { label: "Absent",  count: status.absent,  color: "bg-red-400" },
+            { label: "Late", count: status.late, color: "bg-amber-400" },
+            { label: "On Leave", count: status.on_leave, color: "bg-blue-400" },
+            { label: "Absent", count: status.absent, color: "bg-red-400" },
           ].map(({ label, count, color }) => (
             <span key={label} className="flex items-center gap-1">
               <div className={cn("h-2 w-2 rounded-full", color)} />{label}: {count}
@@ -248,16 +248,16 @@ function LiveDashboard() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function AttendanceHistory({ canManage }: { canManage: boolean }) {
-  const { toast }             = useToast();
-  const [records,  setRecords]= useState<AttendanceRecord[]>([]);
-  const [loading,  setLoading]= useState(true);
-  const [search,   setSearch] = useState("");
-  const [statusF,  setStatusF]= useState("all");
-  const [startDate, setStart] = useState(() => { const d = new Date(); d.setDate(1); return d.toISOString().slice(0,10); });
-  const [endDate,   setEnd]   = useState(() => new Date().toISOString().slice(0,10));
-  const [editOpen, setEditOpen]= useState(false);
+  const { toast } = useToast();
+  const [records, setRecords] = useState<AttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusF, setStatusF] = useState("all");
+  const [startDate, setStart] = useState(() => { const d = new Date(); d.setDate(1); return d.toISOString().slice(0, 10); });
+  const [endDate, setEnd] = useState(() => new Date().toISOString().slice(0, 10));
+  const [editOpen, setEditOpen] = useState(false);
   const [editRow, setEditRow] = useState<Partial<AttendanceRecord>>({});
-  const [saving, setSaving]   = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -276,12 +276,12 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
   const handleExport = async () => {
     try {
       const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
-      const res    = await authFetch(`/api/attendance/export?${params}`);
+      const res = await authFetch(`/api/attendance/export?${params}`);
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement("a");
-      a.href     = url;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
       a.download = `attendance_${startDate}_${endDate}.csv`;
       a.click();
       URL.revokeObjectURL(url);
@@ -307,7 +307,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     if (!search) return true;
     const name = r.employee ? `${r.employee.first_name} ${r.employee.last_name}` : "";
     return name.toLowerCase().includes(search.toLowerCase())
-        || (r.employee?.department ?? "").toLowerCase().includes(search.toLowerCase());
+      || (r.employee?.department ?? "").toLowerCase().includes(search.toLowerCase());
   });
 
   return (
@@ -318,7 +318,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
           <Input placeholder="Search employee / department..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Input type="date" value={startDate} onChange={e => setStart(e.target.value)} className="w-40" />
-        <Input type="date" value={endDate}   onChange={e => setEnd(e.target.value)}   className="w-40" />
+        <Input type="date" value={endDate} onChange={e => setEnd(e.target.value)} className="w-40" />
         <Select value={statusF} onValueChange={setStatusF}>
           <SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger>
           <SelectContent>
@@ -372,7 +372,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                     </td>
                     <td className="px-4 py-2.5 text-xs text-muted-foreground">{r.date}</td>
                     <td className="px-4 py-2.5 text-xs capitalize text-muted-foreground">{r.employee?.shift_sched ?? "—"}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs">{r.time_in  ?? "—"}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs">{r.time_in ?? "—"}</td>
                     <td className="px-4 py-2.5 font-mono text-xs">{r.time_out ?? "—"}</td>
                     <td className="px-4 py-2.5 text-right text-xs">{r.hours_worked > 0 ? `${r.hours_worked}h` : "—"}</td>
                     <td className="px-4 py-2.5 text-center text-xs">
@@ -471,20 +471,20 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function AttendanceImport() {
-  const { toast }                 = useToast();
-  const fileRef                   = useRef<HTMLInputElement>(null);
-  const [preview, setPreview]     = useState<Record<string, string>[]>([]);
+  const { toast } = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<Record<string, string>[]>([]);
   const [importing, setImporting] = useState(false);
-  const [result, setResult]       = useState<{ saved: number; errors: string[] } | null>(null);
+  const [result, setResult] = useState<{ saved: number; errors: string[] } | null>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       const XLSX = await import("xlsx");
-      const buf  = await file.arrayBuffer();
-      const wb   = XLSX.read(buf, { type: "buffer" });
-      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "buffer" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
       setPreview(rows.slice(0, 5));
       setResult(null);
@@ -500,27 +500,27 @@ function AttendanceImport() {
     setImporting(true);
     try {
       const XLSX = await import("xlsx");
-      const buf  = await file.arrayBuffer();
-      const wb   = XLSX.read(buf, { type: "buffer" });
-      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "buffer" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
 
       const normalised = rows
         .filter(r => r.employee_id && r.date)
         .map(r => ({
           employee_id: Number(r.employee_id),
-          date:        String(r.date).trim(),
-          time_in:     String(r.time_in  || "").trim() || null,
-          time_out:    String(r.time_out || "").trim() || null,
+          date: String(r.date).trim(),
+          time_in: String(r.time_in || "").trim() || null,
+          time_out: String(r.time_out || "").trim() || null,
           // FIX #8: pass shift so backend uses employee's shift_sched for late calc
-          shift:       String(r.shift || "").trim() || null,
-          status:      String(r.status || "").trim() || null,
-          notes:       String(r.notes  || "").trim() || null,
+          shift: String(r.shift || "").trim() || null,
+          status: String(r.status || "").trim() || null,
+          notes: String(r.notes || "").trim() || null,
         }));
 
-      const res  = await authFetch("/api/attendance/import", {
+      const res = await authFetch("/api/attendance/import", {
         method: "POST",
-        body:   JSON.stringify({ rows: normalised }),
+        body: JSON.stringify({ rows: normalised }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Import failed");
@@ -592,7 +592,7 @@ function AttendanceImport() {
           <p className="font-medium text-sm flex items-center gap-2">
             {result.errors.length === 0
               ? <CheckCircle className="h-4 w-4 text-green-600" />
-              : <AlertCircle  className="h-4 w-4 text-amber-600" />}
+              : <AlertCircle className="h-4 w-4 text-amber-600" />}
             {result.saved} records imported successfully
           </p>
           {result.errors.map((err, i) => <p key={i} className="text-xs text-red-600">{err}</p>)}
@@ -611,15 +611,15 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
   canApprove: boolean;   // FIX #9: only Admin can approve/reject
   currentEmployeeId?: number;
 }) {
-  const { toast }                     = useToast();
-  const [requests, setRequests]       = useState<LeaveRequest[]>([]);
-  const [balances, setBalances]       = useState<LeaveBalance[]>([]);
-  const [loading, setLoading]         = useState(true);
-  const [statusF, setStatusF]         = useState("all");
-  const [formOpen, setFormOpen]       = useState(false);
-  const [rejectId, setRejectId]       = useState<number | null>(null);
-  const [rejectReason, setRejectReason]= useState("");
-  const [acting, setActing]           = useState<number | null>(null);
+  const { toast } = useToast();
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
+  const [balances, setBalances] = useState<LeaveBalance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusF, setStatusF] = useState("all");
+  const [formOpen, setFormOpen] = useState(false);
+  const [rejectId, setRejectId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [acting, setActing] = useState<number | null>(null);
   const [form, setForm] = useState({
     leave_type: "vacation", start_date: "", end_date: "", reason: "", employee_id: "",
   });
@@ -671,7 +671,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
     try {
       await apiFetch(`/api/leave-requests/${rejectId}/reject`, {
         method: "POST",
-        body:   JSON.stringify({ reason: rejectReason }),
+        body: JSON.stringify({ reason: rejectReason }),
       });
       toast({ title: "Rejected" }); setRejectId(null); setRejectReason(""); load();
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
@@ -686,12 +686,12 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
   };
 
   const filtered = requests.filter(r => statusF === "all" || r.status === statusF);
-  const pending  = requests.filter(r => r.status === "pending").length;
+  const pending = requests.filter(r => r.status === "pending").length;
 
   const statusColors: Record<string, string> = {
-    pending:   "bg-amber-100 text-amber-700",
-    approved:  "bg-green-100 text-green-700",
-    rejected:  "bg-red-100 text-red-700",
+    pending: "bg-amber-100 text-amber-700",
+    approved: "bg-green-100 text-green-700",
+    rejected: "bg-red-100 text-red-700",
     cancelled: "bg-gray-100 text-gray-600",
   };
 
@@ -700,7 +700,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
       {/* Leave balance cards */}
       {balances.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {balances.filter(b => ["vacation","sick","emergency","unpaid"].includes(b.leave_type)).map(b => (
+          {balances.filter(b => ["vacation", "sick", "emergency", "unpaid"].includes(b.leave_type)).map(b => (
             <div key={b.id} className="rounded-xl border border-border bg-card p-3">
               <p className="text-xs text-muted-foreground">{LEAVE_LABELS[b.leave_type] ?? b.leave_type}</p>
               <p className="text-xl font-bold mt-1">{b.remaining_days}</p>
@@ -727,9 +727,11 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
             </button>
           ))}
         </div>
-        <Button size="sm" className="gap-1" onClick={() => setFormOpen(true)}>
-          <Plus className="h-4 w-4" /> Request Leave
-        </Button>
+        {!canApprove && (
+          <Button size="sm" className="gap-1" onClick={() => setFormOpen(true)}>
+            <Plus className="h-4 w-4" /> Request Leave
+          </Button>
+        )}
       </div>
 
       {/* FIX #9: role permissions note */}
@@ -885,11 +887,11 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
 
 export default function Attendance() {
   const { user } = useAuth();
-  const role     = user?.role ?? "";
-  const isHR     = role === "HR";
-  const isAdmin  = role === "Admin";
+  const role = user?.role ?? "";
+  const isHR = role === "HR";
+  const isAdmin = role === "Admin";
 
-  const canManage  = isHR;        // HR only: History + Import + manual entry
+  const canManage = isHR;        // HR only: History + Import + manual entry
   const canApprove = isAdmin;     // Admin only: approve/reject leave
 
   const [currentEmployeeId, setCurrentEmployeeId] = useState<number | undefined>();
@@ -897,7 +899,7 @@ export default function Attendance() {
     authFetch("/api/auth/me").then(r => r.json()).then(b => {
       const emp = b.data?.employee ?? b.employee;
       if (emp?.id) setCurrentEmployeeId(emp.id);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   return (
@@ -917,7 +919,7 @@ export default function Attendance() {
 
         <TabsContent value="dashboard" className="mt-6"><LiveDashboard /></TabsContent>
         {(isHR || isAdmin) && <TabsContent value="history" className="mt-6"><AttendanceHistory canManage={isHR} /></TabsContent>}
-        {isHR && <TabsContent value="import"  className="mt-6"><AttendanceImport /></TabsContent>}
+        {isHR && <TabsContent value="import" className="mt-6"><AttendanceImport /></TabsContent>}
         <TabsContent value="leave" className="mt-6">
           <LeaveManagement
             canManage={isAdmin || isHR}
