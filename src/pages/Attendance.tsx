@@ -747,7 +747,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
                 <th className="px-4 py-3 text-center font-semibold">Days</th>
                 <th className="px-4 py-3 text-left font-semibold">Reason</th>
                 <th className="px-4 py-3 text-left font-semibold">Status</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                {canApprove && <th className="px-4 py-3 text-right font-semibold">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -773,29 +773,23 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
                     <Badge className={cn("text-xs border-0 capitalize", statusColors[r.status])}>{r.status}</Badge>
                     {r.rejected_reason && <p className="text-[10px] text-red-500 mt-0.5">{r.rejected_reason}</p>}
                   </td>
-                  <td className="px-4 py-2.5 text-right">
-                    {/* FIX #9: approve/reject only shown to Admin */}
-                    {r.status === "pending" && canApprove && (
-                      <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-green-600 hover:bg-green-50"
-                          disabled={acting === r.id} onClick={() => approve(r.id)}>
-                          {acting === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
-                          Approve
-                        </Button>
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-red-500 hover:bg-red-50"
-                          disabled={acting === r.id} onClick={() => { setRejectId(r.id); setRejectReason(""); }}>
-                          <XCircle className="h-3.5 w-3.5" /> Reject
-                        </Button>
-                      </div>
-                    )}
-                    {r.status === "pending" && r.employee_id === currentEmployeeId && !canApprove && (
-                      <Button size="sm" variant="ghost" className="h-7 px-2 text-muted-foreground"
-                        disabled={acting === r.id} onClick={() => cancel(r.id)}>
-                        Cancel
-                      </Button>
-                    )}
-                    {r.status === "approved" && <span className="text-xs text-muted-foreground">Approved</span>}
-                  </td>
+                  {canApprove && (
+                    <td className="px-4 py-2.5 text-right">
+                      {r.status === "pending" && (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button size="sm" className="h-8 px-3 rounded-full bg-green-600 hover:bg-green-700 text-white text-xs"
+                            disabled={acting === r.id} onClick={() => approve(r.id)}>
+                            {acting === r.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle className="h-3.5 w-3.5 mr-1" />}
+                            Approve
+                          </Button>
+                          <Button size="sm" className="h-8 px-3 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs"
+                            disabled={acting === r.id} onClick={() => { setRejectId(r.id); setRejectReason(""); }}>
+                            <XCircle className="h-3.5 w-3.5 mr-1" /> Reject
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
