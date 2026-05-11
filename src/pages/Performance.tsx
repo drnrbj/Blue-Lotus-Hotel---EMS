@@ -265,7 +265,7 @@ export default function Performance() {
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="px-5 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
                 <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium text-sm">My Pending Evaluations</span>
+                <span className="font-medium text-sm">Pending Evaluations</span>
                 <Badge className="ml-auto bg-amber-100 text-amber-700 border-0 text-xs">
                   {myAssignments.pending?.length ?? 0}
                 </Badge>
