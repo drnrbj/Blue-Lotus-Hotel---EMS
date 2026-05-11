@@ -1,5 +1,4 @@
-// src/components/employees/EmployeeTable.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +12,15 @@ import { cn } from "@/lib/utils";
 import type { Employee } from "@/types/employee";
 
 interface Props {
-  employees:    Employee[];
-  isLoading:    boolean;
-  isAdmin:      boolean;
-  onView:       (emp: Employee) => void;
-  onEdit:       (emp: Employee) => void;
-  onArchive:    (emp: Employee) => void;
-  onSearch:     (value: string) => void;
-  onFilter:     (status: string) => void;
-  onDeptFilter: (dept: string) => void;   // ← added
+  employees: Employee[];
+  isLoading: boolean;
+  isAdmin: boolean;
+  onView: (emp: Employee) => void;
+  onEdit: (emp: Employee) => void;
+  onArchive: (emp: Employee) => void;
+  onSearch: (value: string) => void;
+  onFilter: (status: string) => void;
+  onDeptFilter: (dept: string) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -43,11 +42,18 @@ export function EmployeeTable({
   onView, onEdit, onArchive, onSearch, onFilter, onDeptFilter,
 }: Props) {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const departments = [...new Set(employees.map(e => e.department).filter(Boolean))].sort();
+  const totalPages  = Math.ceil(employees.length / itemsPerPage);
+  const paginated   = employees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => { setCurrentPage(1); }, [employees.length]);
 
   return (
     <div className="space-y-4">
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px]">
@@ -99,75 +105,133 @@ export function EmployeeTable({
           <p className="text-sm text-muted-foreground mt-1">Employees are added through the Recruitment pipeline</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/30 border-b border-border">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold">Employee</th>
-                <th className="px-4 py-3 text-left font-semibold">Department</th>
-                <th className="px-4 py-3 text-left font-semibold">Job Category</th>
-                <th className="px-4 py-3 text-left font-semibold">Shift</th>
-                <th className="px-4 py-3 text-left font-semibold">Status</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {employees.map(emp => (
-                <tr key={emp.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3">
-                    <p className="font-medium">
-                      {emp.first_name} {emp.last_name}
-                      {emp.name_extension ? ` ${emp.name_extension}` : ""}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{emp.email}</p>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{emp.department}</td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{emp.job_category}</td>
-                  <td className="px-4 py-3">
-                    <Badge className={cn("text-xs border-0 capitalize", SHIFT_COLORS[emp.shift_sched] ?? "bg-gray-100 text-gray-600")}>
-                      {emp.shift_sched}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge className={cn("text-xs border-0 capitalize", STATUS_COLORS[emp.status] ?? "bg-gray-100 text-gray-600")}>
-                      {emp.status?.replace("_", " ")}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0"
-                        onClick={() => onView(emp)} title="View profile">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {isAdmin && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => onEdit(emp)}>
-                              <Pencil className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600"
-                              onClick={() => onArchive(emp)}
-                            >
-                              <Archive className="mr-2 h-4 w-4" /> Archive
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </td>
+        <div className="space-y-4">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30 border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">Employee</th>
+                  <th className="px-4 py-3 text-left font-semibold">Department</th>
+                  <th className="px-4 py-3 text-left font-semibold">Job Category</th>
+                  <th className="px-4 py-3 text-left font-semibold">Shift</th>
+                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {paginated.map(emp => (
+                  <tr key={emp.id} className="hover:bg-muted/20 transition-colors">
+                    <td className="px-4 py-3">
+                      <p className="font-medium">
+                        {emp.first_name} {emp.last_name}
+                        {emp.name_extension ? ` ${emp.name_extension}` : ""}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{emp.email}</p>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{emp.department}</td>
+                    <td className="px-4 py-3 text-muted-foreground text-xs">{emp.job_category}</td>
+                    <td className="px-4 py-3">
+                      <Badge className={cn("text-xs border-0 capitalize", SHIFT_COLORS[emp.shift_sched] ?? "bg-gray-100 text-gray-600")}>
+                        {emp.shift_sched}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge className={cn("text-xs border-0 capitalize", STATUS_COLORS[emp.status] ?? "bg-gray-100 text-gray-600")}>
+                        {emp.status?.replace("_", " ")}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0"
+                          onClick={() => onView(emp)} title="View profile">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {isAdmin && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => onEdit(emp)}>
+                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600"
+                                onClick={() => onArchive(emp)}
+                              >
+                                <Archive className="mr-2 h-4 w-4" /> Archive
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-1">
+              <p className="text-xs text-muted-foreground">
+                Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, employees.length)} of {employees.length} employees
+              </p>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline" size="sm"
+                  className="h-8 px-3 text-xs"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                >
+                  Previous
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page =>
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1
+                  )
+                  .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                    if (idx > 0 && (page as number) - (arr[idx - 1] as number) > 1) {
+                      acc.push("...");
+                    }
+                    acc.push(page);
+                    return acc;
+                  }, [])
+                  .map((page, idx) =>
+                    page === "..." ? (
+                      <span key={`ellipsis-${idx}`} className="px-1 text-xs text-muted-foreground">…</span>
+                    ) : (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        className={`h-8 w-8 p-0 text-xs ${currentPage === page ? "bg-[#2B3588] hover:bg-[#232c70] text-white" : ""}`}
+                        onClick={() => setCurrentPage(page as number)}
+                      >
+                        {page}
+                      </Button>
+                    )
+                  )}
+                <Button
+                  variant="outline" size="sm"
+                  className="h-8 px-3 text-xs"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
+
     </div>
   );
 }
