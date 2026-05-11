@@ -15,6 +15,7 @@ interface Props {
   employees: Employee[];
   isLoading: boolean;
   isAdmin: boolean;
+  isHR: boolean;
   onView: (emp: Employee) => void;
   onEdit: (emp: Employee) => void;
   onArchive: (emp: Employee) => void;
@@ -24,21 +25,21 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active:     "bg-green-100 text-green-700",
-  on_leave:   "bg-yellow-100 text-yellow-700",
+  active: "bg-green-100 text-green-700",
+  on_leave: "bg-yellow-100 text-yellow-700",
   onboarding: "bg-purple-100 text-purple-700",
-  suspended:  "bg-orange-100 text-orange-700",
+  suspended: "bg-orange-100 text-orange-700",
   terminated: "bg-red-100 text-red-700",
 };
 
 const SHIFT_COLORS: Record<string, string> = {
-  morning:   "bg-sky-100 text-sky-700",
+  morning: "bg-sky-100 text-sky-700",
   afternoon: "bg-amber-100 text-amber-700",
-  night:     "bg-indigo-100 text-indigo-700",
+  night: "bg-indigo-100 text-indigo-700",
 };
 
 export function EmployeeTable({
-  employees, isLoading, isAdmin,
+  employees, isLoading, isAdmin, isHR,
   onView, onEdit, onArchive, onSearch, onFilter, onDeptFilter,
 }: Props) {
   const [search, setSearch] = useState("");
@@ -46,8 +47,8 @@ export function EmployeeTable({
   const itemsPerPage = 5;
 
   const departments = [...new Set(employees.map(e => e.department).filter(Boolean))].sort();
-  const totalPages  = Math.ceil(employees.length / itemsPerPage);
-  const paginated   = employees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(employees.length / itemsPerPage);
+  const paginated = employees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   useEffect(() => { setCurrentPage(1); }, [employees.length]);
 
@@ -146,7 +147,7 @@ export function EmployeeTable({
                           onClick={() => onView(emp)} title="View profile">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {isAdmin && (
+                        {isHR && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -166,6 +167,11 @@ export function EmployeeTable({
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                        )}
+                        {isAdmin && (
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onEdit(emp)} title="Edit system role">
+                            <Pencil className="h-4 w-4 text-[#2B3588]" />
+                          </Button>
                         )}
                       </div>
                     </td>

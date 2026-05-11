@@ -21,11 +21,11 @@ import type { Employee } from "@/types/employee";
 
 export default function Employees() {
   const { toast } = useToast();
-  const { user }  = useAuth();
-  const isAdmin   = user?.role === "HR";
-  const isHR      = user?.role === "Admin";
-  const canEdit   = isHR; // only HR can add/edit/archive/delete
-  
+  const { user } = useAuth();
+  const isHR = user?.role === "HR";
+  const isAdmin = user?.role === "Admin";
+  const canEdit = isHR;
+
 
   const {
     employees, archivedEmployees, isLoading,
@@ -34,13 +34,13 @@ export default function Employees() {
     archiveEmployee, restoreEmployee, purgeEmployee,
   } = useEmployees();
 
-  const [tab,           setTab]           = useState("directory");
-  const [viewEmp,       setViewEmp]       = useState<Employee | null>(null);
-  const [editEmp,       setEditEmp]       = useState<Employee | null>(null);
+  const [tab, setTab] = useState("directory");
+  const [viewEmp, setViewEmp] = useState<Employee | null>(null);
+  const [editEmp, setEditEmp] = useState<Employee | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Employee | null>(null);
-  const [purgeTarget,   setPurgeTarget]   = useState<Employee | null>(null);
-  const [formOpen,      setFormOpen]      = useState(false);
-  const [saving,        setSaving]        = useState(false);
+  const [purgeTarget, setPurgeTarget] = useState<Employee | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [filters, setFilters] = useState({ search: "", status: "", department: "" });
 
   useEffect(() => { fetchEmployees(); }, []);
@@ -121,8 +121,8 @@ export default function Employees() {
             Employee Directory
             <Badge className="ml-2 text-xs bg-blue-100 text-blue-700 border-0">{employees.length}</Badge>
           </TabsTrigger>
-          {isAdmin && <TabsTrigger value="new-hires">New Hires</TabsTrigger>}
-          {isAdmin && (
+          {isHR && <TabsTrigger value="new-hires">New Hires</TabsTrigger>}
+          {isHR && (
             <TabsTrigger value="archived">
               Archived
               {archivedEmployees.length > 0 && (
@@ -138,6 +138,7 @@ export default function Employees() {
             employees={employees}
             isLoading={isLoading}
             isAdmin={isAdmin}
+            isHR={isHR}
             onView={setViewEmp}
             onEdit={handleEdit}
             onArchive={setArchiveTarget}
@@ -148,14 +149,14 @@ export default function Employees() {
         </TabsContent>
 
         {/* New Hires — Admin only */}
-        {isAdmin && (
+        {isHR && (
           <TabsContent value="new-hires" className="mt-6">
             <NewHireTab />
           </TabsContent>
         )}
 
         {/* Archived — Admin only  FIX #5: NO "permanently delete" option here replaced by proper archive tab */}
-        {isAdmin && (
+        {isHR && (
           <TabsContent value="archived" className="mt-6">
             {isLoading && archivedEmployees.length === 0 ? (
               <div className="flex justify-center py-20">
@@ -242,6 +243,7 @@ export default function Employees() {
             onSubmit={handleFormSubmit}
             onCancel={() => { setFormOpen(false); setEditEmp(null); }}
             isLoading={saving}
+            isAdminView={isAdmin}
           />
         </DialogContent>
       </Dialog>
