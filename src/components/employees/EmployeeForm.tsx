@@ -222,7 +222,6 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
               <SelectContent>
                 <SelectItem value="Employee">Employee</SelectItem>
                 <SelectItem value="HR">HR</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
                 <SelectItem value="Accountant">Accountant</SelectItem>
                 <SelectItem value="Admin">Admin</SelectItem>
               </SelectContent>
