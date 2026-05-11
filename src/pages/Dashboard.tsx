@@ -52,9 +52,8 @@ function Section({ title, icon: Icon, to, children }: {
 }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+      <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium text-foreground">
             {title}
           </span>
