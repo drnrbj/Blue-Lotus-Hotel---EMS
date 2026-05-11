@@ -898,7 +898,7 @@ export default function Attendance() {
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Attendance & Timekeeping</h1>
+        <h1 className="text-3xl font-bold text-[#2B3588]">Attendance & Timekeeping</h1>
         {isHR && (
           <>
             <Button
