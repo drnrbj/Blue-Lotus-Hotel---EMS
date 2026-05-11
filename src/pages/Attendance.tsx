@@ -734,13 +734,6 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
         )}
       </div>
 
-      {/* FIX #9: role permissions note */}
-      {canManage && !canApprove && (
-        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          You can submit leave requests on behalf of employees. Only Admin can approve or reject.
-        </p>
-      )}
-
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
       ) : (
