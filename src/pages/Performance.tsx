@@ -265,14 +265,14 @@ export default function Performance() {
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="px-5 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
                 <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold text-sm">My Pending Evaluations</h3>
+                <span className="font-medium text-sm">My Pending Evaluations</span>
                 <Badge className="ml-auto bg-amber-100 text-amber-700 border-0 text-xs">
                   {myAssignments.pending?.length ?? 0}
                 </Badge>
               </div>
               {(!myAssignments.pending || myAssignments.pending.length === 0) ? (
                 <div className="px-5 py-10 text-center text-muted-foreground text-sm">
-                  No pending evaluations 🎉
+                  No pending evaluations.
                 </div>
               ) : (
                 <div className="divide-y divide-border">
@@ -285,7 +285,7 @@ export default function Performance() {
                           {a.form?.deadline ? ` · Due ${fmtDate(a.form.deadline)}` : ""}
                         </p>
                       </div>
-                      <Button size="sm" className="gap-1 bg-blue-600 hover:bg-blue-700"
+                      <Button size="sm" className="gap-1 bg-[#2B3588] hover:bg-blue-700"
                         onClick={() => setFillTarget(a as typeof fillTarget)}>
                         <Send className="h-3.5 w-3.5" /> Fill out
                       </Button>
