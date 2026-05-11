@@ -90,31 +90,31 @@ const DEPARTMENTS = [
 ];
 
 const JOB_CATEGORIES: Record<string, string[]> = {
-  "Front Office":    ["Front Desk Agent","Concierge","Reservations Agent","Guest Relations Officer","Bell Staff"],
-  "Housekeeping":    ["Room Attendant","Laundry Attendant","Housekeeping Supervisor","Public Area Cleaner"],
-  "Food & Beverage": ["Waiter/Waitress","Bartender","Chef de Partie","Sous Chef","Executive Chef","Kitchen Steward"],
-  "Maintenance":     ["Maintenance Technician","Electrician","Plumber","Maintenance Supervisor"],
-  "Administration":  ["HR Officer","Accounting Staff","Payroll Officer","General Manager","Department Manager","Supervisor"],
-  "Security":        ["Security Guard","Security Supervisor"],
-  "Sales & Marketing": ["Sales Manager","Marketing Officer","Reservations Manager"],
+  "Front Office": ["Front Desk Agent", "Concierge", "Reservations Agent", "Guest Relations Officer", "Bell Staff"],
+  "Housekeeping": ["Room Attendant", "Laundry Attendant", "Housekeeping Supervisor", "Public Area Cleaner"],
+  "Food & Beverage": ["Waiter/Waitress", "Bartender", "Chef de Partie", "Sous Chef", "Executive Chef", "Kitchen Steward"],
+  "Maintenance": ["Maintenance Technician", "Electrician", "Plumber", "Maintenance Supervisor"],
+  "Administration": ["HR Officer", "Accounting Staff", "Payroll Officer", "General Manager", "Department Manager", "Supervisor"],
+  "Security": ["Security Guard", "Security Supervisor"],
+  "Sales & Marketing": ["Sales Manager", "Marketing Officer", "Reservations Manager"],
 };
 
 const STAGE_STYLES: Record<string, string> = {
-  applied:              "bg-gray-100 text-gray-700",
-  reviewed:             "bg-blue-100 text-blue-700",
-  interview_scheduled:  "bg-purple-100 text-purple-700",
-  interviewed:          "bg-cyan-100 text-cyan-700",
-  hired:                "bg-green-100 text-green-700",
-  rejected:             "bg-red-100 text-red-700",
+  applied: "bg-gray-100 text-gray-700",
+  reviewed: "bg-blue-100 text-blue-700",
+  interview_scheduled: "bg-purple-100 text-purple-700",
+  interviewed: "bg-cyan-100 text-cyan-700",
+  hired: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
 };
 
 const STAGE_LABELS: Record<string, string> = {
-  applied:             "Applied",
-  reviewed:            "Reviewed",
+  applied: "Applied",
+  reviewed: "Reviewed",
   interview_scheduled: "Interview Scheduled",
-  interviewed:         "Interviewed",
-  hired:               "Hired",
-  rejected:            "Rejected",
+  interviewed: "Interviewed",
+  hired: "Hired",
+  rejected: "Rejected",
 };
 
 // ─── Helper Functions ─────────────────────────────────────────────────────────
@@ -130,11 +130,59 @@ const safeFetch = async <T,>(url: string): Promise<T[]> => {
   }
 };
 
+function Pagination({ currentPage, totalPages, totalItems, itemsPerPage, onPageChange }: {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-1">
+      <p className="text-xs text-muted-foreground">
+        Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+      </p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" className="h-8 px-3 text-xs"
+          disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
+          Previous
+        </Button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+          .reduce<(number | string)[]>((acc, p, idx, arr) => {
+            if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+            acc.push(p);
+            return acc;
+          }, [])
+          .map((p, idx) =>
+            p === "..." ? (
+              <span key={`e-${idx}`} className="px-1 text-xs text-muted-foreground">…</span>
+            ) : (
+              <Button key={p} size="sm"
+                className={`h-8 w-8 p-0 text-xs ${currentPage === p ? "bg-[#2B3588] hover:bg-[#232c70] text-white" : ""}`}
+                variant={currentPage === p ? "default" : "outline"}
+                onClick={() => onPageChange(p as number)}>
+                {p}
+              </Button>
+            )
+          )}
+        <Button variant="outline" size="sm" className="h-8 px-3 text-xs"
+          disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // TAB 1 — JOB VACANCIES
 // ═══════════════════════════════════════════════════════════════════════
 
 function JobVacanciesTab({ canManage }: { canManage: boolean }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   const { toast } = useToast();
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -182,15 +230,15 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
     setSaving(true);
     try {
       const body = { ...form, slots: parseInt(form.slots) };
-      const url = editing 
+      const url = editing
         ? `/api/recruitment/job-postings/${editing.id}`
         : "/api/recruitment/job-postings";
       const method = editing ? "PUT" : "POST";
-      
+
       const res = await authFetch(url, { method, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      
+
       toast({ title: editing ? "Job updated" : "Job posted" });
       setOpen(false);
       load();
@@ -233,6 +281,10 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
     j.department.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  useEffect(() => { setCurrentPage(1); }, [search]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -269,7 +321,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map(job => (
+              {paginated.map(job => (
                 <tr key={job.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-medium">{job.title}</td>
                   <td className="px-4 py-3 text-muted-foreground">{job.department}</td>
@@ -300,6 +352,15 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
           </table>
         </div>
       )}
+
+      {/* ADD THIS: */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(filtered.length / itemsPerPage)}
+        totalItems={filtered.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
@@ -338,6 +399,8 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
 // ═══════════════════════════════════════════════════════════════════════
 
 function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; isAdmin: boolean }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   const { toast } = useToast();
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [jobs, setJobs] = useState<JobPosting[]>([]);
@@ -364,94 +427,94 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
   };
 
   // Fetch HR users from employees endpoint
-const fetchInterviewers = async () => {
-  try {
-    const res = await authFetch("/api/recruitment/interviewers");
-    const data = await res.json();
-    if (data.success) {
-      setHrUsers(data.data);
-    } else {
-      // fallback: fetch employees and filter HR/Manager
-      const empRes = await authFetch("/api/employees");
-      const empData = await empRes.json();
-      const employees = empData.data?.data || empData.data || [];
-      const eligible = employees.filter((e: any) => e.role === 'HR' || e.role === 'Manager');
-      setHrUsers(eligible.map((e: any) => ({ id: e.id, name: `${e.first_name} ${e.last_name}`, email: e.email })));
+  const fetchInterviewers = async () => {
+    try {
+      const res = await authFetch("/api/recruitment/interviewers");
+      const data = await res.json();
+      if (data.success) {
+        setHrUsers(data.data);
+      } else {
+        // fallback: fetch employees and filter HR/Manager
+        const empRes = await authFetch("/api/employees");
+        const empData = await empRes.json();
+        const employees = empData.data?.data || empData.data || [];
+        const eligible = employees.filter((e: any) => e.role === 'HR' || e.role === 'Manager');
+        setHrUsers(eligible.map((e: any) => ({ id: e.id, name: `${e.first_name} ${e.last_name}`, email: e.email })));
+      }
+    } catch {
+      setHrUsers([]);
     }
-  } catch {
-    setHrUsers([]);
-  }
-};
+  };
 
-  useEffect(() => { 
-    load(); 
+  useEffect(() => {
+    load();
     fetchInterviewers();
   }, []);
 
   const addApplicant = async () => {
     // Validate
     if (!addForm.first_name.trim()) {
-        toast({ title: "First name is required", variant: "destructive" });
-        return;
+      toast({ title: "First name is required", variant: "destructive" });
+      return;
     }
     if (!addForm.last_name.trim()) {
-        toast({ title: "Last name is required", variant: "destructive" });
-        return;
+      toast({ title: "Last name is required", variant: "destructive" });
+      return;
     }
     if (!addForm.email.trim()) {
-        toast({ title: "Email is required", variant: "destructive" });
-        return;
+      toast({ title: "Email is required", variant: "destructive" });
+      return;
     }
     if (!addForm.job_posting_id) {
-        toast({ title: "Please select a job posting", variant: "destructive" });
-        return;
+      toast({ title: "Please select a job posting", variant: "destructive" });
+      return;
     }
-    
+
     setSaving(true);
     try {
-        // Prepare the data
-        const payload = {
-            first_name: addForm.first_name.trim(),
-            last_name: addForm.last_name.trim(),
-            email: addForm.email.trim(),
-            phone: addForm.phone?.trim() || '',
-            job_posting_id: Number(addForm.job_posting_id)
-        };
-        
-        console.log("Sending payload:", JSON.stringify(payload, null, 2));
-        
-        const res = await authFetch("/api/recruitment/applicants", { 
-            method: "POST", 
-            headers: { 
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
-        
-        const data = await res.json();
-        console.log("Response status:", res.status);
-        console.log("Response data:", data);
-        
-        if (res.ok && data.success) {
-            toast({ title: "Applicant added successfully" });
-            setAddOpen(false);
-            setAddForm({ first_name: "", last_name: "", email: "", phone: "", job_posting_id: "" });
-            load(); // Refresh the list
+      // Prepare the data
+      const payload = {
+        first_name: addForm.first_name.trim(),
+        last_name: addForm.last_name.trim(),
+        email: addForm.email.trim(),
+        phone: addForm.phone?.trim() || '',
+        job_posting_id: Number(addForm.job_posting_id)
+      };
+
+      console.log("Sending payload:", JSON.stringify(payload, null, 2));
+
+      const res = await authFetch("/api/recruitment/applicants", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      console.log("Response status:", res.status);
+      console.log("Response data:", data);
+
+      if (res.ok && data.success) {
+        toast({ title: "Applicant added successfully" });
+        setAddOpen(false);
+        setAddForm({ first_name: "", last_name: "", email: "", phone: "", job_posting_id: "" });
+        load(); // Refresh the list
+      } else {
+        // Show validation errors
+        if (data.errors) {
+          const errorMessages = Object.values(data.errors).flat().join('\n');
+          toast({ title: "Validation Error", description: errorMessages, variant: "destructive" });
         } else {
-            // Show validation errors
-            if (data.errors) {
-                const errorMessages = Object.values(data.errors).flat().join('\n');
-                toast({ title: "Validation Error", description: errorMessages, variant: "destructive" });
-            } else {
-                toast({ title: data.message || "Failed to add applicant", variant: "destructive" });
-            }
+          toast({ title: data.message || "Failed to add applicant", variant: "destructive" });
         }
+      }
     } catch (err) {
-        console.error('Add applicant error:', err);
-        toast({ title: err instanceof Error ? err.message : "Failed to add applicant", variant: "destructive" });
+      console.error('Add applicant error:', err);
+      toast({ title: err instanceof Error ? err.message : "Failed to add applicant", variant: "destructive" });
     } finally {
-        setSaving(false);
+      setSaving(false);
     }
   };
 
@@ -532,6 +595,11 @@ const fetchInterviewers = async () => {
     a.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => { setCurrentPage(1); }, [search]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -565,7 +633,7 @@ const fetchInterviewers = async () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map(app => (
+              {paginated.map(app => (
                 <tr key={app.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
                     <p className="font-medium">{app.first_name} {app.last_name}</p>
@@ -594,20 +662,20 @@ const fetchInterviewers = async () => {
                       {acting !== app.id && app.pipeline_stage === "interview_scheduled" && (
                         <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => updateStage(app, "interviewed")}>Mark Interviewed</Button>
                       )}
-                     {acting !== app.id && app.pipeline_stage === "interviewed" && (
-                      <>
-                        {isAdmin && (
-                          <Button size="sm" className="text-xs h-7 bg-green-600 hover:bg-green-700" onClick={() => hireApplicant(app)}>
-                            <UserCheck className="h-3 w-3 mr-1" /> Hire
-                          </Button>
-                        )}
-                        {isAdmin && (
-                          <Button size="sm" variant="destructive" className="text-xs h-7" onClick={() => rejectApplicant(app)}>
-                            <UserX className="h-3 w-3 mr-1" /> Reject
-                          </Button>
-                        )}
-                      </>
-                    )}
+                      {acting !== app.id && app.pipeline_stage === "interviewed" && (
+                        <>
+                          {isAdmin && (
+                            <Button size="sm" className="text-xs h-7 bg-green-600 hover:bg-green-700" onClick={() => hireApplicant(app)}>
+                              <UserCheck className="h-3 w-3 mr-1" /> Hire
+                            </Button>
+                          )}
+                          {isAdmin && (
+                            <Button size="sm" variant="destructive" className="text-xs h-7" onClick={() => rejectApplicant(app)}>
+                              <UserX className="h-3 w-3 mr-1" /> Reject
+                            </Button>
+                          )}
+                        </>
+                      )}
                       {(app.pipeline_stage === "hired" || app.pipeline_stage === "rejected") && (
                         <span className="text-xs text-muted-foreground capitalize">{app.pipeline_stage}</span>
                       )}
@@ -619,6 +687,14 @@ const fetchInterviewers = async () => {
           </table>
         </div>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(filtered.length / itemsPerPage)}
+        totalItems={filtered.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* Add Applicant Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
@@ -672,7 +748,7 @@ const fetchInterviewers = async () => {
             <Input type="datetime-local" value={schedForm.scheduled_at} onChange={e => setSchedForm(p => ({ ...p, scheduled_at: e.target.value }))} />
           </div>
           <DialogFooter>
-            <Button variant="outline"  className="bg-gray-200" onClick={() => setSchedOpen(false)}>Cancel</Button>
+            <Button variant="outline" className="bg-gray-200" onClick={() => setSchedOpen(false)}>Cancel</Button>
             <Button className="bg-[#2B3588]" onClick={scheduleInterview} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Schedule
             </Button>
@@ -688,6 +764,8 @@ const fetchInterviewers = async () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   const { toast } = useToast();
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -722,6 +800,9 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
     cancelled: "bg-red-100 text-red-700",
   };
 
+  const totalPages = Math.ceil(interviews.length / itemsPerPage);
+  const paginated = interviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-4">
       {loading ? (
@@ -745,7 +826,7 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {interviews.map(iv => (
+              {paginated.map(iv => (
                 <tr key={iv.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-medium">{iv.applicant?.first_name} {iv.applicant?.last_name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{iv.applicant?.job_posting?.title ?? "—"}</td>
@@ -758,22 +839,30 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
                       {iv.status.charAt(0).toUpperCase() + iv.status.slice(1)}
                     </Badge>
                   </td>
-                 <td className="px-4 py-3 text-right">
-                  {iv.status === "scheduled" && canComplete && (
-                    <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
-                      disabled={completing === iv.id}
-                      onClick={() => complete(iv.id)}>
-                      {completing === iv.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
-                      Complete
-                    </Button>
-                  )}
-                </td>
+                  <td className="px-4 py-3 text-right">
+                    {iv.status === "scheduled" && canComplete && (
+                      <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
+                        disabled={completing === iv.id}
+                        onClick={() => complete(iv.id)}>
+                        {completing === iv.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                        Complete
+                      </Button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(interviews.length / itemsPerPage)}
+        totalItems={interviews.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
@@ -783,6 +872,8 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
 // ═══════════════════════════════════════════════════════════════════════
 
 function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   const { toast } = useToast();
   const [assignments, setAssignments] = useState<TrainingAssignment[]>([]);
   const [employees, setEmployees] = useState<{ id: number; first_name: string; last_name: string; department: string }[]>([]);
@@ -841,11 +932,14 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
     }
   };
 
-  const statusColors = { 
-    pending: "bg-yellow-100 text-yellow-700", 
-    in_progress: "bg-blue-100 text-blue-700", 
-    completed: "bg-green-100 text-green-700" 
+  const statusColors = {
+    pending: "bg-yellow-100 text-yellow-700",
+    in_progress: "bg-blue-100 text-blue-700",
+    completed: "bg-green-100 text-green-700"
   };
+
+  const totalPages = Math.ceil(assignments.length / itemsPerPage);
+    const paginated  = assignments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="space-y-4">
@@ -870,7 +964,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {assignments.map(a => (
+              {paginated.map(a => (
                 <tr key={a.id} className="hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-medium">{a.training?.title ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
@@ -912,6 +1006,14 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
         </div>
       )}
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(assignments.length / itemsPerPage)}
+        totalItems={assignments.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
+
       <Dialog open={trainerOpen} onOpenChange={setTrainerOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle className="text-2xl font-semibold">Assign Trainer</DialogTitle></DialogHeader>
@@ -942,7 +1044,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
 
 export default function Recruitment() {
   const { user } = useAuth();
-  const isHR    = user?.role === "HR";
+  const isHR = user?.role === "HR";
   const isAdmin = user?.role === "Admin";
 
   return (
@@ -959,10 +1061,10 @@ export default function Recruitment() {
           {isHR && <TabsTrigger value="training">Training</TabsTrigger>}
         </TabsList>
 
-        {isHR && <TabsContent value="vacancies"  className="mt-6"><JobVacanciesTab canManage={isHR} /></TabsContent>}
+        {isHR && <TabsContent value="vacancies" className="mt-6"><JobVacanciesTab canManage={isHR} /></TabsContent>}
         <TabsContent value="applicants" className="mt-6"><ApplicantManagementTab canManage={isHR} isAdmin={isAdmin} /></TabsContent>
         <TabsContent value="interviews" className="mt-6"><ScheduledInterviewsTab canComplete={isHR} /></TabsContent>
-        {isHR && <TabsContent value="training"   className="mt-6"><TrainingProgramsTab canManage={isHR} /></TabsContent>}
+        {isHR && <TabsContent value="training" className="mt-6"><TrainingProgramsTab canManage={isHR} /></TabsContent>}
       </Tabs>
     </DashboardLayout>
   );

@@ -43,7 +43,7 @@ export function EmployeeTable({
 }: Props) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 5;
 
   const departments = [...new Set(employees.map(e => e.department).filter(Boolean))].sort();
   const totalPages  = Math.ceil(employees.length / itemsPerPage);
