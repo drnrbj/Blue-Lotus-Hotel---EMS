@@ -374,12 +374,12 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
 
       {/* Footer */}
       <div className="flex justify-end gap-3 pb-8">
-        <Button variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button variant="outline" className="bg-gray-200 hover:bg-gray-300" onClick={onCancel}>Cancel</Button>
         <Button variant="outline" onClick={() => submit(true)} disabled={saving || !title.trim()}>
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save as Draft
         </Button>
         <Button onClick={() => submit(false)} disabled={saving || !canSend}
-          className="bg-blue-600 hover:bg-blue-700">
+          className="bg-[#2B3588] hover:bg-blue-700">
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {initialData ? "Update & Send" : "Send to Evaluators"}
         </Button>

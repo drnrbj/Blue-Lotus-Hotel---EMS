@@ -213,7 +213,7 @@ export function EvaluationsTab({
       {/* Create Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Create Evaluation</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-3xl font-semibold">Create Evaluation</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Employee *</label>
