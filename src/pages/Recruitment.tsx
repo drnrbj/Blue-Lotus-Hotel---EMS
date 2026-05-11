@@ -914,7 +914,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
 
       <Dialog open={trainerOpen} onOpenChange={setTrainerOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Assign Trainer</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-semibold">Assign Trainer</DialogTitle></DialogHeader>
           <Select value={trainerId} onValueChange={setTrainerId}>
             <SelectTrigger><SelectValue placeholder="Select Trainer" /></SelectTrigger>
             <SelectContent>
@@ -926,8 +926,8 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
             </SelectContent>
           </Select>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTrainerOpen(false)}>Cancel</Button>
-            <Button onClick={assignTrainer} disabled={saving || !trainerId}>
+            <Button variant="outline" className="bg-gray-200" onClick={() => setTrainerOpen(false)}>Cancel</Button>
+            <Button className="bg-[#2B3588]" onClick={assignTrainer} disabled={saving || !trainerId}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Assign
             </Button>
           </DialogFooter>
