@@ -248,48 +248,6 @@ function LiveDashboard() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function AttendanceHistory({ canManage }: { canManage: boolean }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [importing, setImporting] = useState(false);
-
-  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const XLSX = await import("xlsx");
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "buffer" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
-
-      const normalised = rows
-        .filter(r => r.employee_id && r.date)
-        .map(r => ({
-          employee_id: Number(r.employee_id),
-          date: String(r.date).trim(),
-          time_in: String(r.time_in || "").trim() || null,
-          time_out: String(r.time_out || "").trim() || null,
-          shift: String(r.shift || "").trim() || null,
-          status: String(r.status || "").trim() || null,
-          notes: String(r.notes || "").trim() || null,
-        }));
-
-      const res = await authFetch("/api/attendance/import", {
-        method: "POST",
-        body: JSON.stringify({ rows: normalised }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message ?? "Import failed");
-      toast({ title: `${body.data.saved} records imported successfully` });
-      if (fileRef.current) fileRef.current.value = "";
-      load();
-    } catch (err) {
-      toast({ title: err instanceof Error ? err.message : "Import failed", variant: "destructive" });
-    } finally {
-      setImporting(false);
-    }
-  };
-
   const { toast } = useToast();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -354,29 +312,6 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        {canManage && (
-          <>
-            <Button
-              className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white"
-              disabled={importing}
-              onClick={() => fileRef.current?.click()}
-            >
-              {importing
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <Upload className="h-4 w-4" />}
-              Import Attendance
-            </Button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              className="hidden"
-              onChange={handleImportFile}
-            />
-          </>
-        )}
-      </div>
       <div className="flex flex-wrap gap-3 items-end">
         <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -399,7 +334,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
           <Download className="h-4 w-4" /> Export CSV
         </Button>
         {canManage && (
-          <Button size="sm" className="gap-1" onClick={() => { setEditRow({}); setEditOpen(true); }}>
+          <Button size="sm" className="gap-1 bg-[#2B3588] hover:bg-[#232c70]" onClick={() => { setEditRow({}); setEditOpen(true); }}>
             <Pencil className="h-4 w-4" /> Manual Entry
           </Button>
         )}
@@ -471,9 +406,6 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
           <p className="text-xs text-muted-foreground">{filtered.length} records</p>
         </>
       )}
-
-      {/* Import section — HR only */}
-      {canManage && <AttendanceImport />}
 
       {/* Manual entry dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -796,7 +728,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
           ))}
         </div>
         {!canApprove && (
-          <Button size="sm" className="gap-1" onClick={() => setFormOpen(true)}>
+          <Button size="sm" className="gap-1 bg-[#2B3588] hover:bg-[#232c70]" onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" /> Request Leave
           </Button>
         )}
@@ -974,6 +906,54 @@ export default function Attendance() {
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-foreground">Attendance & Timekeeping</h1>
+        {isHR && (
+          <>
+            <Button
+              className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white"
+              onClick={() => document.getElementById('import-file-input')?.click()}
+            >
+              <Upload className="h-4 w-4" /> Import Attendance
+            </Button>
+            <input
+              id="import-file-input"
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  const XLSX = await import("xlsx");
+                  const buf = await file.arrayBuffer();
+                  const wb = XLSX.read(buf, { type: "buffer" });
+                  const ws = wb.Sheets[wb.SheetNames[0]];
+                  const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
+                  const normalised = rows
+                    .filter(r => r.employee_id && r.date)
+                    .map(r => ({
+                      employee_id: Number(r.employee_id),
+                      date: String(r.date).trim(),
+                      time_in: String(r.time_in || "").trim() || null,
+                      time_out: String(r.time_out || "").trim() || null,
+                      shift: String(r.shift || "").trim() || null,
+                      status: String(r.status || "").trim() || null,
+                      notes: String(r.notes || "").trim() || null,
+                    }));
+                  const res = await authFetch("/api/attendance/import", {
+                    method: "POST",
+                    body: JSON.stringify({ rows: normalised }),
+                  });
+                  const body = await res.json();
+                  if (!res.ok) throw new Error(body.message ?? "Import failed");
+                  alert(`${body.data.saved} records imported successfully`);
+                  e.target.value = "";
+                } catch (err) {
+                  alert(err instanceof Error ? err.message : "Import failed");
+                }
+              }}
+            />
+          </>
+        )}
       </div>
       <Tabs defaultValue="dashboard">
         <TabsList className={`grid w-full ${isHR ? "grid-cols-3" : "grid-cols-3"}`}>
