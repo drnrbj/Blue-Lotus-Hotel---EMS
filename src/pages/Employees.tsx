@@ -235,7 +235,7 @@ export default function Employees() {
       <Dialog open={formOpen} onOpenChange={v => { setFormOpen(v); if (!v) setEditEmp(null); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editEmp ? "Edit Employee" : "New Employee"}</DialogTitle>
+            <DialogTitle className="text-2xl font-semibold">{editEmp ? "Edit Employee" : "New Employee"}</DialogTitle>
           </DialogHeader>
           <EmployeeForm
             employee={editEmp ?? undefined}

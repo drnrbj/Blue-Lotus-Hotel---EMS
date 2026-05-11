@@ -326,8 +326,8 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading }: Props)
       </Tabs>
 
       <div className="flex justify-end gap-3 border-t pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" disabled={isLoading}>
+        <Button type="button" className="bg-gray-200" variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" className="bg-[#2B3588]" disabled={isLoading}>
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {employee ? "Update Employee" : "Create Employee"}
         </Button>
