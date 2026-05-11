@@ -303,7 +303,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editing ? "Edit Job Posting" : "New Job Posting"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-semibold">{editing ? "Edit Job Posting" : "New Job Posting"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <Input placeholder="Job Title *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
             <Select value={form.department} onValueChange={v => { setDept(v); setForm(p => ({ ...p, department: v, job_category: "" })); }}>
@@ -321,8 +321,8 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
             <textarea className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="Job Description" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={save} disabled={saving}>
+            <Button variant="outline" className="bg-gray-200" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button className="bg-[#2B3588]" onClick={save} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save Changes" : "Post Job"}
             </Button>
@@ -623,7 +623,7 @@ const fetchInterviewers = async () => {
       {/* Add Applicant Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Add Applicant</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-semibold">Add Applicant</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="First Name *" value={addForm.first_name} onChange={e => setAddForm(p => ({ ...p, first_name: e.target.value }))} />
@@ -645,8 +645,8 @@ const fetchInterviewers = async () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button onClick={addApplicant} disabled={saving}>
+            <Button variant="outline" className="bg-gray-200" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button className="bg-[#2B3588]" onClick={addApplicant} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add
             </Button>
           </DialogFooter>
@@ -672,8 +672,8 @@ const fetchInterviewers = async () => {
             <Input type="datetime-local" value={schedForm.scheduled_at} onChange={e => setSchedForm(p => ({ ...p, scheduled_at: e.target.value }))} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSchedOpen(false)}>Cancel</Button>
-            <Button onClick={scheduleInterview} disabled={saving}>
+            <Button variant="outline"  className="bg-gray-200" onClick={() => setSchedOpen(false)}>Cancel</Button>
+            <Button className="bg-[#2B3588]" onClick={scheduleInterview} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Schedule
             </Button>
           </DialogFooter>

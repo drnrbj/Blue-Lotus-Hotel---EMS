@@ -129,8 +129,8 @@ function FillFormDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+          <Button variant="outline" className="bg-gray-200" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={saving} className="bg-[#2B3588] hover:bg-blue-700">
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Submit Evaluation
           </Button>
         </DialogFooter>
