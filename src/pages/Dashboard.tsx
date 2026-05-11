@@ -55,7 +55,9 @@ function Section({ title, icon: Icon, to, children }: {
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-normal text-foreground">{title}</h3>
+          <span className="text-sm font-medium text-foreground">
+            {title}
+          </span>
         </div>
         {to && (
           <Link to={to} className="text-xs text-blue-600 hover:underline flex items-center gap-0.5">
@@ -69,10 +71,10 @@ function Section({ title, icon: Icon, to, children }: {
 }
 
 export default function Dashboard() {
-  const { user }              = useAuth();
-  const [data, setData]       = useState<DashboardData | null>(null);
+  const { user } = useAuth();
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(false);
+  const [error, setError] = useState(false);
 
   const isAccountant = user?.role === "Accountant";
 
@@ -140,7 +142,7 @@ export default function Dashboard() {
           <StatCard
             icon={Clock} label="Pending Leaves"
             value={data.pending_leaves}
-               iconBg={data.pending_leaves > 0 ? "bg-amber-100 text-amber-600" : "bg-muted text-muted-foreground"}
+            iconBg={data.pending_leaves > 0 ? "bg-amber-100 text-amber-600" : "bg-muted text-muted-foreground"}
             to="/attendance"
           />
           <StatCard
@@ -211,7 +213,7 @@ export default function Dashboard() {
         {/* Dept headcount */}
         {data.dept_headcount && data.dept_headcount.length > 0 && (
           <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="text-sm font-normal mb-4">Headcount by Department</h3>
+            <span className="text-sm font-medium text-foreground mb-3 block">Headcount by Department</span>
             <div className="space-y-2">
               {data.dept_headcount.map(dept => {
                 const max = Math.max(...data.dept_headcount.map(d => d.count));
