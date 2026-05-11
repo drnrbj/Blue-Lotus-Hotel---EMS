@@ -186,7 +186,7 @@ function LiveDashboard() {
         {/* Recent clock-ins */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-            <span className="font-medium">Recent Clock-ins</span>
+            <span className="font-medium text-sm">Recent Clock-ins</span>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={load}>
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
@@ -217,7 +217,7 @@ function LiveDashboard() {
         {/* Department breakdown */}
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
-            <span className="font-medium">Department Breakdown</span>
+            <span className="font-medium text-sm">Department Breakdown</span>
           </div>
           <div className="p-4 space-y-3">
             {status.dept_breakdown.length === 0 ? (
