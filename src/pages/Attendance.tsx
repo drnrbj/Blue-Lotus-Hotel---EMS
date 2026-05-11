@@ -410,7 +410,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
       {/* Manual entry dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Manual Attendance Entry</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-semibold">Manual Attendance Entry</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium">Employee ID *</label>
@@ -806,12 +806,12 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
       {/* Submit dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Request Leave</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-semibold">Request Leave</DialogTitle></DialogHeader>
           <div className="space-y-3">
             {/* FIX #9: HR sees employee_id field to submit on behalf */}
             {canManage && (
               <div>
-                <label className="text-sm font-medium">Employee ID (blank = yourself)</label>
+                <label className="text-sm font-medium">Employee ID</label>
                 <Input className="mt-1" type="number" value={form.employee_id}
                   onChange={e => setForm(p => ({ ...p, employee_id: e.target.value }))}
                   placeholder="Optional — submits for your account if blank" />
@@ -845,8 +845,8 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>Cancel</Button>
-            <Button onClick={submit} disabled={acting === -1}>
+            <Button variant="outline" className="bg-gray-200" onClick={() => setFormOpen(false)}>Cancel</Button>
+            <Button className="bg-[#2B3588]" onClick={submit} disabled={acting === -1}>
               {acting === -1 && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Submit
             </Button>
           </DialogFooter>
