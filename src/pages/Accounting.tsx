@@ -617,12 +617,9 @@ export default function Accounting() {
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Accounting & Payroll</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Payslip generation, approval workflow, statutory contributions
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">Accounting & Payroll</h1>
         </div>
-
+    
         {/* Workflow steps */}
         <div className="flex items-center gap-2 text-xs flex-wrap">
           {[
@@ -696,7 +693,7 @@ export default function Accounting() {
 
             {canManage && step2Done && !step3Done && (
               <Button size="sm" onClick={handleApproveAll}
-                disabled={approveAllLoading} className="gap-1">
+                disabled={approveAllLoading} className="gap-1 bg-[#2B3588] hover:bg-[#232c70]">
                 {approveAllLoading
                   ? <Loader2 className="h-4 w-4 animate-spin" />
                   : <CheckCircle className="h-4 w-4" />}
