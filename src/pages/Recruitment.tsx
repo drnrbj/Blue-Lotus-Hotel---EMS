@@ -241,7 +241,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
           <Input placeholder="Search jobs..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         {canManage && (
-          <Button onClick={openCreate} className="gap-2">
+          <Button onClick={openCreate} className="gap-2 bg-[#2B3588] hover:bg-[#232c70]">
             <Plus className="h-4 w-4" /> New Job Posting
           </Button>
         )}
@@ -540,7 +540,7 @@ const fetchInterviewers = async () => {
           <Input placeholder="Search applicants..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         {canManage && (
-          <Button onClick={() => setAddOpen(true)} className="gap-2">
+          <Button onClick={() => setAddOpen(true)} className="gap-2 bg-[#2B3588] hover:bg-[#232c70]">
             <Plus className="h-4 w-4" /> Add Applicant
           </Button>
         )}
@@ -953,10 +953,10 @@ export default function Recruitment() {
 
       <Tabs defaultValue={isAdmin ? "applicants" : "vacancies"}>
         <TabsList className="grid w-full" style={{ gridTemplateColumns: isAdmin ? "1fr 1fr" : "repeat(4, 1fr)" }}>
-          {isHR && <TabsTrigger value="vacancies"><Briefcase className="h-4 w-4 mr-2" /> Job Vacancies</TabsTrigger>}
-          <TabsTrigger value="applicants"><Users className="h-4 w-4 mr-2" /> Applicants</TabsTrigger>
-          <TabsTrigger value="interviews"><Calendar className="h-4 w-4 mr-2" /> Interviews</TabsTrigger>
-          {isHR && <TabsTrigger value="training"><GraduationCap className="h-4 w-4 mr-2" /> Training</TabsTrigger>}
+          {isHR && <TabsTrigger value="vacancies">Job Vacancies</TabsTrigger>}
+          <TabsTrigger value="applicants">Applicants</TabsTrigger>
+          <TabsTrigger value="interviews">Interviews</TabsTrigger>
+          {isHR && <TabsTrigger value="training">Training</TabsTrigger>}
         </TabsList>
 
         {isHR && <TabsContent value="vacancies"  className="mt-6"><JobVacanciesTab canManage={isHR} /></TabsContent>}
