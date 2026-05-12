@@ -43,7 +43,13 @@ function getCompletionPct(hire: NewHire): number {
   return Math.round((filled / REQUIRED_FIELDS.length) * 100);
 }
 
-export function NewHireTab({ onTransferSuccess }: { onTransferSuccess: () => void }) {
+export function NewHireTab({ 
+  onTransferSuccess,
+  onSwitchToDirectory 
+}: { 
+  onTransferSuccess: () => void;
+  onSwitchToDirectory?: () => void;  // Make it optional
+}) {
   const { toast } = useToast();
   const [hires, setHires] = useState<NewHire[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +61,7 @@ export function NewHireTab({ onTransferSuccess }: { onTransferSuccess: () => voi
     try {
       const res = await authFetch("/api/new-hires");
       const body = await res.json();
-      console.log("New hires response:", body); // ← check this in browser console
+      console.log("New hires response:", body);
 
       // Handle all possible response shapes
       let data = [];
@@ -64,7 +70,7 @@ export function NewHireTab({ onTransferSuccess }: { onTransferSuccess: () => voi
       } else if (Array.isArray(body.data)) {
         data = body.data;
       } else if (Array.isArray(body.data?.data)) {
-        data = body.data.data; // paginated
+        data = body.data.data;
       }
 
       setHires(data);
@@ -84,9 +90,17 @@ export function NewHireTab({ onTransferSuccess }: { onTransferSuccess: () => voi
     setModalOpen(true);
   };
 
-  const handleModalSuccess = () => {
-    fetchHires();            
-    onTransferSuccess();    
+  const handleModalSuccess = async () => {
+    // Refresh the new hires list
+    await fetchHires();
+    
+    // Refresh the employees list in the parent component
+    await onTransferSuccess();
+    
+    // Switch to employee directory tab if the callback is provided
+    if (onSwitchToDirectory) {
+      onSwitchToDirectory();
+    }
   };
 
   if (loading) {

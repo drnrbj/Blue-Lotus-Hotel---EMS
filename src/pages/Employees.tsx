@@ -156,10 +156,16 @@ export default function Employees() {
           />
         </TabsContent>
 
-        {/* New Hires — Admin only */}
         {isHR && (
           <TabsContent value="new-hires" className="mt-6">
-            <NewHireTab onTransferSuccess={fetchEmployees} />
+            <NewHireTab
+              onTransferSuccess={async () => {
+                await fetchEmployees(filters); // Refresh employee list
+              }}
+              onSwitchToDirectory={() => {
+                setTab("directory"); // Switch to employee directory tab after transfer
+              }}
+            />
           </TabsContent>
         )}
 

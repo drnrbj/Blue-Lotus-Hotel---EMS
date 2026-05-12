@@ -173,6 +173,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
       .finally(() => setFetching(false));
   }, [open, newHireId]);
 
+  // In NewHireDetailsModal.tsx - update the handleTransfer function
   const handleTransfer = async () => {
     setAttempted(true);
 
@@ -182,6 +183,10 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
       "department", "job_category", "start_date",
     ];
     const emptyCritical = criticalFields.filter(f => !form[f] || form[f] === "");
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+    const isEmailValid = form.email && emailRegex.test(form.email);
 
     if (emptyCritical.length > 0) {
       toast({
@@ -194,6 +199,17 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
       const employmentFields = ["department", "job_category", "start_date", "basic_salary", "shift_sched"];
       if (emptyCritical.some(f => personalFields.includes(f))) setTab("personal");
       else if (emptyCritical.some(f => employmentFields.includes(f))) setTab("employment");
+      return;
+    }
+
+    // Add email format check
+    if (!isEmailValid) {
+      toast({
+        title: "Invalid email format",
+        description: "Please enter a valid email address (e.g., name@example.com)",
+        variant: "destructive",
+      });
+      setTab("personal"); // Switch to personal tab where email field is
       return;
     }
 
@@ -211,12 +227,26 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
       const txBody = await txRes.json();
       if (!txRes.ok) throw new Error(txBody.message ?? "Transfer failed");
 
-      toast({ title: "Transferred!", description: `${form.first_name} ${form.last_name} is now an active employee.`, variant: "success" });
+      toast({
+        title: "Employee transferred successfully!",
+        description: `${form.first_name} ${form.last_name} is now an active employee.`,
+        variant: "success"
+      });
+
       setAttempted(false);
-      onSuccess();
+
+      // Call onSuccess to refresh the employee list and new hires list
+      await onSuccess();
+
+      // Close the modal
       onClose();
+
     } catch (e) {
-      toast({ title: "Please fill up this form", variant: "destructive" });
+      toast({
+        title: "Transfer failed",
+        description: e instanceof Error ? e.message : "Please try again",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -239,15 +269,15 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
         ) : (
           <div className="space-y-4">
             {/* Progress */}
-            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
-              <div className="flex items-center justify-between text-sm">
+            {/* <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2"> */}
+            {/* <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">Completion</span>
                 <span className={cn("font-semibold tabular-nums", pct === 100 ? "text-green-600" : "text-amber-600")}>
                   {pct}% ({REQUIRED.length - missing.length}/{REQUIRED.length} required)
                 </span>
               </div>
-              <Progress value={pct} className={cn("h-2.5", pct === 100 ? "[&>div]:bg-green-500" : "[&>div]:bg-amber-500")} />
-              {pct < 100 && (
+              <Progress value={pct} className={cn("h-2.5", pct === 100 ? "[&>div]:bg-green-500" : "[&>div]:bg-amber-500")} /> */}
+            {/* {pct < 100 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {missing.map(f => (
                     <Badge key={f} variant="outline" className="text-[10px] border-amber-300 text-amber-700 bg-amber-50">
@@ -256,13 +286,13 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                     </Badge>
                   ))}
                 </div>
-              )}
-              {pct === 100 && (
+              )} */}
+            {/* {pct === 100 && (
                 <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
                   <CheckCircle2 className="h-3.5 w-3.5" /> All required fields complete — ready to transfer!
                 </div>
               )}
-            </div>
+            </div> */}
 
             <Tabs value={tab} onValueChange={setTab}>
               <TabsList className="grid w-full grid-cols-4">

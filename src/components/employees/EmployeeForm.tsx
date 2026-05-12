@@ -328,10 +328,6 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
                 )}
               </div>
             </div>
-            <div>
-              <label className="text-xs font-medium">System Role (auto-determined)</label>
-              <Input className="mt-1 h-9 bg-muted/30" value={form.role} readOnly />
-            </div>
           </TabsContent>
 
           <TabsContent value="contact" className="space-y-3 pt-4">
