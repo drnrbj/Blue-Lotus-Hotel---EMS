@@ -115,23 +115,21 @@ function AccountantDashboard() {
         {/* Payroll KPI cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard
-            icon={Users}       label="Total Employees"
+            icon={Users} label="Total Employees"
             value={data.total_employees ?? 0}
             iconBg="bg-blue-100 text-blue-600"
           />
           <StatCard
-            icon={DollarSign}  label="Total Payroll This Month"
+            icon={DollarSign} label="Total Payroll This Month"
             value={data.total_payroll_this_month > 0
               ? `₱${(data.total_payroll_this_month / 1000).toFixed(1)}k`
               : "₱0"}
-            sub="Net pay"
             iconBg="bg-teal-100 text-teal-600"
             to="/payroll"
           />
           <StatCard
-            icon={FileText}    label="Pending Payslips"
+            icon={FileText} label="Pending Payslips"
             value={data.pending_payslips ?? 0}
-            sub={data.pending_payslips > 0 ? "Needs processing" : "All processed"}
             iconBg={data.pending_payslips > 0 ? "bg-amber-100 text-amber-600" : "bg-muted text-muted-foreground"}
             to="/payroll"
           />
@@ -148,25 +146,12 @@ function AccountantDashboard() {
             to="/payroll"
           />
           <StatCard
-            icon={TrendingUp}  label="Avg Salary"
+            icon={TrendingUp} label="Avg Salary"
             value={data.avg_salary > 0
               ? `₱${(data.avg_salary / 1000).toFixed(1)}k`
               : "₱0"}
-            sub="Per employee"
             iconBg="bg-purple-100 text-purple-600"
           />
-        </div>
-
-        {/* Quick action */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm font-medium mb-3">Payroll Actions</p>
-          <div className="flex flex-wrap gap-2">
-            <Link to="/payroll">
-              <Button className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white text-sm">
-                <DollarSign className="h-4 w-4" /> Go to Payroll
-              </Button>
-            </Link>
-          </div>
         </div>
 
         {/* Dept headcount — useful for payroll context */}
@@ -197,21 +182,18 @@ function AccountantDashboard() {
 
 export default function Dashboard() {
   const { user } = useAuth();
-
-  if (user?.role === "Accountant") return <AccountantDashboard />;
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const isAccountant = user?.role === "Accountant";
-
   useEffect(() => {
+    // Always fetch data regardless of role
     authFetch("/api/dashboard/stats")
       .then(r => r.json())
       .then(body => setData(body.data ?? body))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.role]); // Re-fetch if role changes
 
   if (loading) {
     return (
@@ -234,6 +216,9 @@ export default function Dashboard() {
       </DashboardLayout>
     );
   }
+
+  // Accountant gets its own dashboard layout
+  if (user?.role === "Accountant") return <AccountantDashboard />;
 
   const attendanceRate = data.total_employees > 0
     ? Math.round((data.present_today / data.total_employees) * 100)
