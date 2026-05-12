@@ -74,12 +74,12 @@ function PayslipDetailSheet({
 
   if (!payslip) return null;
 
-  const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
-    setActing(true);
-    try   { await fn(); toast({ title: successMsg }); }
-    catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
-    finally { setActing(false); }
-  };
+const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
+  setActing(true);
+  try   { await fn(); toast({ title: successMsg, variant: "success" }); }
+  catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
+  finally { setActing(false); }
+};
 
   const doApprove = wrap(() => onApprove(payslip.id), "Approved");
   const doPay     = wrap(() => onMarkPaid(payslip.id), "Marked as paid");
