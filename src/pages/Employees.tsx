@@ -18,6 +18,7 @@ import { EmployeeDetails } from "@/components/employees/EmployeeDetails";
 import { NewHireTab } from "@/components/employees/NewHireTab";
 import { RotateCcw, Trash2, Loader2 } from "lucide-react";
 import type { Employee } from "@/types/employee";
+import { authFetch } from "@/hooks/api";
 
 export default function Employees() {
   const { toast } = useToast();
@@ -62,8 +63,6 @@ export default function Employees() {
     setSaving(true);
     try {
       if (isAdmin && editEmp) {
-        // Admin can only update role
-        const { authFetch } = await import("@/hooks/api");
         const res = await authFetch(`/api/employees/${editEmp.id}/role`, {
           method: "PATCH",
           body: JSON.stringify({ role: data.role }),

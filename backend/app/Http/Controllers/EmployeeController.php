@@ -1,5 +1,5 @@
 <?php
-
+//app/Http/Controllers/EmployeeController.php
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
@@ -126,12 +126,19 @@ class EmployeeController extends Controller
     }
 
     // ─── PATCH /api/employees/{employee}/role ────────────────────────────────
-    public function updateRole(Request $request, Employee $employee): JsonResponse
-    {
-        $request->validate(['role' => 'required|in:Employee,HR,Manager,Accountant,Admin']);
-        $employee->update(['role' => $request->role]);
-        return response()->json(['success' => true, 'data' => $employee->fresh()]);
-    }
+public function updateRole(Request $request, Employee $employee): JsonResponse
+{
+    $request->validate(['role' => 'required|in:Employee,HR,Manager,Accountant,Admin']);
+    
+    // Update employee record
+    $employee->update(['role' => $request->role]);
+    
+    // Also update the linked User account so login role matches
+    \App\Models\User::where('email', $employee->email)
+        ->update(['role' => $request->role]);
+
+    return response()->json(['success' => true, 'data' => $employee->fresh()]);
+}
 
     // ─── DELETE /api/employees/{employee} (soft delete / archive) ────────────
     public function destroy(Employee $employee): JsonResponse
