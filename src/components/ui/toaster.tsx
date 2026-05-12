@@ -14,13 +14,13 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
         return (
-          <Toast key={id} {...props}>
+          <Toast key={id} variant={variant} {...props}>
             <div className="grid gap-1">
               {title && (
                 <ToastTitle className="flex items-center gap-2">
-                  {props.variant === "success" && (
+                  {variant === "success" && (
                     <CheckCircle className="h-4 w-4 shrink-0" />
                   )}
                   {title}

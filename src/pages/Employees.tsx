@@ -63,10 +63,10 @@ export default function Employees() {
     try {
       if (editEmp) {
         await updateEmployee(editEmp.id, data);
-        toast({ title: "Employee updated successfully" });
+        toast({ title: "Employee updated successfully", variant: "success" });
       } else {
         await createEmployee(data);
-        toast({ title: "Employee created successfully" }); 
+        toast({ title: "Employee created successfully", variant: "success" });
       }
       setFormOpen(false);
       setEditEmp(null);
@@ -82,7 +82,7 @@ export default function Employees() {
     if (!archiveTarget) return;
     try {
       await archiveEmployee(archiveTarget.id);
-      toast({ title: "Employee archived", description: `${archiveTarget.first_name} ${archiveTarget.last_name}` });
+      toast({ title: "Employee archived successfully", variant: "success", description: `${archiveTarget.first_name} ${archiveTarget.last_name}` });
       fetchEmployees(filters);
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
@@ -95,7 +95,7 @@ export default function Employees() {
     if (!purgeTarget) return;
     try {
       await purgeEmployee(purgeTarget.id);
-      toast({ title: "Employee permanently deleted" });
+      toast({ title: "Employee permanently deleted", variant: "success" });
       fetchArchived();
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
@@ -194,7 +194,7 @@ export default function Employees() {
                               className="gap-1 text-green-700 border-green-200 hover:bg-green-50"
                               onClick={() =>
                                 restoreEmployee(emp.id).then(() => {
-                                  toast({ title: "Employee restored" });
+                                  toast({ title: "Employee restored successfully" });
                                   fetchArchived();
                                   fetchEmployees(filters);
                                 })
@@ -252,9 +252,12 @@ export default function Employees() {
       <AlertDialog open={!!archiveTarget} onOpenChange={() => setArchiveTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive employee?</AlertDialogTitle>
+            <AlertDialogTitle className="text-2xl font-semibold">Archive employee?</AlertDialogTitle>
             <AlertDialogDescription>
-              {archiveTarget?.first_name} {archiveTarget?.last_name} will be archived and removed from active lists.
+              <span className="font-semibold">
+                {archiveTarget?.first_name} {archiveTarget?.last_name}
+              </span>{" "}
+              will be archived and removed from active lists.
               You can restore them later from the Archived tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
