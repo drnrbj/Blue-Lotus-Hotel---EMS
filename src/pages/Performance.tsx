@@ -63,7 +63,7 @@ function FillFormDialog({
     setSaving(true);
     try {
       await onSubmit(assignment.id, Object.values(responses));
-      toast({ title: "Submitted!", description: "Your evaluation has been recorded." });
+      toast({ title: "Submitted!", description: "Your evaluation has been recorded.", variant: "success" });
       onClose();
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Submit failed", variant: "destructive" });
@@ -187,7 +187,7 @@ export default function Performance() {
         <EvaluationFormBuilder
           onSave={async (data: CreateFormData) => {
             await createForm(data);
-            toast({ title: "Evaluation created" });
+            toast({ title: "Evaluation created successfully", variant: "success" });
             setView("list"); fetchForms();
           }}
           onCancel={() => setView("list")}
@@ -208,7 +208,7 @@ export default function Performance() {
           initialData={editingForm}
           onSave={async (data) => {
             await updateForm(editingForm.id, data as Partial<EvaluationForm> & { sections?: EvaluationSection[] });
-            toast({ title: "Updated" }); setView("list"); fetchForms();
+            toast({ title: "Evaluation updated successfully", variant: "success" }); setView("list"); fetchForms();
           }}
           onCancel={() => setView("list")}
         />
@@ -382,7 +382,7 @@ export default function Performance() {
                                 disabled={closingId === form.id}
                                 onClick={async () => {
                                   setClosingId(form.id);
-                                  try { await closeForm(form.id); toast({ title: "Form closed" }); fetchForms(); }
+                                  try { await closeForm(form.id); toast({ title: "Form closed successfully", variant: "success" }); fetchForms(); }
                                   catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
                                   finally { setClosingId(null); }
                                 }}>
@@ -453,7 +453,7 @@ export default function Performance() {
                               disabled={sendingId === form.id}
                               onClick={async () => {
                                 setSendingId(form.id);
-                                try { await sendForm(form.id); toast({ title: "Sent to HR evaluators" }); fetchForms(); }
+                                try { await sendForm(form.id); toast({ title: "Sent to HR evaluators", variant: "success" }); fetchForms(); }
                                 catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
                                 finally { setSendingId(null); }
                               }}>
@@ -544,7 +544,7 @@ export default function Performance() {
                   if (!deleteTarget) return;
                   try {
                     await deleteForm(deleteTarget.id);
-                    toast({ title: "Deleted" });
+                    toast({ title: "Evaluation deleted successfully", variant: "success" });
                     setDeleteTarget(null);
                     fetchForms();
                   } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
