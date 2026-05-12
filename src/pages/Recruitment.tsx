@@ -677,9 +677,6 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
                           )}
                         </>
                       )}
-                      {(app.pipeline_stage === "hired" || app.pipeline_stage === "rejected") && (
-                        <span className="text-xs text-muted-foreground capitalize">{app.pipeline_stage}</span>
-                      )}
                     </div>
                   </td>
                 </tr>

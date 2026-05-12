@@ -776,7 +776,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
                   <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[150px] truncate">{r.reason}</td>
                   <td className="px-4 py-2.5">
                     <Badge className={cn("text-xs border-0 capitalize", statusColors[r.status])}>{r.status}</Badge>
-                    {r.rejected_reason && <p className="text-[10px] text-red-500 mt-0.5">{r.rejected_reason}</p>}
+                    {r.rejected_reason && <p className="text-[10px] text-red-500 mt-0.5 ml-2">{r.rejected_reason}</p>}
                   </td>
                   {canApprove && (
                     <td className="px-4 py-2.5 text-right">
