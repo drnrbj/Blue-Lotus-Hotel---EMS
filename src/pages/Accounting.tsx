@@ -667,8 +667,8 @@ export default function Accounting() {
                 {periods.map(p => (
                   <SelectItem key={p.id} value={String(p.id)}>
                     <span>{p.label}</span>
-                    <Badge className={cn("ml-2 text-[10px] border-0", PERIOD_STATUS_STYLES[p.status.charAt(0).toUpperCase() + p.status.slice(1)])}>
-                      {p.status}
+                    <Badge className={cn("ml-2 text-[10px] border-0", PERIOD_STATUS_STYLES[p.status])}>
+                      {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
                     </Badge>
                   </SelectItem>
                 ))}
