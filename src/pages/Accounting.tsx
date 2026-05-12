@@ -656,7 +656,6 @@ export default function Accounting() {
         {/* Period selector + action bar */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
             <Select
               value={activePeriodId ? String(activePeriodId) : ""}
               onValueChange={v => setActivePeriodId(Number(v))}
@@ -668,7 +667,7 @@ export default function Accounting() {
                 {periods.map(p => (
                   <SelectItem key={p.id} value={String(p.id)}>
                     <span>{p.label}</span>
-                    <Badge className={cn("ml-2 text-[10px] border-0", PERIOD_STATUS_STYLES[p.status])}>
+                    <Badge className={cn("ml-2 text-[10px] border-0", PERIOD_STATUS_STYLES{p.status.charAt(0).toUpperCase() + p.status.slice(1)})}>
                       {p.status}
                     </Badge>
                   </SelectItem>
