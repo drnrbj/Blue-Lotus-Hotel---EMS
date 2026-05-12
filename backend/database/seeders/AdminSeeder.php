@@ -16,34 +16,22 @@ class AdminSeeder extends Seeder
     {
         $users = [
             [
-                'name'     => 'System Admin',
-                'email'    => 'admin@hrharmony.com',
-                'password' => Hash::make('Admin@1234'),
+                'name'     => 'Dranreb Arzadon',
+                'email'    => 'admin@bluelotus.com',
+                'password' => Hash::make('admin123'),
                 'role'     => 'Admin',
             ],
             [
-                'name'     => 'HR Officer',
-                'email'    => 'hr@hrharmony.com',
-                'password' => Hash::make('Hr@12345'),
+                'name'     => 'Annika Dumalogdog',
+                'email'    => 'hr@bluelotus.com',
+                'password' => Hash::make('hr123'),
                 'role'     => 'HR',
             ],
             [
-                'name'     => 'Department Manager',
-                'email'    => 'manager@hrharmony.com',
-                'password' => Hash::make('Manager@1'),
-                'role'     => 'Manager',
-            ],
-            [
-                'name'     => 'Accountant',
-                'email'    => 'accountant@hrharmony.com',
-                'password' => Hash::make('Account@1'),
+                'name'     => 'Gwen Peralta',
+                'email'    => 'accountant@bluelotus.com',
+                'password' => Hash::make('acc123'),
                 'role'     => 'Accountant',
-            ],
-            [
-                'name'     => 'Juan dela Cruz',
-                'email'    => 'employee@hrharmony.com',
-                'password' => Hash::make('Employee@1'),
-                'role'     => 'Employee',
             ],
         ];
 
@@ -60,13 +48,12 @@ class AdminSeeder extends Seeder
             collect($users)->map(fn($u) => [
                 $u['role'],
                 $u['email'],
-                // Show plaintext only for local seeding convenience
+
                 match($u['role']) {
-                    'Admin'      => 'Admin@1234',
-                    'HR'         => 'Hr@12345',
-                    'Manager'    => 'Manager@1',
-                    'Accountant' => 'Account@1',
-                    default      => 'Employee@1',
+                    'Admin'      => 'admin123',
+                    'HR'         => 'hr123',
+                    'Accountant' => 'acc123',
+                    default      => 'employee123',
                 }
             ])->toArray()
         );
