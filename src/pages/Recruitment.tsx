@@ -502,10 +502,6 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// TAB 2 — APPLICANT MANAGEMENT
-// ═══════════════════════════════════════════════════════════════════════
-
 function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; isAdmin: boolean }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -521,7 +517,9 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
   const [acting, setActing] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [addForm, setAddForm] = useState({ first_name: "", last_name: "", email: "", phone: "", job_posting_id: "" });
+  const [addFieldErrors, setAddFieldErrors] = useState<Record<string, boolean>>({});
   const [schedForm, setSchedForm] = useState({ interviewer_id: "", scheduled_at: "" });
+  const [schedFieldErrors, setSchedFieldErrors] = useState<Record<string, boolean>>({});
 
   const load = async () => {
     setLoading(true);
@@ -559,28 +557,70 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
     fetchInterviewers();
   }, []);
 
+  const openAddDialog = () => {
+    setAddForm({ first_name: "", last_name: "", email: "", phone: "", job_posting_id: "" });
+    setAddFieldErrors({});
+    setAddOpen(true);
+  };
+
+  const openSchedDialog = (app: Applicant) => {
+    setSelApp(app);
+    setSchedForm({ interviewer_id: "", scheduled_at: "" });
+    setSchedFieldErrors({});
+    setSchedOpen(true);
+  };
+
+  const clearAddFieldError = (field: string) => {
+    if (addFieldErrors[field]) {
+      setAddFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const clearSchedFieldError = (field: string) => {
+    if (schedFieldErrors[field]) {
+      setSchedFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const validateAddForm = () => {
+    const errors: Record<string, boolean> = {};
+    if (!addForm.first_name.trim()) errors.first_name = true;
+    if (!addForm.last_name.trim()) errors.last_name = true;
+    if (!addForm.email.trim()) errors.email = true;
+    else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(addForm.email.trim())) errors.email = true;
+    }
+    if (!addForm.phone.trim()) errors.phone = true;  // ADD THIS LINE
+    if (!addForm.job_posting_id) errors.job_posting_id = true;
+    setAddFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateSchedForm = () => {
+    const errors: Record<string, boolean> = {};
+    if (!schedForm.interviewer_id) errors.interviewer_id = true;
+    if (!schedForm.scheduled_at) errors.scheduled_at = true;
+    setSchedFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const addApplicant = async () => {
-    // Validate
-    if (!addForm.first_name.trim()) {
-      toast({ title: "First name is required", variant: "destructive" });
-      return;
-    }
-    if (!addForm.last_name.trim()) {
-      toast({ title: "Last name is required", variant: "destructive" });
-      return;
-    }
-    if (!addForm.email.trim()) {
-      toast({ title: "Email is required", variant: "destructive" });
-      return;
-    }
-    if (!addForm.job_posting_id) {
-      toast({ title: "Please select a job posting", variant: "destructive" });
+    if (!validateAddForm()) {
+      toast({ title: "Please fill in all required fields correctly", variant: "destructive" });
       return;
     }
 
     setSaving(true);
     try {
-      // Prepare the data
       const payload = {
         first_name: addForm.first_name.trim(),
         last_name: addForm.last_name.trim(),
@@ -608,9 +648,9 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
         toast({ title: "Applicant added successfully", variant: "success" });
         setAddOpen(false);
         setAddForm({ first_name: "", last_name: "", email: "", phone: "", job_posting_id: "" });
-        load(); // Refresh the list
+        setAddFieldErrors({});
+        load();
       } else {
-        // Show validation errors
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat().join('\n');
           toast({ title: "Validation Error", description: errorMessages, variant: "destructive" });
@@ -627,15 +667,22 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
   };
 
   const scheduleInterview = async () => {
-    if (!selApp || !schedForm.interviewer_id || !schedForm.scheduled_at) {
+    if (!selApp) return;
+
+    if (!validateSchedForm()) {
       toast({ title: "Fill all fields", variant: "destructive" });
       return;
     }
+
     setSaving(true);
     try {
       const res = await authFetch("/api/recruitment/interviews", {
         method: "POST",
-        body: JSON.stringify({ applicant_id: selApp.id, ...schedForm }),
+        body: JSON.stringify({
+          applicant_id: selApp.id,
+          interviewer_id: Number(schedForm.interviewer_id),
+          scheduled_at: schedForm.scheduled_at,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
@@ -643,6 +690,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       setSchedOpen(false);
       setSelApp(null);
       setSchedForm({ interviewer_id: "", scheduled_at: "" });
+      setSchedFieldErrors({});
       load();
     } catch (err) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
@@ -717,7 +765,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
           <Input placeholder="Search applicants..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         {canManage && (
-          <Button onClick={() => setAddOpen(true)} className="gap-2 bg-[#2B3588] hover:bg-[#232c70]">
+          <Button onClick={openAddDialog} className="gap-2 bg-[#2B3588] hover:bg-[#232c70]">
             <Plus className="h-4 w-4" /> Add Applicant
           </Button>
         )}
@@ -764,7 +812,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
                         <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => updateStage(app, "reviewed")}>Mark Reviewed</Button>
                       )}
                       {acting !== app.id && app.pipeline_stage === "reviewed" && (
-                        <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => { setSelApp(app); setSchedOpen(true); }}>
+                        <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => openSchedDialog(app)}>
                           <Calendar className="h-3 w-3 mr-1" /> Schedule Interview
                         </Button>
                       )}
@@ -808,19 +856,87 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
           <DialogHeader><DialogTitle className="text-2xl font-semibold">Add Applicant</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="First Name *" value={addForm.first_name} onChange={e => setAddForm(p => ({ ...p, first_name: e.target.value }))} />
-              <Input placeholder="Last Name *" value={addForm.last_name} onChange={e => setAddForm(p => ({ ...p, last_name: e.target.value }))} />
+              <div>
+                <Input
+                  placeholder="First Name *"
+                  value={addForm.first_name}
+                  onChange={e => {
+                    setAddForm(p => ({ ...p, first_name: e.target.value }));
+                    clearAddFieldError("first_name");
+                  }}
+                  className={addFieldErrors.first_name ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {addFieldErrors.first_name && (
+                  <p className="text-xs text-red-500 mt-1 ml-1">First name is required</p>
+                )}
+              </div>
+              <div>
+                <Input
+                  placeholder="Last Name *"
+                  value={addForm.last_name}
+                  onChange={e => {
+                    setAddForm(p => ({ ...p, last_name: e.target.value }));
+                    clearAddFieldError("last_name");
+                  }}
+                  className={addFieldErrors.last_name ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {addFieldErrors.last_name && (
+                  <p className="text-xs text-red-500 mt-1 ml-1">Last name is required</p>
+                )}
+              </div>
             </div>
-            <Input type="email" placeholder="Email *" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} />
-            <Input placeholder="Phone" value={addForm.phone} onChange={e => setAddForm(p => ({ ...p, phone: e.target.value }))} />
-            <Select value={addForm.job_posting_id} onValueChange={v => setAddForm(p => ({ ...p, job_posting_id: v }))}>
-              <SelectTrigger><SelectValue placeholder="Select Job Posting *" /></SelectTrigger>
-              <SelectContent>
-                {jobs.filter(j => j.status === "open").map(j => (
-                  <SelectItem key={j.id} value={String(j.id)}>{j.title} — {j.department}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <Input
+                type="email"
+                placeholder="Email *"
+                value={addForm.email}
+                onChange={e => {
+                  setAddForm(p => ({ ...p, email: e.target.value }));
+                  clearAddFieldError("email");
+                }}
+                className={addFieldErrors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {addFieldErrors.email && (
+                <p className="text-xs text-red-500 mt-1 ml-1">
+                  {addForm.email.trim() ? "Please enter a valid email address" : "Email is required"}
+                </p>
+              )}
+            </div>
+            <div>
+              <Input
+                placeholder="Phone *"
+                value={addForm.phone}
+                onChange={e => {
+                  setAddForm(p => ({ ...p, phone: e.target.value }));
+                  clearAddFieldError("phone");
+                }}
+                className={addFieldErrors.phone ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {addFieldErrors.phone && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Phone number is required</p>
+              )}
+            </div>
+            <div>
+              <Select
+                value={addForm.job_posting_id}
+                onValueChange={v => {
+                  setAddForm(p => ({ ...p, job_posting_id: v }));
+                  clearAddFieldError("job_posting_id");
+                }}
+              >
+                <SelectTrigger className={addFieldErrors.job_posting_id ? "border-red-500 focus-visible:ring-red-500" : ""}>
+                  <SelectValue placeholder="Select Job Posting *" />
+                </SelectTrigger>
+                <SelectContent>
+                  {jobs.filter(j => j.status === "open").map(j => (
+                    <SelectItem key={j.id} value={String(j.id)}>{j.title} — {j.department}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {addFieldErrors.job_posting_id && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Please select a job posting</p>
+              )}
+            </div>
             <div>
               <label className="text-xs text-muted-foreground">Resume (PDF/DOC, optional)</label>
               <Input type="file" accept=".pdf,.doc,.docx" className="mt-1" />
@@ -829,7 +945,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
           <DialogFooter>
             <Button variant="outline" className="bg-gray-200" onClick={() => setAddOpen(false)}>Cancel</Button>
             <Button className="bg-[#2B3588]" onClick={addApplicant} disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add Applicant
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -843,15 +959,41 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
             {selApp && <p className="text-sm text-muted-foreground">{selApp.first_name} {selApp.last_name}</p>}
           </DialogHeader>
           <div className="space-y-3">
-            <Select value={schedForm.interviewer_id} onValueChange={v => setSchedForm(p => ({ ...p, interviewer_id: v }))}>
-              <SelectTrigger><SelectValue placeholder="Select Interviewer" /></SelectTrigger>
-              <SelectContent>
-                {hrUsers.length === 0
-                  ? <SelectItem value="0" disabled>No HR users found</SelectItem>
-                  : hrUsers.map(u => <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Input type="datetime-local" value={schedForm.scheduled_at} onChange={e => setSchedForm(p => ({ ...p, scheduled_at: e.target.value }))} />
+            <div>
+              <Select
+                value={schedForm.interviewer_id}
+                onValueChange={v => {
+                  setSchedForm(p => ({ ...p, interviewer_id: v }));
+                  clearSchedFieldError("interviewer_id");
+                }}
+              >
+                <SelectTrigger className={schedFieldErrors.interviewer_id ? "border-red-500 focus-visible:ring-red-500" : ""}>
+                  <SelectValue placeholder="Select Interviewer *" />
+                </SelectTrigger>
+                <SelectContent>
+                  {hrUsers.length === 0
+                    ? <SelectItem value="0" disabled>No HR users found</SelectItem>
+                    : hrUsers.map(u => <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {schedFieldErrors.interviewer_id && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Please select an interviewer</p>
+              )}
+            </div>
+            <div>
+              <Input
+                type="datetime-local"
+                value={schedForm.scheduled_at}
+                onChange={e => {
+                  setSchedForm(p => ({ ...p, scheduled_at: e.target.value }));
+                  clearSchedFieldError("scheduled_at");
+                }}
+                className={schedFieldErrors.scheduled_at ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {schedFieldErrors.scheduled_at && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Please select a date and time</p>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" className="bg-gray-200" onClick={() => setSchedOpen(false)}>Cancel</Button>
