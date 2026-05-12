@@ -9,19 +9,19 @@ import { useToast } from "@/hooks/use-toast";
 import { authFetch } from "@/hooks/api";
 import type { EvaluationSection, EvaluationQuestion, LikertOption, CreateFormData, EvaluationForm } from "@/hooks/useEvaluation";
 import { cn } from "@/lib/utils";
- 
+
 interface Props {
   onSave:       (data: CreateFormData) => Promise<void>;
   onCancel:     () => void;
   initialData?: EvaluationForm;
 }
- 
+
 const DEPARTMENTS = [
   "Human Resources","Finance","Front Office","Food & Beverage",
   "Housekeeping","Rooms Division","Security","Engineering",
   "Sales & Marketing","All Departments",
 ];
- 
+
 const DEFAULT_LIKERT: LikertOption[] = [
   { label: "Excellent", value: 5, order: 0 },
   { label: "Very Good", value: 4, order: 1 },
@@ -29,34 +29,37 @@ const DEFAULT_LIKERT: LikertOption[] = [
   { label: "Fair",      value: 2, order: 3 },
   { label: "Poor",      value: 1, order: 4 },
 ];
- 
+
 interface HRUser { id: number; name: string; email: string; role: string; }
- 
-// ─── Validation error shape ───────────────────────────────────────────────────
+
 interface ValidationErrors {
   title?: string;
   department?: string;
   evaluators?: string;
   questions?: string;
 }
- 
+
 export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) {
-  const { toast }                     = useToast();
-  const titleRef                      = useRef<HTMLInputElement>(null);
-  const departmentRef                 = useRef<HTMLDivElement>(null);
-  const evaluatorsRef                 = useRef<HTMLDivElement>(null);
-  const questionsRef                  = useRef<HTMLDivElement>(null);
- 
-  const [title,      setTitle]        = useState(initialData?.title ?? "");
-  const [department, setDepartment]   = useState(initialData?.department ?? "");
-  const [dateStart,  setDateStart]    = useState(initialData?.date_start?.slice(0,10) ?? "");
-  const [deadline,   setDeadline]     = useState(initialData?.deadline?.slice(0,10) ?? "");
-  const [evaluators, setEvaluators]   = useState<number[]>(() => initialData?.assignments?.map(a => a.user_id) ?? []);
-  const [hrUsers,    setHrUsers]      = useState<HRUser[]>([]);
-  const [showUserDD, setShowUserDD]   = useState(false);
-  const [saving,     setSaving]       = useState(false);
-  const [errors,     setErrors]       = useState<ValidationErrors>({});
- 
+  const { toast }         = useToast();
+  const titleRef          = useRef<HTMLInputElement>(null);
+  const departmentRef     = useRef<HTMLDivElement>(null);
+  const evaluatorsRef     = useRef<HTMLDivElement>(null);
+  const questionsRef      = useRef<HTMLDivElement>(null);
+
+  const [title,      setTitle]      = useState(initialData?.title ?? "");
+  const [department, setDepartment] = useState(initialData?.department ?? "");
+  const [dateStart,  setDateStart]  = useState(initialData?.date_start?.slice(0,10) ?? "");
+  const [deadline,   setDeadline]   = useState(initialData?.deadline?.slice(0,10) ?? "");
+  const [evaluators, setEvaluators] = useState<number[]>(() => initialData?.assignments?.map(a => a.user_id) ?? []);
+  const [hrUsers,    setHrUsers]    = useState<HRUser[]>([]);
+  const [showUserDD, setShowUserDD] = useState(false);
+  const [errors,     setErrors]     = useState<ValidationErrors>({});
+
+  // ── Each button has its own loading state so spinners are independent ─────
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [sendingForm, setSendingForm] = useState(false);
+  const isBusy = savingDraft || sendingForm;
+
   const [sections, setSections] = useState<EvaluationSection[]>(() => {
     const existing = initialData?.sections?.filter(s => s.type === "likert") ?? [];
     if (existing.length) return existing.map((s,i) => ({
@@ -65,10 +68,10 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
     }));
     return [{ title:"", description:"", type:"likert", likert_options:[...DEFAULT_LIKERT], questions:[], order:0 }];
   });
- 
+
   const [openQs, setOpenQs] = useState<EvaluationQuestion[]>(() =>
     initialData?.sections?.find(s => s.type === "open_ended")?.questions ?? []);
- 
+
   useEffect(() => {
     authFetch("/api/employees?role=HR&status=active")
       .then(r => r.json())
@@ -76,106 +79,78 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
         const data = body.data?.data ?? body.data ?? [];
         setHrUsers(Array.isArray(data) ? data.map((e: {
           id: number; first_name: string; last_name: string; role: string; email: string;
-        }) => ({
-          id: e.id,
-          name: `${e.first_name} ${e.last_name}`,
-          email: e.email,
-          role: e.role,
-        })) : []);
+        }) => ({ id: e.id, name: `${e.first_name} ${e.last_name}`, email: e.email, role: e.role })) : []);
       })
       .catch(() => setHrUsers([]));
   }, []);
- 
-  // Clear individual error as soon as the field is fixed
-  useEffect(() => { if (title.trim())       setErrors(p => ({ ...p, title: undefined })); },      [title]);
-  useEffect(() => { if (department)         setErrors(p => ({ ...p, department: undefined })); }, [department]);
-  useEffect(() => { if (evaluators.length)  setErrors(p => ({ ...p, evaluators: undefined })); }, [evaluators]);
- 
+
+  // Clear individual errors as fields are fixed
+  useEffect(() => { if (title.trim())      setErrors(p => ({ ...p, title: undefined })); },      [title]);
+  useEffect(() => { if (department)        setErrors(p => ({ ...p, department: undefined })); }, [department]);
+  useEffect(() => { if (evaluators.length) setErrors(p => ({ ...p, evaluators: undefined })); }, [evaluators]);
+
   // ─── Section helpers ──────────────────────────────────────────────────────
- 
+
   const addSection = () =>
     setSections(p => [...p, { title:"", description:"", type:"likert", order:p.length, likert_options:[...DEFAULT_LIKERT], questions:[] }]);
- 
+
   const removeSection = (i: number) =>
     setSections(p => p.filter((_,j) => j !== i));
- 
+
   const setSection = (i: number, field: keyof EvaluationSection, value: unknown) =>
     setSections(p => p.map((s,j) => j === i ? { ...s, [field]: value } : s));
- 
+
   const addQuestion = (si: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, questions: [...s.questions, { text:"", type:"likert" as const, order: s.questions.length }],
     } : s));
- 
+
   const setQuestion = (si: number, qi: number, text: string) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, questions: s.questions.map((q,j) => j === qi ? { ...q, text } : q),
     } : s));
- 
+
   const removeQuestion = (si: number, qi: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, questions: s.questions.filter((_,j) => j !== qi),
     } : s));
- 
+
   const addColumn = (si: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, likert_options: [...s.likert_options, { label:"New", value: s.likert_options.length + 1, order: s.likert_options.length }],
     } : s));
- 
+
   const setColumn = (si: number, oi: number, label: string) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, likert_options: s.likert_options.map((o,j) => j === oi ? { ...o, label } : o),
     } : s));
- 
+
   const removeColumn = (si: number, oi: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, likert_options: s.likert_options.filter((_,j) => j !== oi),
     } : s));
- 
+
   // ─── Validation ───────────────────────────────────────────────────────────
- 
+
   const validate = (): ValidationErrors => {
     const errs: ValidationErrors = {};
-    if (!title.trim())        errs.title      = "Evaluation name is required.";
-    if (!department)          errs.department = "Please select a department.";
+    if (!title.trim())           errs.title      = "Evaluation name is required.";
+    if (!department)             errs.department = "Please select a department.";
     if (evaluators.length === 0) errs.evaluators = "Select at least one HR evaluator.";
- 
-    const hasLikertQ  = sections.some(s => s.questions.some(q => q.text.trim()));
-    const hasOpenQ    = openQs.some(q => q.text.trim());
+    const hasLikertQ = sections.some(s => s.questions.some(q => q.text.trim()));
+    const hasOpenQ   = openQs.some(q => q.text.trim());
     if (!hasLikertQ && !hasOpenQ)
       errs.questions = "Add at least one question before sending.";
- 
     return errs;
   };
- 
-  // ─── Submit ───────────────────────────────────────────────────────────────
- 
-  const submit = async (asDraft: boolean) => {
-    if (!asDraft) {
-      const errs = validate();
-      if (Object.keys(errs).length > 0) {
-        setErrors(errs);
-        // Scroll to the first offending field
-        if (errs.title)      titleRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
-        else if (errs.department) departmentRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
-        else if (errs.evaluators) evaluatorsRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
-        else if (errs.questions)  questionsRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
-        return;
-      }
-    } else {
-      if (!title.trim()) {
-        setErrors({ title: "Evaluation name is required." });
-        titleRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
-        return;
-      }
-    }
- 
+
+  // ─── Build payload ────────────────────────────────────────────────────────
+
+  const buildPayload = (asDraft: boolean): CreateFormData => {
     const cleanSections: EvaluationSection[] = sections
       .filter(s => s.title.trim() && s.questions.some(q => q.text.trim()))
       .map(s => ({ ...s, questions: s.questions.filter(q => q.text.trim()) }));
- 
     const cleanOpen = openQs.filter(q => q.text.trim());
- 
     const allSections: EvaluationSection[] = [
       ...cleanSections,
       ...(cleanOpen.length ? [{
@@ -183,37 +158,77 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
         likert_options: [], questions: cleanOpen, order: cleanSections.length,
       }] : []),
     ];
- 
-    setSaving(true);
-    try {
-      await onSave({
-        title, department,
-        deadline:      deadline   || undefined,
-        date_start:    dateStart  || undefined,
-        sections:      allSections,
-        evaluator_ids: evaluators,
-        save_as_draft: asDraft,
-      });
-    } finally { setSaving(false); }
+    return {
+      title, department,
+      deadline:      deadline   || undefined,
+      date_start:    dateStart  || undefined,
+      sections:      allSections,
+      evaluator_ids: evaluators,
+      save_as_draft: asDraft,
+    };
   };
- 
+
+  // ─── Save as Draft ────────────────────────────────────────────────────────
+
+  const handleSaveDraft = async () => {
+    if (!title.trim()) {
+      setErrors({ title: "Evaluation name is required." });
+      titleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setSavingDraft(true);
+    try {
+      await onSave(buildPayload(true));
+      toast({
+        title: "Draft saved",
+        description: "Your evaluation has been saved as a draft.",
+        variant: "success",
+      });
+    } catch (e) {
+      toast({ title: e instanceof Error ? e.message : "Failed to save draft", variant: "destructive" });
+    } finally {
+      setSavingDraft(false);
+    }
+  };
+
+  // ─── Send to Evaluators ───────────────────────────────────────────────────
+
+  const handleSend = async () => {
+    const errs = validate();
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      if (errs.title)           titleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      else if (errs.department) departmentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      else if (errs.evaluators) evaluatorsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      else if (errs.questions)  questionsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setSendingForm(true);
+    try {
+      await onSave(buildPayload(false));
+    } catch (e) {
+      toast({ title: e instanceof Error ? e.message : "Failed to send", variant: "destructive" });
+    } finally {
+      setSendingForm(false);
+    }
+  };
+
   const hasErrors = Object.keys(errors).length > 0;
- 
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
- 
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold">{initialData ? "Edit Evaluation" : "Create Evaluation"}</h1>
-      </div>  
- 
+      </div>
+
       {/* Basic info */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
- 
-        {/* Title */}
+
         <div>
           <label className="text-sm font-medium">
             Evaluation Name <span className="text-red-500">*</span>
@@ -238,10 +253,9 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
             </p>
           )}
         </div>
- 
+
         <div className="grid grid-cols-2 gap-4">
- 
-          {/* Department */}
+
           <div ref={departmentRef}>
             <label className="text-sm font-medium">
               Department <span className="text-red-500">*</span>
@@ -263,8 +277,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
               </p>
             )}
           </div>
- 
-          {/* Evaluators */}
+
           <div className="relative" ref={evaluatorsRef}>
             <label className="text-sm font-medium">
               Evaluators (HR only) <span className="text-red-500">*</span>
@@ -275,9 +288,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
               className={cn(
                 "mt-1 flex h-10 w-full items-center justify-between rounded-md border px-3 text-sm",
                 "bg-background transition-colors",
-                errors.evaluators
-                  ? "border-red-400 bg-red-50"
-                  : "border-input hover:border-input"
+                errors.evaluators ? "border-red-400 bg-red-50" : "border-input hover:border-input"
               )}
             >
               <span className={evaluators.length === 0 ? "text-muted-foreground" : ""}>
@@ -287,7 +298,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                 ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
                 : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
             </button>
- 
+
             {showUserDD && (
               <div className="absolute z-20 mt-1 w-full rounded-md border border-border bg-card shadow-lg max-h-52 overflow-y-auto">
                 {hrUsers.length === 0 ? (
@@ -308,13 +319,13 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                 ))}
               </div>
             )}
- 
+
             {errors.evaluators && (
               <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" /> {errors.evaluators}
               </p>
             )}
- 
+
             {evaluators.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {evaluators.map(id => {
@@ -332,7 +343,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
             )}
           </div>
         </div>
- 
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium">Start Date</label>
@@ -344,7 +355,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           </div>
         </div>
       </div>
- 
+
       {/* Likert sections */}
       {sections.map((section, si) => (
         <div key={si} className="rounded-xl border border-border bg-card p-5 space-y-3">
@@ -371,7 +382,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
               )}
             </div>
           </div>
- 
+
           <div
             ref={si === 0 ? questionsRef : undefined}
             className={cn(
@@ -451,11 +462,11 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           </div>
         </div>
       ))}
- 
+
       <Button variant="outline" className="w-full border-dashed gap-2" onClick={addSection}>
         <Plus className="h-4 w-4" /> Add Likert Section
       </Button>
- 
+
       {/* Open-ended section */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-3">
         <div className="flex items-center justify-between">
@@ -483,22 +494,29 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           </div>
         ))}
       </div>
- 
+
       {/* Footer */}
       <div className="flex justify-end gap-3 pb-8">
         <Button variant="outline" className="bg-gray-200 hover:bg-gray-300" onClick={onCancel}>
           Cancel
         </Button>
-        <Button variant="outline" onClick={() => submit(true)} disabled={saving || !title.trim()}>
-          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save as Draft
-        </Button>
-        {/* Always enabled — validation runs on click and shows inline errors */}
-        <Button className="bg-[#2B3588]"
-          onClick={() => submit(false)}
-          disabled={saving}
+        <Button
+          variant="outline"
+          onClick={handleSaveDraft}
+          disabled={isBusy || !title.trim()}
         >
-          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {initialData ? "Update & Send" : "Send to Evaluators"}
+          {savingDraft
+            ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</>
+            : "Save as Draft"}
+        </Button>
+        <Button
+          onClick={handleSend}
+          disabled={isBusy}
+          className="bg-[#2B3588] hover:bg-blue-700"
+        >
+          {sendingForm
+            ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending…</>
+            : initialData ? "Update & Send" : "Send to Evaluators"}
         </Button>
       </div>
     </div>
