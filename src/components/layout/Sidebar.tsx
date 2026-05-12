@@ -49,6 +49,9 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
 
   const role = user?.role ?? "";
 
+  // ADD right after:
+  if (!user) return null;
+
   const visibleItems = NAV_ITEMS.filter(
     (item) => !item.roles || item.roles.includes(role)
   );
@@ -165,7 +168,6 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
         </TooltipProvider>
       </nav>
 
-      {/* ── Bottom: User info + collapse + logout ── */}
       <div
         className="flex-shrink-0 px-3 py-4 border-t"
         style={{ borderColor: "rgba(250,236,29,0.15)" }}

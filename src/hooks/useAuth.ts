@@ -113,7 +113,7 @@ export function useAuth(): UseAuthReturn {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Login failed");
       }
@@ -143,7 +143,7 @@ export function useAuth(): UseAuthReturn {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Registration failed");
       }
@@ -170,15 +170,18 @@ export function useAuth(): UseAuthReturn {
             'Authorization': `Bearer ${currentToken}`,
             'Content-Type': 'application/json',
           },
-        }).catch(() => {});
+        }).catch(() => { });
       }
     } finally {
       clearSession();
       setToken(null);
       setUser(null);
       setIsLoading(false);
+      // Hard redirect — clears all React state completely
+      window.location.href = "/login";
     }
   }, []);
+
 
   const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
     setIsLoading(true);
@@ -200,7 +203,7 @@ export function useAuth(): UseAuthReturn {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to change password");
       }
