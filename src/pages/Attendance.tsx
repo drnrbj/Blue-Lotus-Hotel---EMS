@@ -297,7 +297,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     setSaving(true);
     try {
       await apiFetch("/api/attendance/manual", { method: "POST", body: JSON.stringify(editRow) });
-      toast({ title: "Record saved" });
+      toast({ title: "Record saved successfully", variant: "success" });
       setEditOpen(false); setEditRow({}); load();
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setSaving(false); }
@@ -650,7 +650,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
       const payload: Record<string, string> = { ...form };
       if (!form.employee_id) delete payload.employee_id;
       await apiFetch("/api/leave-requests", { method: "POST", body: JSON.stringify(payload) });
-      toast({ title: "Leave request submitted" });
+      toast({ title: "Leave request submitted successfully", variant: "success" });
       setFormOpen(false);
       setForm({ leave_type: "vacation", start_date: "", end_date: "", reason: "", employee_id: "" });
       load();
@@ -660,7 +660,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
 
   const approve = async (id: number) => {
     setActing(id);
-    try { await apiFetch(`/api/leave-requests/${id}/approve`, { method: "POST" }); toast({ title: "Approved" }); load(); }
+    try { await apiFetch(`/api/leave-requests/${id}/approve`, { method: "POST" }); toast({ title: "Approved", variant: "success" }); load(); }
     catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setActing(null); }
   };
@@ -673,14 +673,14 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
         method: "POST",
         body: JSON.stringify({ reason: rejectReason }),
       });
-      toast({ title: "Rejected" }); setRejectId(null); setRejectReason(""); load();
+      toast({ title: "Rejected", variant: "success" }); setRejectId(null); setRejectReason(""); load();
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setActing(null); }
   };
 
   const cancel = async (id: number) => {
     setActing(id);
-    try { await apiFetch(`/api/leave-requests/${id}/cancel`, { method: "POST" }); toast({ title: "Cancelled" }); load(); }
+    try { await apiFetch(`/api/leave-requests/${id}/cancel`, { method: "POST" }); toast({ title: "Cancelled", variant: "success" }); load(); }
     catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setActing(null); }
   };

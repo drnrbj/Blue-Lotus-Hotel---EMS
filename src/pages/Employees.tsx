@@ -82,7 +82,7 @@ export default function Employees() {
     if (!archiveTarget) return;
     try {
       await archiveEmployee(archiveTarget.id);
-      toast({ title: "Employee archived successfully", variant: "success", description: `${archiveTarget.first_name} ${archiveTarget.last_name}` });
+      toast({ title: "Employee archived successfully", variant: "success" });
       fetchEmployees(filters);
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
@@ -194,7 +194,7 @@ export default function Employees() {
                               className="gap-1 text-green-700 border-green-200 hover:bg-green-50"
                               onClick={() =>
                                 restoreEmployee(emp.id).then(() => {
-                                  toast({ title: "Employee restored successfully" });
+                                  toast({ title: "Employee restored successfully", variant: "success" });
                                   fetchArchived();
                                   fetchEmployees(filters);
                                 })
