@@ -44,11 +44,15 @@ export function EmployeeTable({
 }: Props) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [hideOnboarding, setHideOnboarding] = useState(true);
   const itemsPerPage = 5;
 
   const departments = [...new Set(employees.map(e => e.department).filter(Boolean))].sort();
-  const totalPages = Math.ceil(employees.length / itemsPerPage);
-  const paginated = employees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const visibleEmployees = hideOnboarding
+    ? employees.filter(e => e.status !== "onboarding")
+    : employees;
+  const totalPages = Math.ceil(visibleEmployees.length / itemsPerPage);
+  const paginated = visibleEmployees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   useEffect(() => { setCurrentPage(1); }, [employees.length]);
 
@@ -92,6 +96,17 @@ export function EmployeeTable({
             ))}
           </SelectContent>
         </Select>
+
+        <button
+          type="button"
+          onClick={() => { setHideOnboarding(p => !p); setCurrentPage(1); }}
+          className={`h-9 px-3 rounded-md border text-xs font-medium transition-all ${hideOnboarding
+              ? "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+              : "border-purple-300 bg-purple-50 text-purple-700"
+            }`}
+        >
+          {hideOnboarding ? "Show Onboarding" : "Hide Onboarding"}
+        </button>
       </div>
 
       {/* Table */}
