@@ -239,7 +239,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
 
-      toast({ title: editing ? "Job updated" : "Job posted" });
+      toast({ title: editing ? "Job updated successfully" : "Job posted successfully", variant: "success" });
       setOpen(false);
       load();
     } catch (err) {
@@ -255,7 +255,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
       const res = await authFetch(`/api/recruitment/job-postings/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Deleted" });
+      toast({ title: "Job deleted successfully", variant: "success" });
       load();
     } catch {
       toast({ title: "Failed to delete", variant: "destructive" });
@@ -497,7 +497,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       console.log("Response data:", data);
 
       if (res.ok && data.success) {
-        toast({ title: "Applicant added successfully" });
+        toast({ title: "Applicant added successfully", variant: "success" });
         setAddOpen(false);
         setAddForm({ first_name: "", last_name: "", email: "", phone: "", job_posting_id: "" });
         load(); // Refresh the list
@@ -531,7 +531,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Interview scheduled" });
+      toast({ title: "Interview scheduled successfully", variant: "success" });
       setSchedOpen(false);
       setSelApp(null);
       setSchedForm({ interviewer_id: "", scheduled_at: "" });
@@ -549,7 +549,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       const res = await authFetch(`/api/recruitment/applicants/${app.id}/hire`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Applicant hired! Training record created." });
+      toast({ title: "Applicant hired! Training record created.", variant: "success" });
       load();
     } catch (err) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
@@ -564,7 +564,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       const res = await authFetch(`/api/recruitment/applicants/${app.id}/reject`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Applicant rejected" });
+      toast({ title: "Applicant rejected successfully", variant: "success" });
       load();
     } catch (err) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
@@ -582,6 +582,7 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
+      toast({ title: "Stage updated successfully", variant: "success" });
       load();
     } catch (err) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
@@ -785,7 +786,7 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
       const res = await authFetch(`/api/recruitment/interviews/${id}/complete`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Interview completed" });
+      toast({ title: "Interview completed successfully", variant: "success" });
       load();
     } catch (err) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
@@ -907,7 +908,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Trainer assigned" });
+      toast({ title: "Trainer assigned successfully", variant: "success" });
       setTrainerOpen(false);
       load();
     } catch (err) {
@@ -923,7 +924,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
       const res = await authFetch(`/api/recruitment/training-assignments/${id}/complete`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "Failed");
-      toast({ title: "Training completed! New hire record created." });
+      toast({ title: "Training completed! New hire record created.", variant: "success" });
       load();
     } catch (err) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
