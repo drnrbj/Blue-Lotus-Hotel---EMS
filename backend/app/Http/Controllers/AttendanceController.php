@@ -1,5 +1,5 @@
 <?php
-
+//app/Http/Controllers/AttendanceController.php
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
@@ -14,9 +14,9 @@ class AttendanceController extends Controller
 {
     // FIX #8: shift-aware time windows
     private const SHIFTS = [
-        'morning'   => ['start' => '07:00', 'end' => '15:00'],
+        'morning' => ['start' => '07:00', 'end' => '15:00'],
         'afternoon' => ['start' => '15:00', 'end' => '23:00'],
-        'night'     => ['start' => '23:00', 'end' => '07:00'],
+        'night' => ['start' => '23:00', 'end' => '07:00'],
     ];
     private const GRACE_MINUTES = 30;
 
@@ -26,10 +26,14 @@ class AttendanceController extends Controller
         $query = Attendance::with('employee:id,first_name,last_name,department,shift_sched')
             ->orderBy('date', 'desc');
 
-        if ($request->filled('start_date')) $query->where('date', '>=', $request->start_date);
-        if ($request->filled('end_date'))   $query->where('date', '<=', $request->end_date);
-        if ($request->filled('status'))     $query->where('status', $request->status);
-        if ($request->filled('employee_id'))$query->where('employee_id', $request->employee_id);
+        if ($request->filled('start_date'))
+            $query->where('date', '>=', $request->start_date);
+        if ($request->filled('end_date'))
+            $query->where('date', '<=', $request->end_date);
+        if ($request->filled('status'))
+            $query->where('status', $request->status);
+        if ($request->filled('employee_id'))
+            $query->where('employee_id', $request->employee_id);
         if ($request->filled('department')) {
             $query->whereHas('employee', fn($q) => $q->where('department', $request->department));
         }
@@ -42,29 +46,30 @@ class AttendanceController extends Controller
     // FIX #6: was crashing because Employee::full_name accessor was missing
     public function liveStatus(): JsonResponse
     {
-        $today     = now()->toDateString();
+        $today = now()->toDateString();
         $employees = Employee::where('status', 'active')->get();
-        $total     = $employees->count();
+        $total = $employees->count();
 
         $todayRecords = Attendance::where('date', $today)
             ->get()
             ->keyBy('employee_id');
 
-        $summary        = ['present' => 0, 'late' => 0, 'absent' => 0, 'on_leave' => 0];
+        $summary = ['present' => 0, 'late' => 0, 'absent' => 0, 'on_leave' => 0];
         $recentClockIns = [];
 
         foreach ($employees as $emp) {
             $record = $todayRecords[$emp->id] ?? null;
             if ($record) {
                 $st = strtolower($record->status);
-                if (array_key_exists($st, $summary)) $summary[$st]++;
+                if (array_key_exists($st, $summary))
+                    $summary[$st]++;
                 if ($record->time_in) {
                     $recentClockIns[] = [
-                        'id'         => $emp->id,
-                        'name'       => $emp->full_name,
+                        'id' => $emp->id,
+                        'name' => $emp->full_name,
                         'department' => $emp->department,
-                        'time'       => $record->time_in,
-                        'status'     => $st,
+                        'time' => $record->time_in,
+                        'status' => $st,
                     ];
                 }
             } else {
@@ -89,21 +94,21 @@ class AttendanceController extends Controller
                 return [
                     'department' => $dept->department,
                     'clocked_in' => $present,
-                    'total'      => (int) $dept->total,
+                    'total' => (int) $dept->total,
                 ];
             });
 
         return response()->json([
             'success' => true,
-            'data'    => [
+            'data' => [
                 'total_employees' => $total,
-                'present'         => $summary['present'],
-                'late'            => $summary['late'],
-                'absent'          => $summary['absent'],
-                'on_leave'        => $summary['on_leave'],
-                'date'            => $today,
+                'present' => $summary['present'],
+                'late' => $summary['late'],
+                'absent' => $summary['absent'],
+                'on_leave' => $summary['on_leave'],
+                'date' => $today,
                 'recent_clockins' => $recentClockIns,
-                'dept_breakdown'  => $deptBreakdown,
+                'dept_breakdown' => $deptBreakdown,
             ],
         ]);
     }
@@ -112,22 +117,23 @@ class AttendanceController extends Controller
     public function monthlyStats(Request $request): JsonResponse
     {
         $month = (int) $request->input('month', now()->month);
-        $year  = (int) $request->input('year',  now()->year);
+        $year = (int) $request->input('year', now()->year);
 
         $query = Attendance::whereYear('date', $year)->whereMonth('date', $month);
-        if ($request->filled('employee_id')) $query->where('employee_id', $request->employee_id);
+        if ($request->filled('employee_id'))
+            $query->where('employee_id', $request->employee_id);
 
         $records = $query->get();
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'present'      => $records->where('status', 'present')->count(),
-                'late'         => $records->where('status', 'late')->count(),
-                'absent'       => $records->where('status', 'absent')->count(),
-                'on_leave'     => $records->where('status', 'on_leave')->count(),
-                'total_days'   => $records->count(),
-                'total_hours'  => round($records->sum('hours_worked'), 2),
+            'data' => [
+                'present' => $records->where('status', 'present')->count(),
+                'late' => $records->where('status', 'late')->count(),
+                'absent' => $records->where('status', 'absent')->count(),
+                'on_leave' => $records->where('status', 'on_leave')->count(),
+                'total_days' => $records->count(),
+                'total_hours' => round($records->sum('hours_worked'), 2),
                 'minutes_late' => $records->sum('minutes_late'),
             ],
         ]);
@@ -137,18 +143,28 @@ class AttendanceController extends Controller
     // FIX #8: reads employee shift_sched for late calculation
     public function import(Request $request): JsonResponse
     {
-        $request->validate([
-            'rows'               => 'required|array|min:1',
+        $data = $request->json()->all();
+
+        $validator = validator($data, [
+            'rows' => 'required|array|min:1',
             'rows.*.employee_id' => 'required|integer',
-            'rows.*.date'        => 'required|date_format:Y-m-d',
-            'rows.*.shift'       => 'nullable|in:morning,afternoon,night',
+            'rows.*.date' => 'required|date_format:Y-m-d',
+            'rows.*.shift' => 'nullable|in:morning,afternoon,night',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $rows = $data['rows'];
         $saved = 0;
         $errors = [];
 
-        DB::transaction(function () use ($request, &$saved, &$errors) {
-            foreach ($request->rows as $i => $row) {
+        DB::transaction(function () use ($rows, &$saved, &$errors) {
+            foreach ($rows as $i => $row) {
                 try {
                     $employee = Employee::find((int) $row['employee_id']);
                     if (!$employee) {
@@ -157,23 +173,23 @@ class AttendanceController extends Controller
                     }
 
                     // FIX #8: prefer row shift, fall back to employee's shift_sched
-                    $shift   = !empty($row['shift']) ? $row['shift'] : ($employee->shift_sched ?? 'morning');
-                    $timeIn  = !empty($row['time_in'])  ? (string) $row['time_in']  : null;
+                    $shift = !empty($row['shift']) ? $row['shift'] : ($employee->shift_sched ?? 'morning');
+                    $timeIn = !empty($row['time_in']) ? (string) $row['time_in'] : null;
                     $timeOut = !empty($row['time_out']) ? (string) $row['time_out'] : null;
-                    $status  = !empty($row['status'])   ? $row['status'] : $this->calcStatus($timeIn, $shift);
-                    $late    = $this->calcMinutesLate($timeIn, $shift);
-                    $hours   = $this->calcHoursWorked($timeIn, $timeOut, $shift);
+                    $status = !empty($row['status']) ? $row['status'] : $this->calcStatus($timeIn, $shift);
+                    $late = $this->calcMinutesLate($timeIn, $shift);
+                    $hours = $this->calcHoursWorked($timeIn, $timeOut, $shift);
 
                     Attendance::updateOrCreate(
                         ['employee_id' => $employee->id, 'date' => $row['date']],
                         [
-                            'time_in'      => $timeIn,
-                            'time_out'     => $timeOut,
-                            'status'       => $status,
+                            'time_in' => $timeIn,
+                            'time_out' => $timeOut,
+                            'status' => $status,
                             'minutes_late' => $late,
                             'hours_worked' => $hours,
-                            'notes'        => $row['notes'] ?? null,
-                            'recorded_by'  => Auth::id(),
+                            'notes' => $row['notes'] ?? null,
+                            'recorded_by' => Auth::id(),
                         ]
                     );
                     $saved++;
@@ -185,7 +201,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => ['saved' => $saved, 'errors' => $errors],
+            'data' => ['saved' => $saved, 'errors' => $errors],
             'message' => "{$saved} records imported." . (count($errors) ? ' ' . count($errors) . ' errors.' : ''),
         ]);
     }
@@ -196,28 +212,28 @@ class AttendanceController extends Controller
     {
         $v = $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'date'        => 'required|date',
-            'time_in'     => 'nullable|date_format:H:i',
-            'time_out'    => 'nullable|date_format:H:i',
-            'status'      => 'nullable|in:present,late,absent,on_leave,half_day',
-            'notes'       => 'nullable|string|max:500',
+            'date' => 'required|date',
+            'time_in' => 'nullable|date_format:H:i',
+            'time_out' => 'nullable|date_format:H:i',
+            'status' => 'nullable|in:present,late,absent,on_leave,half_day',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $employee = Employee::findOrFail($v['employee_id']);
-        $shift    = $employee->shift_sched ?? 'morning';
-        $timeIn   = $v['time_in']  ?? null;
-        $timeOut  = $v['time_out'] ?? null;
+        $shift = $employee->shift_sched ?? 'morning';
+        $timeIn = $v['time_in'] ?? null;
+        $timeOut = $v['time_out'] ?? null;
 
         $record = Attendance::updateOrCreate(
             ['employee_id' => $v['employee_id'], 'date' => $v['date']],
             [
-                'time_in'      => $timeIn,
-                'time_out'     => $timeOut,
-                'status'       => $v['status'] ?? $this->calcStatus($timeIn, $shift),
+                'time_in' => $timeIn,
+                'time_out' => $timeOut,
+                'status' => $v['status'] ?? $this->calcStatus($timeIn, $shift),
                 'minutes_late' => $this->calcMinutesLate($timeIn, $shift),
                 'hours_worked' => $this->calcHoursWorked($timeIn, $timeOut, $shift),
-                'notes'        => $v['notes'] ?? null,
-                'recorded_by'  => Auth::id(),
+                'notes' => $v['notes'] ?? null,
+                'recorded_by' => Auth::id(),
             ]
         );
 
@@ -229,7 +245,7 @@ class AttendanceController extends Controller
     public function export(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $start = $request->input('start_date', now()->startOfMonth()->toDateString());
-        $end   = $request->input('end_date',   now()->toDateString());
+        $end = $request->input('end_date', now()->toDateString());
 
         $records = Attendance::with('employee:id,first_name,last_name,department,shift_sched')
             ->whereBetween('date', [$start, $end])
@@ -241,9 +257,17 @@ class AttendanceController extends Controller
         return response()->streamDownload(function () use ($records) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'Employee ID', 'Name', 'Department', 'Shift',
-                'Date', 'Time In', 'Time Out',
-                'Hours Worked', 'Minutes Late', 'Status', 'Notes',
+                'Employee ID',
+                'Name',
+                'Department',
+                'Shift',
+                'Date',
+                'Time In',
+                'Time Out',
+                'Hours Worked',
+                'Minutes Late',
+                'Status',
+                'Notes',
             ]);
             foreach ($records as $r) {
                 fputcsv($out, [
@@ -262,7 +286,7 @@ class AttendanceController extends Controller
             }
             fclose($out);
         }, $filename, [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
@@ -271,20 +295,22 @@ class AttendanceController extends Controller
 
     private function calcStatus(?string $timeIn, string $shift): string
     {
-        if (!$timeIn) return 'absent';
+        if (!$timeIn)
+            return 'absent';
         return $this->calcMinutesLate($timeIn, $shift) > 0 ? 'late' : 'present';
     }
 
     private function calcMinutesLate(?string $timeIn, string $shift): int
     {
-        if (!$timeIn) return 0;
+        if (!$timeIn)
+            return 0;
 
         $shiftStart = self::SHIFTS[$shift]['start'] ?? '07:00';
 
         try {
             $clockIn = Carbon::createFromTimeString($timeIn);
-            $start   = Carbon::createFromTimeString($shiftStart);
-            $cutoff  = $start->copy()->addMinutes(self::GRACE_MINUTES);
+            $start = Carbon::createFromTimeString($shiftStart);
+            $cutoff = $start->copy()->addMinutes(self::GRACE_MINUTES);
 
             // Handle midnight crossover for night shift
             if ($shift === 'night' && $clockIn->hour >= 6 && $clockIn->hour < 20) {
@@ -295,21 +321,24 @@ class AttendanceController extends Controller
             if ($clockIn->gt($cutoff)) {
                 return (int) $clockIn->diffInMinutes($start);
             }
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
 
         return 0;
     }
 
     private function calcHoursWorked(?string $timeIn, ?string $timeOut, string $shift = 'morning'): float
     {
-        if (!$timeIn || !$timeOut) return 0.0;
+        if (!$timeIn || !$timeOut)
+            return 0.0;
 
         try {
-            $in  = Carbon::createFromTimeString($timeIn);
+            $in = Carbon::createFromTimeString($timeIn);
             $out = Carbon::createFromTimeString($timeOut);
 
             // Handle overnight shifts (e.g., night shift 23:00 → 07:00)
-            if ($out->lt($in)) $out->addDay();
+            if ($out->lt($in))
+                $out->addDay();
 
             return round($in->diffInMinutes($out) / 60, 2);
         } catch (\Throwable) {

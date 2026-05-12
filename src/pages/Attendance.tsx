@@ -933,6 +933,7 @@ export default function Attendance() {
                     }));
                   const res = await authFetch("/api/attendance/import", {
                     method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ rows: normalised }),
                   });
                   const body = await res.json();
