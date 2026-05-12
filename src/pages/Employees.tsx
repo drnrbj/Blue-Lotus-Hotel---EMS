@@ -63,10 +63,10 @@ export default function Employees() {
     try {
       if (editEmp) {
         await updateEmployee(editEmp.id, data);
-        toast({ title: "Employee updated" });
+        toast({ title: "Employee updated successfully" });
       } else {
         await createEmployee(data);
-        toast({ title: "Employee created" });
+        toast({ title: "Employee created successfully" }); 
       }
       setFormOpen(false);
       setEditEmp(null);
