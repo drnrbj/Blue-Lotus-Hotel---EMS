@@ -169,7 +169,7 @@ export default function Dashboard() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{lr.employee}</p>
                     <p className="text-xs text-muted-foreground">
-                      {lr.leave_type?.replace("_", " ")} · {lr.start_date} → {lr.end_date}
+                      {lr.leave_type?.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())} · {new Date(lr.start_date).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })} → {new Date(lr.end_date).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <Badge className="ml-3 shrink-0 bg-amber-100 text-amber-700 border-0 text-xs">Pending</Badge>

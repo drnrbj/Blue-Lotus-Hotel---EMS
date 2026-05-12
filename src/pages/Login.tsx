@@ -1,18 +1,17 @@
-// src/pages/Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import logo from "@/assets/logo.png";
 import hotelBg from "@/assets/hotel.jpg";
 
 export default function Login() {
   const { login, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,124 +25,152 @@ export default function Login() {
     }
   };
 
+  const testCredentials = [
+    { role: "Admin",     email: "admin@hrharmony.com",     pass: "Admin@1234" },
+    { role: "HR",        email: "hr@hrharmony.com",        pass: "Hr@12345" },
+    { role: "Accountant",email: "accountant@hrharmony.com",pass: "Account@1" },
+  ];
+
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${hotelBg})` }}
-    >
-      <div className="absolute inset-0 bg-black/50" />
-      
-      <div className="w-full max-w-sm space-y-6 relative z-10">
-        <div className="text-center">
-          <h1 className="font-display text-4xl font-bold text-white">
-            Blue Lotus
-          </h1>
-          <p className="mt-2 text-sm text-white/80">
-            HR Management System
-          </p>
+    <div className="min-h-screen flex">
+
+      {/* ── Left panel — branding ── */}
+      <div
+        className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12"
+        style={{ backgroundImage: `url(${hotelBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0" style={{
+          background: "linear-gradient(135deg, rgba(43,53,136,0.85) 0%, rgba(0,0,0,0.6) 100%)"
+        }} />
+
+        {/* Logo + Hotel name */}
+        <div className="relative z-10 flex items-center gap-3">
+          <img src={logo} alt="Blue Lotus Hotel" style={{ width: 48, height: 30 }} className="object-contain" />
+          <div>
+            <p className="text-white font-bold text-base tracking-wide" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              BLUE LOTUS HOTEL
+            </p>
+          </div>
         </div>
 
-        <Card className="bg-white/95 backdrop-blur-sm shadow-xl">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Sign In</CardTitle>
-            <CardDescription>
-              Enter your credentials to access the system
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
-              <div className="space-y-1">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="text"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="you@bluelotus.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoFocus
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
+        {/* Center quote */}
+        <div className="relative z-10">
+          <h2 className="text-white text-4xl font-bold leading-snug mb-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+            Managing people,<br />
+            <span style={{ color: "#FAEC1D" }}>inspiring excellence.</span>
+          </h2>
+        </div>
 
-              <div className="space-y-1">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
+        {/* Bottom credit */}
+        <div className="relative z-10">
+          <p className="text-white/30 text-xs">© {new Date().getFullYear()} Blue Lotus Hotel. All rights reserved.</p>
+        </div>
+      </div>
+
+      {/* ── Right panel — login form ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-white">
+        
+        {/* Mobile logo */}
+        <div className="lg:hidden flex items-center gap-2 mb-8">
+          <img src={logo} alt="Blue Lotus Hotel" style={{ width: 40, height: 25 }} className="object-contain" />
+          <div>
+            <p className="font-bold text-sm" style={{ color: "#2B3588", fontFamily: "'Montserrat', sans-serif" }}>BLUE LOTUS HOTEL</p>
+          </div>
+        </div>
+
+        <div className="w-full max-w-md">
+
+          {/* Heading */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+              Welcome back
+            </h1>
+            <p className="text-gray-400 text-sm">Sign in to your account to continue</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="text"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@bluelotus.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                autoFocus
+                className="w-full h-11 rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition"
+                style={{ "--tw-ring-color": "#2B3588" } as React.CSSProperties}
+                onFocus={e => e.currentTarget.style.boxShadow = "0 0 0 2px #2B3588"}
+                onBlur={e => e.currentTarget.style.boxShadow = "none"}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </label>
+                <button
+                  type="button"
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: "#2B3588" }}
+                  onClick={() => alert("Contact HR to reset password")}
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="w-full h-11 rounded-lg border border-gray-200 bg-gray-50 px-4 pr-12 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none transition"
+                  onFocus={e => e.currentTarget.style.boxShadow = "0 0 0 2px #2B3588"}
+                  onBlur={e => e.currentTarget.style.boxShadow = "none"}
                 />
-              </div>
-
-              <div className="text-right">
                 <button
                   type="button"
-                  className="text-sm text-primary hover:underline"
-                  onClick={() => alert("Contact HR to reset password")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-medium"
+                  onClick={() => setShowPassword(p => !p)}
                 >
-                  Forgot Password?
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-
-              {error && (
-                <div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2">
-                  <p className="text-sm text-destructive">{error}</p>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={isLoading || !email || !password}
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <LogIn className="mr-2 h-4 w-4" />
-                )}
-                {isLoading ? "Signing in..." : "Log In"}
-              </Button>
-            </form>
-
-            <div className="mt-4 rounded-md bg-muted p-3 space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground">
-                Test Credentials
-              </p>
-              <div className="space-y-1">
-                {[
-                  { role: "Admin", email: "admin@hrharmony.com", pass: "Admin@1234" },
-                  { role: "HR", email: "hr@hrharmony.com", pass: "Hr@12345" },
-                  { role: "Accountant", email: "accountant@hrharmony.com", pass: "Account@1" },
-                  { role: "Manager", email: "manager@hrharmony.com", pass: "Manager@1" },
-                  { role: "Employee", email: "employee@hrharmony.com", pass: "Employee@1" },
-                ].map(({ role, email: e, pass }) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => { setEmail(e); setPassword(pass); }}
-                    className="block w-full text-left text-xs text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 rounded px-1 py-0.5 transition-colors"
-                  >
-                    <span className="font-medium">{role}:</span> {e}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                Click a role to auto-fill credentials
-              </p>
             </div>
-          </CardContent>
-        </Card>
+
+            {error && (
+              <div className="rounded-lg bg-red-50 border border-red-100 px-4 py-3">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-11 text-sm font-semibold rounded-lg text-white transition-all"
+              style={{ backgroundColor: "#2B3588" }}
+              disabled={isLoading || !email || !password}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#232c70")}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#2B3588")}
+            >
+              {isLoading
+                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in...</>
+                : "Sign In"
+              }
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
