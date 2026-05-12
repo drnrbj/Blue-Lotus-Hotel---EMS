@@ -195,6 +195,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
     title: "", department: "", job_category: "",
     description: "", slots: "1", deadline: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
 
   const load = async () => {
     setLoading(true);
@@ -208,6 +209,7 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
     setEditing(null);
     setDept("");
     setForm({ title: "", department: "", job_category: "", description: "", slots: "1", deadline: "" });
+    setFieldErrors({});
     setOpen(true);
   };
 
@@ -219,12 +221,23 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
       job_category: job.job_category, description: job.description,
       slots: String(job.slots), deadline: job.deadline ?? "",
     });
+    setFieldErrors({});
     setOpen(true);
   };
 
+  const validate = () => {
+    const errors: Record<string, boolean> = {};
+    if (!form.title.trim()) errors.title = true;
+    if (!form.department) errors.department = true;
+    if (!form.job_category) errors.job_category = true;
+    if (!form.slots || parseInt(form.slots) < 1) errors.slots = true;
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const save = async () => {
-    if (!form.title || !form.department || !form.job_category) {
-      toast({ title: "Required fields missing", variant: "destructive" });
+    if (!validate()) {
+      toast({ title: "Please fill in all required fields", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -246,6 +259,16 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
       toast({ title: err instanceof Error ? err.message : "Failed", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const clearFieldError = (field: string) => {
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
     }
   };
 
@@ -364,25 +387,110 @@ function JobVacanciesTab({ canManage }: { canManage: boolean }) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle className="text-2xl font-semibold">{editing ? "Edit Job Posting" : "New Job Posting"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">
+              {editing ? "Edit Job Posting" : "New Job Posting"}
+            </DialogTitle>
+          </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder="Job Title *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-            <Select value={form.department} onValueChange={v => { setDept(v); setForm(p => ({ ...p, department: v, job_category: "" })); }}>
-              <SelectTrigger><SelectValue placeholder="Select Department *" /></SelectTrigger>
-              <SelectContent>{DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-            </Select>
-            <Select value={form.job_category} onValueChange={v => setForm(p => ({ ...p, job_category: v }))} disabled={!dept}>
-              <SelectTrigger><SelectValue placeholder={dept ? "Select Job Category *" : "Select department first"} /></SelectTrigger>
-              <SelectContent>{(JOB_CATEGORIES[dept] ?? []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-            </Select>
-            <div className="grid grid-cols-2 gap-3">
-              <Input type="number" placeholder="Slots" min="1" value={form.slots} onChange={e => setForm(p => ({ ...p, slots: e.target.value }))} />
-              <Input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))} />
+            {/* Title Field */}
+            <div>
+              <Input
+                placeholder="Job Title *"
+                value={form.title}
+                onChange={e => {
+                  setForm(p => ({ ...p, title: e.target.value }));
+                  clearFieldError("title");
+                }}
+                className={fieldErrors.title ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {fieldErrors.title && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Job title is required</p>
+              )}
             </div>
-            <textarea className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="Job Description" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+
+            {/* Department Field */}
+            <div>
+              <Select
+                value={form.department}
+                onValueChange={v => {
+                  setDept(v);
+                  setForm(p => ({ ...p, department: v, job_category: "" }));
+                  clearFieldError("department");
+                  clearFieldError("job_category");
+                }}
+              >
+                <SelectTrigger className={fieldErrors.department ? "border-red-500 focus-visible:ring-red-500" : ""}>
+                  <SelectValue placeholder="Select Department *" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {fieldErrors.department && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Department is required</p>
+              )}
+            </div>
+
+            {/* Job Category Field */}
+            <div>
+              <Select
+                value={form.job_category}
+                onValueChange={v => {
+                  setForm(p => ({ ...p, job_category: v }));
+                  clearFieldError("job_category");
+                }}
+                disabled={!dept}
+              >
+                <SelectTrigger className={fieldErrors.job_category ? "border-red-500 focus-visible:ring-red-500" : ""}>
+                  <SelectValue placeholder={dept ? "Select Job Category *" : "Select department first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(JOB_CATEGORIES[dept] ?? []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {fieldErrors.job_category && (
+                <p className="text-xs text-red-500 mt-1 ml-1">Job category is required</p>
+              )}
+            </div>
+
+            {/* Slots & Deadline */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Input
+                  type="number"
+                  placeholder="Slots *"
+                  min="1"
+                  value={form.slots}
+                  onChange={e => {
+                    setForm(p => ({ ...p, slots: e.target.value }));
+                    clearFieldError("slots");
+                  }}
+                  className={fieldErrors.slots ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {fieldErrors.slots && (
+                  <p className="text-xs text-red-500 mt-1 ml-1">At least 1 slot required</p>
+                )}
+              </div>
+              <Input
+                type="date"
+                value={form.deadline}
+                onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
+              />
+            </div>
+
+            {/* Description Field (optional) */}
+            <textarea
+              className="w-full rounded-md border border-input px-3 py-2 text-sm min-h-[80px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              placeholder="Job Description (optional)"
+              value={form.description}
+              onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+            />
           </div>
           <DialogFooter>
-            <Button variant="outline" className="bg-gray-200" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="outline" className="bg-gray-200" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button className="bg-[#2B3588]" onClick={save} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editing ? "Save Changes" : "Post Job"}
@@ -937,7 +1045,7 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
   };
 
   const totalPages = Math.ceil(assignments.length / itemsPerPage);
-    const paginated  = assignments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginated = assignments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="space-y-4">
