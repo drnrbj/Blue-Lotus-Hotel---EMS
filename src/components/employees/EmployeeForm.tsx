@@ -163,6 +163,13 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Admin view — only submit role
+    if (isAdminView) {
+      await onSubmit({ role: form.role } as any);
+      return;
+    }
+
     if (!validate()) return;
     const formData: EmployeeFormData = {
       first_name: form.first_name,
@@ -316,6 +323,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
                 <label className="text-xs font-medium">Basic Salary (₱) — auto from category</label>
                 <Input className="mt-1 h-9 bg-muted/30" type="number" value={form.basic_salary} readOnly />
                 {form.basic_salary && (
+
                   <p className="text-xs text-green-600 mt-0.5">₱{Number(form.basic_salary).toLocaleString("en-PH")} / month</p>
                 )}
               </div>

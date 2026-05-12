@@ -61,7 +61,17 @@ export default function Employees() {
   const handleFormSubmit = async (data: Parameters<typeof createEmployee>[0]) => {
     setSaving(true);
     try {
-      if (editEmp) {
+      if (isAdmin && editEmp) {
+        // Admin can only update role
+        const { authFetch } = await import("@/hooks/api");
+        const res = await authFetch(`/api/employees/${editEmp.id}/role`, {
+          method: "PATCH",
+          body: JSON.stringify({ role: data.role }),
+        });
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message ?? "Failed");
+        toast({ title: "System role updated successfully", variant: "success" });
+      } else if (editEmp) {
         await updateEmployee(editEmp.id, data);
         toast({ title: "Employee updated successfully", variant: "success" });
       } else {
