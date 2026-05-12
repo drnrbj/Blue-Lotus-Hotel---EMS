@@ -429,10 +429,6 @@ function AuditTab({ logs, isLoading }: { logs: AuditLog[]; isLoading: boolean })
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
-        <ShieldCheck className="h-3.5 w-3.5 text-green-600" />
-        Immutable audit trail — records cannot be edited or deleted
-      </div>
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted/30 border-b border-border">
@@ -685,7 +681,7 @@ export default function Accounting() {
 
             {canManage && !step2Done && (
               <Button size="sm" onClick={handleComputeAll}
-                disabled={computing || !activePeriodId} className="gap-1">
+                disabled={computing || !activePeriodId} className="gap-1 bg-[#2B3588] hover:bg-[#232c70]">
                 {computing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                 {computing ? "Computing…" : "Compute All"}
               </Button>
@@ -770,11 +766,11 @@ export default function Accounting() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-muted-foreground">
-                    No payslips for {activePeriod.label} yet. Click "Compute All" to generate.
+                    No payslips for {activePeriod.label} yet. Click "Process Period" to generate.
                   </p>
-                  <Button onClick={handleComputeAll} disabled={computing} size="sm" className="gap-1">
+                  <Button onClick={handleComputeAll} disabled={computing} size="sm" className="gap-1 bg-[#2B3588] hover:bg-[#232c70]">
                     {computing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                    Compute All
+                    Process Period
                   </Button>
                 </div>
 
