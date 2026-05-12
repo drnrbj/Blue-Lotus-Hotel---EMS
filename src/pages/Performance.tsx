@@ -63,7 +63,7 @@ function FillFormDialog({
     setSaving(true);
     try {
       await onSubmit(assignment.id, Object.values(responses));
-      toast({ title: "Submitted!", description: "Your evaluation has been recorded.", variant: "success" });
+      toast({ title: "Submitted successfully!", description: "Your evaluation has been recorded.", variant: "success" });
       onClose();
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Submit failed", variant: "destructive" });
@@ -297,8 +297,7 @@ export default function Performance() {
             {(myAssignments.completed?.length ?? 0) > 0 && (
               <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="px-5 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <h3 className="font-semibold text-sm">Completed Evaluations</h3>
+                  <span className="font-medium text-sm">Completed Evaluations</span>
                 </div>
                 <div className="divide-y divide-border">
                   {myAssignments.completed?.map(a => (
@@ -333,7 +332,7 @@ export default function Performance() {
             {paginated.length > 0 && (
               <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="px-5 py-3 border-b border-border bg-muted/30">
-                  <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Active Evaluations</h2>
+                  <span className="font-medium text-sm">Active Evaluations</span>
                 </div>
                 <table className="w-full text-sm">
                   <thead className="bg-muted/20 border-b border-border">
@@ -382,7 +381,7 @@ export default function Performance() {
                                 disabled={closingId === form.id}
                                 onClick={async () => {
                                   setClosingId(form.id);
-                                  try { await closeForm(form.id); toast({ title: "Form closed successfully", variant: "success" }); fetchForms(); }
+                                  try { await closeForm(form.id); toast({ title: "Evaluation closed", variant: "success" }); fetchForms(); }
                                   catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
                                   finally { setClosingId(null); }
                                 }}>
@@ -425,7 +424,7 @@ export default function Performance() {
             {draftForms.length > 0 && (
               <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="px-5 py-3 border-b border-border bg-muted/30">
-                  <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Drafts</h2>
+                  <span className="font-medium text-sm">Drafts</span>
                 </div>
                 <table className="w-full text-sm">
                   <thead className="bg-muted/20 border-b border-border">
@@ -476,7 +475,7 @@ export default function Performance() {
             {closedForms.length > 0 && (
               <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="px-5 py-3 border-b border-border bg-muted/30">
-                  <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Closed</h2>
+                  <span className="font-medium text-sm">Closed</span>
                 </div>
                 <table className="w-full text-sm">
                   <thead className="bg-muted/20 border-b border-border">
