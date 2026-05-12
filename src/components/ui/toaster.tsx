@@ -1,4 +1,3 @@
-// src/components/ui/toaster.tsx
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -8,6 +7,7 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast"
+import { CheckCircle } from "lucide-react"
 
 export function Toaster() {
   const { toasts } = useToast()
@@ -18,7 +18,14 @@ export function Toaster() {
         return (
           <Toast key={id} {...props}>
             <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
+              {title && (
+                <ToastTitle className="flex items-center gap-2">
+                  {props.variant === "success" && (
+                    <CheckCircle className="h-4 w-4 shrink-0" />
+                  )}
+                  {title}
+                </ToastTitle>
+              )}
               {description && (
                 <ToastDescription>{description}</ToastDescription>
               )}
