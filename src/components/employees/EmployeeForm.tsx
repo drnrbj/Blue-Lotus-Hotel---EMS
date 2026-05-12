@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import type { Employee, EmployeeFormData } from "@/types/employee";
 
 const SALARY_MAP: Record<string, number> = {
@@ -56,6 +58,22 @@ type FormData = {
   basic_salary: string; role: RoleType;
 };
 
+// Which tab each required field lives on — used to auto-navigate on error
+const FIELD_TAB: Partial<Record<keyof FormData, string>> = {
+  first_name: "personal", last_name: "personal",
+  date_of_birth: "personal", email: "personal", home_address: "personal",
+  department: "employment", job_category: "employment", start_date: "employment",
+  phone_number: "contact",
+};
+
+const FIELD_LABELS: Partial<Record<keyof FormData, string>> = {
+  first_name: "First Name", last_name: "Last Name",
+  date_of_birth: "Date of Birth", email: "Email",
+  home_address: "Home Address", phone_number: "Phone Number",
+  department: "Department", job_category: "Job Category",
+  start_date: "Start Date",
+};
+
 // ─── Field component OUTSIDE EmployeeForm so it never remounts on re-render ──
 interface FieldProps {
   label: string;
@@ -76,9 +94,13 @@ function Field({ label, field, form, errors, onChange, required, type = "text", 
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <Input
-        className={`mt-1 h-9 ${errors[field] ? "border-red-400" : ""} ${readOnly ? "bg-muted/30" : ""}`}
+        className={cn(
+          "mt-1 h-9",
+          errors[field] && "border-red-400 bg-red-50",
+          readOnly && "bg-muted/30"
+        )}
         type={type}
-        value={form[field] as string}
+        value={form[field] ?? ""}
         onChange={e => onChange(field, e.target.value)}
         placeholder={placeholder}
         readOnly={readOnly}
@@ -97,12 +119,17 @@ interface Props {
 }
 
 export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminView }: Props) {
+  const { toast } = useToast();
+  const [tab, setTab] = useState("personal");
+
   const [form, setForm] = useState<FormData>({
     first_name: employee?.first_name ?? "",
     last_name: employee?.last_name ?? "",
     middle_name: employee?.middle_name ?? "",
     name_extension: employee?.name_extension ?? "",
-    date_of_birth: employee?.date_of_birth ?? "",
+    date_of_birth: employee?.date_of_birth
+  ? new Date(employee.date_of_birth).toISOString().split("T")[0]
+  : "",
     email: employee?.email ?? "",
     phone_number: employee?.phone_number ?? "",
     home_address: employee?.home_address ?? "",
@@ -127,8 +154,12 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
 
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
-  const handleChange = (field: keyof FormData, value: string) =>
+
+  const handleChange = (field: keyof FormData, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
+    // Clear error for this field as soon as user fills it in
+    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
 
   // Auto-fill salary when job_category changes
   useEffect(() => {
@@ -148,15 +179,15 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
 
   const validate = (): boolean => {
     const e: Partial<Record<keyof FormData, string>> = {};
-    if (!form.first_name) e.first_name = "Required";
-    if (!form.last_name) e.last_name = "Required";
-    if (!form.date_of_birth) e.date_of_birth = "Required";
-    if (!form.email) e.email = "Required";
-    if (!form.phone_number) e.phone_number = "Required";
-    if (!form.home_address) e.home_address = "Required";
-    if (!form.start_date) e.start_date = "Required";
-    if (!form.department) e.department = "Required";
-    if (!form.job_category) e.job_category = "Required";
+    if (!form.first_name.trim()) e.first_name = "First name is required";
+    if (!form.last_name.trim()) e.last_name = "Last name is required";
+    if (!form.date_of_birth) e.date_of_birth = "Date of birth is required";
+    if (!form.email.trim()) e.email = "Email is required";
+    if (!form.phone_number.trim()) e.phone_number = "Phone number is required";
+    if (!form.home_address.trim()) e.home_address = "Home address is required";
+    if (!form.start_date) e.start_date = "Start date is required";
+    if (!form.department) e.department = "Department is required";
+    if (!form.job_category) e.job_category = "Job category is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -170,7 +201,52 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
       return;
     }
 
-    if (!validate()) return;
+    // Run validation — populates errors state (turns fields red)
+    const newErrors: Partial<Record<keyof FormData, string>> = {};
+    if (!form.first_name.trim()) newErrors.first_name = "Required";
+    if (!form.last_name.trim()) newErrors.last_name = "Required";
+    if (!form.date_of_birth || form.date_of_birth.trim() === "") {
+      newErrors.date_of_birth = "Date of Birth is required";
+    }
+    if (!form.email.trim()) newErrors.email = "Required";
+    if (!form.phone_number.trim()) newErrors.phone_number = "Required";
+    if (!form.home_address.trim()) newErrors.home_address = "Required";
+    if (!form.start_date) newErrors.start_date = "Required";
+    if (!form.department) newErrors.department = "Required";
+    if (!form.job_category) newErrors.job_category = "Required";
+
+    setErrors(newErrors);  // ← this makes the red borders appear
+
+    if (Object.keys(newErrors).length > 0) {
+      // Show toast listing every missing field
+      const LABELS: Partial<Record<keyof FormData, string>> = {
+        first_name: "First Name", last_name: "Last Name",
+        date_of_birth: "Date of Birth", email: "Email",
+        phone_number: "Phone Number", home_address: "Home Address",
+        start_date: "Start Date", department: "Department",
+        job_category: "Job Category",
+      };
+      const missing = Object.keys(newErrors).map(f => LABELS[f as keyof FormData] ?? f).join(", ");
+      toast({
+        title: "Cannot update employee",
+        description: `Please fill in: ${missing}`,
+        variant: "destructive",
+      });
+
+      // Navigate to the tab that has the first missing field
+      const TAB_MAP: Partial<Record<keyof FormData, string>> = {
+        first_name: "personal", last_name: "personal",
+        date_of_birth: "personal", email: "personal", home_address: "personal",
+        department: "employment", job_category: "employment", start_date: "employment",
+        phone_number: "contact",
+      };
+      const firstField = Object.keys(newErrors)[0] as keyof FormData;
+      if (TAB_MAP[firstField]) setTab(TAB_MAP[firstField]!);
+
+      return; // ← BLOCKS the API call
+    }
+
+    // All valid — build payload and submit
     const formData: EmployeeFormData = {
       first_name: form.first_name,
       last_name: form.last_name,
@@ -236,7 +312,8 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
           </div>
         </div>
       ) : (
-        <Tabs defaultValue="personal">
+        // ── controlled tab so we can navigate to the offending tab on error ──
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="personal">Personal</TabsTrigger>
             <TabsTrigger value="employment">Employment</TabsTrigger>
@@ -267,7 +344,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
                   Department<span className="text-red-500 ml-0.5">*</span>
                 </label>
                 <Select value={form.department} onValueChange={v => { handleChange("department", v); handleChange("job_category", ""); }}>
-                  <SelectTrigger className={`mt-1 h-9 ${errors.department ? "border-red-400" : ""}`}>
+                  <SelectTrigger className={cn("mt-1 h-9", errors.department && "border-red-400 bg-red-50")}>
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
@@ -281,7 +358,7 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
                   Job Category<span className="text-red-500 ml-0.5">*</span>
                 </label>
                 <Select value={form.job_category} onValueChange={v => handleChange("job_category", v)} disabled={!form.department}>
-                  <SelectTrigger className={`mt-1 h-9 ${errors.job_category ? "border-red-400" : ""}`}>
+                  <SelectTrigger className={cn("mt-1 h-9", errors.job_category && "border-red-400 bg-red-50")}>
                     <SelectValue placeholder={form.department ? "Select category" : "Select dept first"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -320,10 +397,9 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
             <div className="grid grid-cols-2 gap-3">
               <Field label="Start Date" field="start_date" form={form} errors={errors} onChange={handleChange} required type="date" />
               <div>
-                <label className="text-xs font-medium">Basic Salary (₱) — auto from category</label>
+                <label className="text-xs font-medium">Basic Salary (₱)</label>
                 <Input className="mt-1 h-9 bg-muted/30" type="number" value={form.basic_salary} readOnly />
                 {form.basic_salary && (
-
                   <p className="text-xs text-green-600 mt-0.5">₱{Number(form.basic_salary).toLocaleString("en-PH")} / month</p>
                 )}
               </div>

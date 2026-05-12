@@ -244,7 +244,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
     } catch (e) {
       toast({
         title: "Transfer failed",
-        description: e instanceof Error ? e.message : "Please try again",
+        description: e instanceof Error ? e.message : "Please fill up this form",
         variant: "destructive"
       });
     } finally {

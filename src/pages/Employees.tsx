@@ -62,6 +62,8 @@ export default function Employees() {
   const handleFormSubmit = async (data: Parameters<typeof createEmployee>[0]) => {
     setSaving(true);
     try {
+      let updatedEmployee: Employee | null = null;
+
       if (isAdmin && editEmp) {
         const res = await authFetch(`/api/employees/${editEmp.id}/role`, {
           method: "PATCH",
@@ -69,21 +71,41 @@ export default function Employees() {
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.message ?? "Failed");
+        updatedEmployee = body.data;
         toast({ title: "System role updated successfully", variant: "success" });
       } else if (editEmp) {
-        await updateEmployee(editEmp.id, data);
+        updatedEmployee = await updateEmployee(editEmp.id, data);
         toast({ title: "Employee updated successfully", variant: "success" });
       } else {
-        await createEmployee(data);
+        const newEmployee = await createEmployee(data);
+        updatedEmployee = newEmployee;
         toast({ title: "Employee created successfully", variant: "success" });
       }
+
       setFormOpen(false);
       setEditEmp(null);
-      fetchEmployees(filters);
+      await fetchEmployees(filters);
+
+      // Update the viewEmp if it's the same employee being viewed/edited
+      if (viewEmp && editEmp && viewEmp.id === editEmp.id && updatedEmployee) {
+        setViewEmp(updatedEmployee);
+      }
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRefreshViewEmp = async (empId: number) => {
+    try {
+      const res = await authFetch(`/api/employees/${empId}`);
+      const body = await res.json();
+      if (res.ok && body.data) {
+        setViewEmp(body.data);
+      }
+    } catch (error) {
+      console.error("Failed to refresh employee data:", error);
     }
   };
 
@@ -236,12 +258,15 @@ export default function Employees() {
         )}
       </Tabs>
 
-      {/* Employee Detail Sheet */}
       <EmployeeDetails
         employee={viewEmp}
         open={!!viewEmp}
         onClose={() => setViewEmp(null)}
-        onEdit={handleEdit}
+        onEdit={(emp) => {
+          handleEdit(emp);
+          // Close the details sheet when opening edit form
+          setViewEmp(null);
+        }}
         onArchive={emp => { setViewEmp(null); setArchiveTarget(emp); }}
         isAdmin={isAdmin}
       />

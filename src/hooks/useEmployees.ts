@@ -10,14 +10,14 @@ interface Filters {
 }
 
 export function useEmployees() {
-  const [employees,         setEmployees]         = useState<Employee[]>([]);
-  const [archivedEmployees, setArchived]          = useState<Employee[]>([]);
-  const [selectedEmployee,  setSelected]          = useState<Employee | null>(null);
-  const [departments,       setDepartments]       = useState<string[]>([]);
-  const [jobCategories,     setJobCategories]     = useState<string[]>([]);
-  const [salaryMap,         setSalaryMap]         = useState<Record<string, number>>({});
-  const [isLoading,         setIsLoading]         = useState(false);
-  const [error,             setError]             = useState<string | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [archivedEmployees, setArchived] = useState<Employee[]>([]);
+  const [selectedEmployee, setSelected] = useState<Employee | null>(null);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [jobCategories, setJobCategories] = useState<string[]>([]);
+  const [salaryMap, setSalaryMap] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const safe = (data: unknown): Employee[] => {
     if (Array.isArray(data)) return data;
@@ -33,12 +33,12 @@ export function useEmployees() {
     setIsLoading(true); setError(null);
     try {
       const params = new URLSearchParams();
-      if (filters.search)     params.set("search",     filters.search);
-      if (filters.status)     params.set("status",     filters.status);
+      if (filters.search) params.set("search", filters.search);
+      if (filters.status) params.set("status", filters.status);
       if (filters.department) params.set("department", filters.department);
       params.set("per_page", "100");
 
-      const res  = await authFetch(`/api/employees?${params}`);
+      const res = await authFetch(`/api/employees?${params}`);
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed");
       setEmployees(safe(body.data));
@@ -50,7 +50,7 @@ export function useEmployees() {
   const fetchArchived = useCallback(async () => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch("/api/employees/archived");
+      const res = await authFetch("/api/employees/archived");
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed");
       setArchived(safe(body.data));
@@ -62,7 +62,7 @@ export function useEmployees() {
   const fetchEmployee = useCallback(async (id: number) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch(`/api/employees/${id}`);
+      const res = await authFetch(`/api/employees/${id}`);
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed");
       setSelected(body.data);
@@ -75,7 +75,7 @@ export function useEmployees() {
   const createEmployee = useCallback(async (data: EmployeeFormData) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch("/api/employees", { method: "POST", body: JSON.stringify(data) });
+      const res = await authFetch("/api/employees", { method: "POST", body: JSON.stringify(data) });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed to create");
       setEmployees(prev => [body.data, ...prev]);
@@ -88,7 +88,7 @@ export function useEmployees() {
   const updateEmployee = useCallback(async (id: number, data: Partial<EmployeeFormData>) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch(`/api/employees/${id}`, {
+      const res = await authFetch(`/api/employees/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
       });
@@ -97,7 +97,7 @@ export function useEmployees() {
       const updated = body.data as Employee;
       setEmployees(prev => prev.map(e => e.id === id ? updated : e));
       if (selectedEmployee?.id === id) setSelected(updated);
-      return updated;
+      return updated; // Return the updated employee
     } catch (err) { handleError(err); throw err; }
     finally { setIsLoading(false); }
   }, [selectedEmployee]);
@@ -106,7 +106,7 @@ export function useEmployees() {
   const archiveEmployee = useCallback(async (id: number) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch(`/api/employees/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/employees/${id}`, { method: "DELETE" });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed");
       setEmployees(prev => prev.filter(e => e.id !== id));
@@ -118,7 +118,7 @@ export function useEmployees() {
   const restoreEmployee = useCallback(async (id: number) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch(`/api/employees/${id}/restore`, { method: "POST" });
+      const res = await authFetch(`/api/employees/${id}/restore`, { method: "POST" });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed");
       setArchived(prev => prev.filter(e => e.id !== id));
@@ -131,7 +131,7 @@ export function useEmployees() {
   const purgeEmployee = useCallback(async (id: number) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch(`/api/employees/${id}/purge`, { method: "DELETE" });
+      const res = await authFetch(`/api/employees/${id}/purge`, { method: "DELETE" });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Failed");
       setArchived(prev => prev.filter(e => e.id !== id));
@@ -143,7 +143,7 @@ export function useEmployees() {
   const updateRole = useCallback(async (id: number, role: Employee["role"]) => {
     setIsLoading(true); setError(null);
     try {
-      const res  = await authFetch(`/api/employees/${id}/role`, {
+      const res = await authFetch(`/api/employees/${id}/role`, {
         method: "PATCH", body: JSON.stringify({ role }),
       });
       const body = await res.json();
@@ -156,7 +156,7 @@ export function useEmployees() {
   // ─── Dropdowns ───────────────────────────────────────────────────────────
   const fetchDepartments = useCallback(async () => {
     try {
-      const res  = await authFetch("/api/employees/departments");
+      const res = await authFetch("/api/employees/departments");
       const body = await res.json();
       setDepartments(Array.isArray(body.data) ? body.data : []);
     } catch { /* non-critical */ }
@@ -167,7 +167,7 @@ export function useEmployees() {
       const url = department
         ? `/api/employees/job-categories?department=${encodeURIComponent(department)}`
         : "/api/employees/job-categories";
-      const res  = await authFetch(url);
+      const res = await authFetch(url);
       const body = await res.json();
       setJobCategories(Array.isArray(body.data) ? body.data : []);
     } catch { /* non-critical */ }
@@ -175,7 +175,7 @@ export function useEmployees() {
 
   const fetchSalaryMap = useCallback(async () => {
     try {
-      const res  = await authFetch("/api/employees/salary-mapping");
+      const res = await authFetch("/api/employees/salary-mapping");
       const body = await res.json();
       setSalaryMap(body.data ?? {});
       return body.data as Record<string, number>;
@@ -185,13 +185,13 @@ export function useEmployees() {
   // FIX #3: Export to JSON download
   const exportEmployee = useCallback(async (id: number, firstName: string, lastName: string) => {
     try {
-      const res  = await authFetch(`/api/employees/${id}/export`);
+      const res = await authFetch(`/api/employees/${id}/export`);
       const body = await res.json();
       if (!res.ok) throw new Error(body.message ?? "Export failed");
       const blob = new Blob([JSON.stringify(body.data, null, 2)], { type: "application/json" });
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement("a");
-      a.href     = url;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
       a.download = `employee_${id}_${lastName}_${firstName}.json`;
       a.click();
       URL.revokeObjectURL(url);
