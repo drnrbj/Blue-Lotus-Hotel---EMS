@@ -205,8 +205,13 @@ function LiveDashboard() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-xs font-mono">{ci.time}</p>
-                  <Badge className={cn("text-[10px] border-0", STATUS_COLORS[ci.status] ?? "bg-gray-100 text-gray-600")}>
-                    {ci.status}
+                  <Badge
+                    className={cn(
+                      "text-[10px] border-0",
+                      STATUS_COLORS[ci.status] ?? "bg-gray-100 text-gray-600"
+                    )}
+                  >
+                    {ci.status?.charAt(0).toUpperCase() + ci.status?.slice(1)}
                   </Badge>
                 </div>
               </div>
