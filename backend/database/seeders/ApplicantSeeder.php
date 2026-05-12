@@ -13,7 +13,7 @@ class ApplicantSeeder extends Seeder
     {
         // Get first job posting or create one
         $jobPosting = JobPosting::first();
-        
+
         if (!$jobPosting) {
             $jobPosting = JobPosting::create([
                 'title' => 'Front Desk Agent',
@@ -27,49 +27,58 @@ class ApplicantSeeder extends Seeder
 
         $applicants = [
             [
-                'first_name' => 'Jessica',
-                'last_name' => 'Ocampo',
-                'email' => 'jessica.ocampo@email.com',
-                'phone' => '09201234504',
+                'first_name' => 'Bai Fatima',
+                'last_name' => 'Andong',
+                'email' => 'b.andong.545438@umindanao.edu.ph',
+                'phone' => '09100000001',
                 'job_posting_id' => $jobPosting->id,
                 'pipeline_stage' => 'hired',
-                'notes' => 'Excellent communication skills',
+                'notes' => '',
             ],
             [
-                'first_name' => 'Patrick',
-                'last_name' => 'Gonzales',
-                'email' => 'patrick.gonzales@email.com',
-                'phone' => '09211234505',
+                'first_name' => 'Robert Jhon',
+                'last_name' => 'Aracena',
+                'email' => 'r.aracena.545985@umindanao.edu.ph',
+                'phone' => '09100000002',
                 'job_posting_id' => $jobPosting->id,
                 'pipeline_stage' => 'hired',
-                'notes' => 'Strong leadership potential',
+                'notes' => '',
             ],
             [
-                'first_name' => 'Stephanie',
-                'last_name' => 'Villanueva',
-                'email' => 'stephanie.villanueva@email.com',
-                'phone' => '09221234506',
+                'first_name' => 'Nino',
+                'last_name' => 'Asan',
+                'email' => 'n.asan.546681@umindanao.edu.ph',
+                'phone' => '09100000003',
                 'job_posting_id' => $jobPosting->id,
                 'pipeline_stage' => 'interviewed',
-                'notes' => 'Good customer service experience',
+                'notes' => '',
             ],
             [
-                'first_name' => 'Victor',
-                'last_name' => 'Fernandez',
-                'email' => 'victor.fernandez@email.com',
-                'phone' => '09231234507',
+                'first_name' => 'John Benedict',
+                'last_name' => 'Bongcac',
+                'email' => 'j.bongcac.543497@umindanao.edu.ph',
+                'phone' => '09100000004',
                 'job_posting_id' => $jobPosting->id,
                 'pipeline_stage' => 'hired',
-                'notes' => 'Technical background',
+                'notes' => '',
             ],
             [
-                'first_name' => 'Michelle',
-                'last_name' => 'Dizon',
-                'email' => 'michelle.dizon@email.com',
-                'phone' => '09241234508',
+                'first_name' => 'Joana',
+                'last_name' => 'Bravo',
+                'email' => 'j.bravo.546336@umindanao.edu.ph',
+                'phone' => '09100000005',
                 'job_posting_id' => $jobPosting->id,
                 'pipeline_stage' => 'interview_scheduled',
-                'notes' => 'Fluent in English',
+                'notes' => '',
+            ],
+            [
+                'first_name' => 'Joanne Faith',
+                'last_name' => 'Cabarde',
+                'email' => 'j.cabarde.548077@umindanao.edu.ph',
+                'phone' => '09100000006',
+                'job_posting_id' => $jobPosting->id,
+                'pipeline_stage' => 'interview_scheduled',
+                'notes' => '',
             ],
         ];
 

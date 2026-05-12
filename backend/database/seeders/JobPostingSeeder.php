@@ -13,64 +13,86 @@ class JobPostingSeeder extends Seeder
     public function run(): void
     {
         $adminId = User::where('role', 'Admin')->value('id') ?? 1;
-        $hrId    = User::where('role', 'HR')->value('id') ?? 2;
+        $hrId = User::where('role', 'HR')->value('id') ?? 2;
 
         // ── Job Postings ──────────────────────────────────────────────────
         $postings = [
             [
-                'title'        => 'Front Desk Receptionist',
-                'department'   => 'Front Office',
+                'title' => 'Front Desk Receptionist',
+                'department' => 'Front Office',
                 'job_category' => 'Front Desk Agent',
-                'description'  => 'Handle guest check-ins, manage reservations, and provide excellent customer service at the front desk.',
-                'slots'        => 2,
-                'status'       => 'open',
-                'created_by'   => $adminId,
-                'posted_date'  => now()->subDays(10)->toDateString(),
-                'deadline'     => now()->addDays(20)->toDateString(),
+                'description' => 'Handle guest check-ins, manage reservations, and provide excellent customer service at the front desk.',
+                'slots' => 2,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(10)->toDateString(),
+                'deadline' => now()->addDays(20)->toDateString(),
             ],
             [
-                'title'        => 'Housekeeping Supervisor',
-                'department'   => 'Housekeeping',
+                'title' => 'Housekeeping Supervisor',
+                'department' => 'Housekeeping',
                 'job_category' => 'Housekeeping Supervisor',
-                'description'  => 'Oversee housekeeping staff, maintain cleanliness standards, and manage room assignments.',
-                'slots'        => 1,
-                'status'       => 'open',
-                'created_by'   => $adminId,
-                'posted_date'  => now()->subDays(15)->toDateString(),
-                'deadline'     => now()->addDays(15)->toDateString(),
+                'description' => 'Oversee housekeeping staff, maintain cleanliness standards, and manage room assignments.',
+                'slots' => 1,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(15)->toDateString(),
+                'deadline' => now()->addDays(15)->toDateString(),
             ],
             [
-                'title'        => 'Kitchen Assistant',
-                'department'   => 'Food & Beverage',
+                'title' => 'Kitchen Assistant',
+                'department' => 'Food & Beverage',
                 'job_category' => 'Kitchen Steward',
-                'description'  => 'Assist in food preparation, maintain kitchen cleanliness, and support cooking operations.',
-                'slots'        => 3,
-                'status'       => 'open',
-                'created_by'   => $adminId,
-                'posted_date'  => now()->subDays(5)->toDateString(),
-                'deadline'     => now()->addDays(25)->toDateString(),
+                'description' => 'Assist in food preparation, maintain kitchen cleanliness, and support cooking operations.',
+                'slots' => 3,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(5)->toDateString(),
+                'deadline' => now()->addDays(25)->toDateString(),
             ],
             [
-                'title'        => 'Maintenance Technician',
-                'department'   => 'Maintenance',
+                'title' => 'Maintenance Technician',
+                'department' => 'Maintenance',
                 'job_category' => 'Maintenance Technician',
-                'description'  => 'Perform routine maintenance, repairs, and ensure all hotel facilities are in working order.',
-                'slots'        => 1,
-                'status'       => 'open',
-                'created_by'   => $adminId,
-                'posted_date'  => now()->subDays(8)->toDateString(),
-                'deadline'     => now()->addDays(22)->toDateString(),
+                'description' => 'Perform routine maintenance, repairs, and ensure all hotel facilities are in working order.',
+                'slots' => 1,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(8)->toDateString(),
+                'deadline' => now()->addDays(22)->toDateString(),
             ],
             [
-                'title'        => 'Sales Manager',
-                'department'   => 'Sales & Marketing',
+                'title' => 'Sales Manager',
+                'department' => 'Sales & Marketing',
                 'job_category' => 'Sales Manager',
-                'description'  => 'Coordinate corporate accounts, drive revenue targets, and manage key client relationships.',
-                'slots'        => 1,
-                'status'       => 'open',
-                'created_by'   => $adminId,
-                'posted_date'  => now()->subDays(3)->toDateString(),
-                'deadline'     => now()->addDays(27)->toDateString(),
+                'description' => 'Coordinate corporate accounts, drive revenue targets, and manage key client relationships.',
+                'slots' => 1,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(3)->toDateString(),
+                'deadline' => now()->addDays(27)->toDateString(),
+            ],
+            [
+                'title' => 'Bartender',
+                'department' => 'Food & Beverage',
+                'job_category' => 'Bartender',
+                'description' => 'Prepare and serve beverages, interact with guests, and maintain bar cleanliness.',
+                'slots' => 1,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(4)->toDateString(),
+                'deadline' => now()->addDays(26)->toDateString(),
+            ],
+            [
+                'title' => 'HR Assistant',
+                'department' => 'Administration',
+                'job_category' => 'HR Officer',
+                'description' => 'Assist HR in recruitment, onboarding, and employee records management.',
+                'slots' => 1,
+                'status' => 'open',
+                'created_by' => $adminId,
+                'posted_date' => now()->subDays(6)->toDateString(),
+                'deadline' => now()->addDays(24)->toDateString(),
             ],
         ];
 
@@ -85,74 +107,51 @@ class JobPostingSeeder extends Seeder
         $applicants = [
             [
                 'job_posting_id' => JobPosting::where('title', 'Front Desk Receptionist')->value('id'),
-                'first_name'     => 'Carlos',
-                'last_name'      => 'Reyes',
-                'email'          => 'carlos.reyes@email.com',
-                'phone'          => '09182345678',
-                'pipeline_stage' => 'reviewed',
-                'notes'          => 'Good basic qualifications, needs interview.',
-            ],
-            [
-                'job_posting_id' => JobPosting::where('title', 'Housekeeping Supervisor')->value('id'),
-                'first_name'     => 'Ana',
-                'last_name'      => 'Garcia',
-                'email'          => 'ana.garcia@email.com',
-                'phone'          => '09193456789',
-                'pipeline_stage' => 'hired',
-                'notes'          => 'Excellent candidate, hired immediately.',
-                'hired_at'       => now()->subDays(5),
+                'first_name' => 'April Bords',
+                'last_name' => 'Nerosa',
+                'email' => 'a.nerosa.545679@umindanao.edu.ph',
+                'phone' => '09171231001',
+                'pipeline_stage' => 'applied',
+                'notes' => 'Good communication skills, for initial review.',
             ],
             [
                 'job_posting_id' => JobPosting::where('title', 'Kitchen Assistant')->value('id'),
-                'first_name'     => 'Pedro',
-                'last_name'      => 'Lopez',
-                'email'          => 'pedro.lopez@email.com',
-                'phone'          => '09204567890',
-                'pipeline_stage' => 'applied',
-                'notes'          => 'New application, pending review.',
+                'first_name' => 'Gabriel Joshua',
+                'last_name' => 'Regidor',
+                'email' => 'g.regidor.548909@umindanao.edu.ph',
+                'phone' => '09171231002',
+                'pipeline_stage' => 'interview_scheduled',
+                'notes' => 'Scheduled for interview, promising background.',
             ],
             [
-                'job_posting_id' => JobPosting::where('title', 'Maintenance Technician')->value('id'),
-                'first_name'     => 'Rosa',
-                'last_name'      => 'Mendoza',
-                'email'          => 'rosa.mendoza@email.com',
-                'phone'          => '09215678901',
-                'pipeline_stage' => 'interviewed',
-                'notes'          => 'Technical skills verified.',
+                'job_posting_id' => JobPosting::where('title', 'Sales Manager')->value('id'),
+                'first_name' => 'Charish',
+                'last_name' => 'Pulido',
+                'email' => 'c.pulido.544201@umindanao.edu.ph',
+                'phone' => '09171231003',
+                'pipeline_stage' => 'reviewed',
+                'notes' => 'Has sales experience, under evaluation.',
             ],
         ];
 
         foreach ($applicants as $data) {
-            if (!$data['job_posting_id']) continue;
+            if (!$data['job_posting_id'])
+                continue;
             Applicant::updateOrCreate(['email' => $data['email']], $data);
         }
 
         // ── Interviews ────────────────────────────────────────────────────
-        $carlosId = Applicant::where('email', 'carlos.reyes@email.com')->value('id');
-        $rosaId   = Applicant::where('email', 'rosa.mendoza@email.com')->value('id');
+        $gabrielId = Applicant::where('email', 'g.regidor.548909@umindanao.edu.ph')->value('id');
 
-        if ($carlosId) {
+        if ($gabrielId) {
             Interview::updateOrCreate(
-                ['applicant_id' => $carlosId],
+                ['applicant_id' => $gabrielId],
                 [
-                    'applicant_id'   => $carlosId,
+                    'applicant_id' => $gabrielId,
                     'interviewer_id' => $hrId,
-                    'scheduled_at'   => now()->addDays(2)->setTime(10, 0),
-                    'status'         => 'scheduled',
-                    'feedback'       => null,
-                ]
-            );
-        }
-
-        if ($rosaId) {
-            Interview::updateOrCreate(
-                ['applicant_id' => $rosaId],
-                [
-                    'applicant_id'   => $rosaId,
-                    'interviewer_id' => $hrId,
-                    'scheduled_at'   => now()->subDays(1)->setTime(14, 0),
-                    'status'         => 'completed',
-                    'feedback'       => 'Strong technical background, recommended for hire.',
+                    'scheduled_at' => now()->addDays(1)->setTime(10, 0),
+                    'status' => 'scheduled',
+                    'feedback' => null,
                 ]
             );
         }
