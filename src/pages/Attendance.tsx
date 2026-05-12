@@ -263,7 +263,11 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editRow, setEditRow] = useState<Partial<AttendanceRecord>>({});
   const [saving, setSaving] = useState(false);
-
+ 
+  // ── Pagination state ──────────────────────────────────────────────────────
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+ 
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -271,13 +275,16 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
       if (statusF !== "all") params.set("status", statusF);
       const data = await apiFetch<{ data: AttendanceRecord[] } | AttendanceRecord[]>(`/api/attendance?${params}`);
       setRecords(Array.isArray(data) ? data : ((data as { data?: AttendanceRecord[] }).data ?? []));
+      setPage(1); // reset to first page on new fetch
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setLoading(false); }
   }, [startDate, endDate, statusF]);
-
+ 
   useEffect(() => { load(); }, [load]);
-
-  // FIX #7: export uses authFetch + blob download (not window.open which bypasses auth)
+ 
+  // Reset page when search changes
+  useEffect(() => { setPage(1); }, [search]);
+ 
   const handleExport = async () => {
     try {
       const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
@@ -294,7 +301,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
       toast({ title: e instanceof Error ? e.message : "Export failed", variant: "destructive" });
     }
   };
-
+ 
   const handleSave = async () => {
     if (!editRow.employee_id || !editRow.date) {
       toast({ title: "Employee ID and date are required", variant: "destructive" }); return;
@@ -307,20 +314,48 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setSaving(false); }
   };
-
+ 
+  // ── Filtering + pagination derivations ───────────────────────────────────
   const filtered = records.filter(r => {
     if (!search) return true;
     const name = r.employee ? `${r.employee.first_name} ${r.employee.last_name}` : "";
     return name.toLowerCase().includes(search.toLowerCase())
       || (r.employee?.department ?? "").toLowerCase().includes(search.toLowerCase());
   });
-
+ 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+ 
+  // Build page number array with ellipsis: [1, …, 4, 5, 6, …, 12]
+  const pageNumbers = (() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | "…")[] = [];
+    const addRange = (from: number, to: number) => {
+      for (let i = from; i <= to; i++) pages.push(i);
+    };
+    pages.push(1);
+    if (safePage > 4) pages.push("…");
+    const start = Math.max(2, safePage - 1);
+    const end = Math.min(totalPages - 1, safePage + 1);
+    addRange(start, end);
+    if (safePage < totalPages - 3) pages.push("…");
+    if (totalPages > 1) pages.push(totalPages);
+    return pages;
+  })();
+ 
   return (
     <div className="space-y-4">
+      {/* ── Filters ─────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 items-end">
         <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search employee / department..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input
+            placeholder="Search employee / department..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
         <Input type="date" value={startDate} onChange={e => setStart(e.target.value)} className="w-40" />
         <Input type="date" value={endDate} onChange={e => setEnd(e.target.value)} className="w-40" />
@@ -334,19 +369,25 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
             <SelectItem value="on_leave">On Leave</SelectItem>
           </SelectContent>
         </Select>
-        {/* FIX #7: blob download via authFetch */}
         <Button variant="outline" size="sm" onClick={handleExport} className="gap-1">
           <Download className="h-4 w-4" /> Export CSV
         </Button>
         {canManage && (
-          <Button size="sm" className="gap-1 bg-[#2B3588] hover:bg-[#232c70]" onClick={() => { setEditRow({}); setEditOpen(true); }}>
+          <Button
+            size="sm"
+            className="gap-1 bg-[#2B3588] hover:bg-[#232c70]"
+            onClick={() => { setEditRow({}); setEditOpen(true); }}
+          >
             <Pencil className="h-4 w-4" /> Manual Entry
           </Button>
         )}
       </div>
-
+ 
+      {/* ── Table ───────────────────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
       ) : (
         <>
           <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -365,9 +406,13 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filtered.length === 0 ? (
-                  <tr><td colSpan={canManage ? 9 : 8} className="text-center py-12 text-muted-foreground">No records found</td></tr>
-                ) : filtered.map(r => (
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={canManage ? 9 : 8} className="text-center py-12 text-muted-foreground">
+                      No records found
+                    </td>
+                  </tr>
+                ) : paginated.map(r => (
                   <tr key={`${r.employee_id}-${r.date}`} className="hover:bg-muted/20">
                     <td className="px-4 py-2.5">
                       <p className="font-medium">
@@ -379,9 +424,13 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                     <td className="px-4 py-2.5 text-xs capitalize text-muted-foreground">{r.employee?.shift_sched ?? "—"}</td>
                     <td className="px-4 py-2.5 font-mono text-xs">{r.time_in ?? "—"}</td>
                     <td className="px-4 py-2.5 font-mono text-xs">{r.time_out ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-right text-xs">{r.hours_worked > 0 ? `${r.hours_worked}h` : "—"}</td>
+                    <td className="px-4 py-2.5 text-right text-xs">
+                      {r.hours_worked > 0 ? `${r.hours_worked}h` : "—"}
+                    </td>
                     <td className="px-4 py-2.5 text-center text-xs">
-                      {r.minutes_late > 0 ? <span className="text-amber-600 font-medium">{r.minutes_late}m</span> : "—"}
+                      {r.minutes_late > 0
+                        ? <span className="text-amber-600 font-medium">{r.minutes_late}m</span>
+                        : "—"}
                     </td>
                     <td className="px-4 py-2.5 text-center">
                       <Badge className={cn("text-xs border-0 capitalize", STATUS_COLORS[r.status])}>
@@ -390,7 +439,8 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                     </td>
                     {canManage && (
                       <td className="px-4 py-2.5 text-right">
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
+                        <Button
+                          variant="ghost" size="sm" className="h-7 w-7 p-0"
                           onClick={() => {
                             setEditRow({
                               employee_id: r.employee_id, date: r.date,
@@ -398,7 +448,8 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                               status: r.status, notes: r.notes ?? "",
                             });
                             setEditOpen(true);
-                          }}>
+                          }}
+                        >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
                       </td>
@@ -408,42 +459,122 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-muted-foreground">{filtered.length} records</p>
+ 
+          {/* ── Pagination footer ────────────────────────────────────────── */}
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-xs text-muted-foreground">
+              Showing{" "}
+              <span className="font-medium text-foreground">
+                {filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)}
+              </span>{" "}
+              of <span className="font-medium text-foreground">{filtered.length}</span> records
+            </p>
+ 
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                {/* Prev */}
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                  className={cn(
+                    "h-8 w-8 rounded-lg flex items-center justify-center text-sm transition-colors",
+                    safePage === 1
+                      ? "text-muted-foreground/40 cursor-not-allowed"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label="Previous page"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+ 
+                {/* Page numbers */}
+                {pageNumbers.map((p, i) =>
+                  p === "…" ? (
+                    <span key={`ellipsis-${i}`} className="h-8 w-8 flex items-center justify-center text-xs text-muted-foreground select-none">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p as number)}
+                      className={cn(
+                        "h-8 w-8 rounded-lg flex items-center justify-center text-xs font-medium transition-colors",
+                        safePage === p
+                          ? "bg-[#2B3588] text-white shadow-sm"
+                          : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+ 
+                {/* Next */}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={safePage === totalPages}
+                  className={cn(
+                    "h-8 w-8 rounded-lg flex items-center justify-center text-sm transition-colors",
+                    safePage === totalPages
+                      ? "text-muted-foreground/40 cursor-not-allowed"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label="Next page"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
         </>
       )}
-
-      {/* Manual entry dialog */}
+ 
+      {/* ── Manual entry dialog ──────────────────────────────────────────── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle className="text-2xl font-semibold">Manual Attendance Entry</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium">Employee ID *</label>
-              <Input type="number" className="mt-1" value={editRow.employee_id ?? ""}
+              <Input
+                type="number" className="mt-1" value={editRow.employee_id ?? ""}
                 onChange={e => setEditRow(p => ({ ...p, employee_id: Number(e.target.value) }))}
-                placeholder="Employee ID" />
+                placeholder="Employee ID"
+              />
             </div>
             <div>
               <label className="text-sm font-medium">Date *</label>
-              <Input type="date" className="mt-1" value={editRow.date ?? ""}
-                onChange={e => setEditRow(p => ({ ...p, date: e.target.value }))} />
+              <Input
+                type="date" className="mt-1" value={editRow.date ?? ""}
+                onChange={e => setEditRow(p => ({ ...p, date: e.target.value }))}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Time In</label>
-                <Input type="time" className="mt-1" value={editRow.time_in ?? ""}
-                  onChange={e => setEditRow(p => ({ ...p, time_in: e.target.value }))} />
+                <Input
+                  type="time" className="mt-1" value={editRow.time_in ?? ""}
+                  onChange={e => setEditRow(p => ({ ...p, time_in: e.target.value }))}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium">Time Out</label>
-                <Input type="time" className="mt-1" value={editRow.time_out ?? ""}
-                  onChange={e => setEditRow(p => ({ ...p, time_out: e.target.value }))} />
+                <Input
+                  type="time" className="mt-1" value={editRow.time_out ?? ""}
+                  onChange={e => setEditRow(p => ({ ...p, time_out: e.target.value }))}
+                />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Override Status (leave blank = auto-calc)</label>
-              <Select value={(editRow.status as string) ?? ""}
-                onValueChange={v => setEditRow(p => ({ ...p, status: v as AttendanceRecord["status"] }))}>
+              <Select
+                value={(editRow.status as string) ?? ""}
+                onValueChange={v => setEditRow(p => ({ ...p, status: v as AttendanceRecord["status"] }))}
+              >
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Auto-calculate from shift" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="present">Present</SelectItem>
@@ -455,8 +586,11 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
             </div>
             <div>
               <label className="text-sm font-medium">Notes</label>
-              <Input className="mt-1" value={editRow.notes ?? ""}
-                onChange={e => setEditRow(p => ({ ...p, notes: e.target.value }))} placeholder="Optional" />
+              <Input
+                className="mt-1" value={editRow.notes ?? ""}
+                onChange={e => setEditRow(p => ({ ...p, notes: e.target.value }))}
+                placeholder="Optional"
+              />
             </div>
           </div>
           <DialogFooter>
