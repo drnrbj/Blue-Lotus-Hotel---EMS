@@ -665,7 +665,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
 
   const approve = async (id: number) => {
     setActing(id);
-    try { await apiFetch(`/api/leave-requests/${id}/approve`, { method: "POST" }); toast({ title: "Approved", variant: "success" }); load(); }
+    try { await apiFetch(`/api/leave-requests/${id}/approve`, { method: "POST" }); toast({ title: "Leave approved", variant: "success" }); load(); }
     catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setActing(null); }
   };
