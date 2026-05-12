@@ -92,14 +92,14 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
             </p>
             {/* Changed: Using Inter for subtitle */}
             <p
-              className="font-medium text-white/60"
+              className="font-bold text-white/60"
               style={{
-                fontSize: "10px",
+                fontSize: "11px",
                 letterSpacing: "0.04em",
-                fontFamily: "'Inter', system-ui, sans-serif"  // ← Added
+                fontFamily: "'Playfair Display', serif"  // ← Added
               }}
             >
-              Employee Management System
+              EMPLOYEE MANAGEMENT
             </p>
           </div>
         )}
