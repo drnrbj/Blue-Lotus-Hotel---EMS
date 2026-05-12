@@ -95,10 +95,10 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
             </p>
             {/* Changed: Using Inter for subtitle */}
             <p
-              className="font-bold text-white/60"
+              className="font-bold text-white/80"
               style={{
                 fontSize: "11px",
-                letterSpacing: "0.04em",
+                letterSpacing: "0.05em",
                 fontFamily: "'Playfair Display', serif"  // ← Added
               }}
             >
