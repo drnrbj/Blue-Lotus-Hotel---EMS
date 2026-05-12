@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Log;
 
 class PayslipController extends Controller
 {
-    public function __construct(private PayslipService $payslipService) {}
+    public function __construct(private PayslipService $payslipService)
+    {
+    }
 
     private function ok(mixed $data, string $message = ''): JsonResponse
     {
@@ -42,10 +44,10 @@ class PayslipController extends Controller
     public function createPeriod(Request $request): JsonResponse
     {
         $v = $request->validate([
-            'type'         => 'required|in:semi_monthly,monthly',
+            'type' => 'required|in:semi_monthly,monthly',
             'period_start' => 'required|date',
-            'period_end'   => 'required|date|after:period_start',
-            'label'        => 'required|string|max:100',
+            'period_end' => 'required|date|after:period_start',
+            'label' => 'required|string|max:100',
         ]);
         $period = PayrollPeriod::create([...$v, 'status' => 'open']);
         return $this->ok($period, 'Payroll period created');
@@ -53,7 +55,7 @@ class PayslipController extends Controller
 
     public function generateNextPeriod(Request $request): JsonResponse
     {
-        $type   = $request->input('type', 'semi_monthly');
+        $type = $request->input('type', 'semi_monthly');
         $period = PayrollPeriod::generateNext($type);
         return $this->ok($period, 'Next period generated');
     }
@@ -65,7 +67,7 @@ class PayslipController extends Controller
     public function computeSingle(Request $request): JsonResponse
     {
         $v = $request->validate([
-            'employee_id'       => 'required|exists:employees,id',
+            'employee_id' => 'required|exists:employees,id',
             'payroll_period_id' => 'required|exists:payroll_periods,id',
         ]);
         $payslip = $this->payslipService->compute(
@@ -78,7 +80,7 @@ class PayslipController extends Controller
 
     public function computeAll(Request $request): JsonResponse
     {
-        $v      = $request->validate(['payroll_period_id' => 'required|exists:payroll_periods,id']);
+        $v = $request->validate(['payroll_period_id' => 'required|exists:payroll_periods,id']);
         $period = PayrollPeriod::findOrFail($v['payroll_period_id']);
 
         if (!in_array($period->status, ['open', 'computed'])) {
@@ -104,9 +106,12 @@ class PayslipController extends Controller
     {
         $q = Payslip::with(['employee', 'period'])->latest();
 
-        if ($request->filled('payroll_period_id')) $q->where('payroll_period_id', $request->payroll_period_id);
-        if ($request->filled('employee_id'))        $q->where('employee_id',       $request->employee_id);
-        if ($request->filled('status'))             $q->where('status',            $request->status);
+        if ($request->filled('payroll_period_id'))
+            $q->where('payroll_period_id', $request->payroll_period_id);
+        if ($request->filled('employee_id'))
+            $q->where('employee_id', $request->employee_id);
+        if ($request->filled('status'))
+            $q->where('status', $request->status);
 
         return $this->ok($q->paginate(50));
     }
@@ -126,13 +131,18 @@ class PayslipController extends Controller
     {
         $v = $request->validate([
             'category' => 'required|in:earning,deduction',
-            'label'    => 'required|string|max:100',
-            'amount'   => 'required|numeric|min:0.01',
-            'note'     => 'required|string|max:500',
+            'label' => 'required|string|max:100',
+            'amount' => 'required|numeric|min:0.01',
+            'note' => 'required|string|max:500',
         ]);
         return $this->ok(
             $this->payslipService->addManualAdjustment(
-                $payslip, $v['category'], $v['label'], $v['amount'], $v['note'], Auth::id()
+                $payslip,
+                $v['category'],
+                $v['label'],
+                $v['amount'],
+                $v['note'],
+                Auth::id()
             ),
             'Adjustment applied'
         );
@@ -144,9 +154,15 @@ class PayslipController extends Controller
             return $this->fail("Only computed payslips can be approved. Current: {$payslip->status}");
         }
         $payslip->update(['status' => 'approved', 'approved_by' => Auth::id(), 'approved_at' => now()]);
-        PayrollAuditLog::record('payslip', $payslip->id, 'approved', Auth::id(),
-            ['status' => 'computed'], ['status' => 'approved'],
-            "Payslip approved for {$payslip->employee->full_name}");
+        PayrollAuditLog::record(
+            'payslip',
+            $payslip->id,
+            'approved',
+            Auth::id(),
+            ['status' => 'computed'],
+            ['status' => 'approved'],
+            "Payslip approved for {$payslip->employee->full_name}"
+        );
         return $this->ok($payslip->fresh(), 'Payslip approved');
     }
 
@@ -157,10 +173,18 @@ class PayslipController extends Controller
         }
         $payslip->update(['status' => 'paid']);
         $this->applyLoanDeductions($payslip);
-        PayrollAuditLog::record('payslip', $payslip->id, 'paid', Auth::id(),
-            [], ['net_pay' => $payslip->net_pay],
-            '₱' . number_format($payslip->net_pay, 2) . " disbursed to {$payslip->employee->full_name}");
-        return $this->ok($payslip->fresh(), 'Marked as paid');
+        PayrollAuditLog::record(
+            'payslip',
+            $payslip->id,
+            'paid',
+            Auth::id(),
+            [],
+            ['net_pay' => $payslip->net_pay],
+            '₱' . number_format($payslip->net_pay, 2) . " disbursed to {$payslip->employee->full_name}"
+        );
+
+        // Load relationships before returning
+        return $this->ok($payslip->fresh()->load(['employee', 'period']), 'Marked as paid');
     }
 
     public function approveAll(int $periodId): JsonResponse
@@ -179,9 +203,15 @@ class PayslipController extends Controller
             $period->update(['status' => 'approved']);
         }
 
-        PayrollAuditLog::record('payroll_period', $periodId, 'approved', Auth::id(),
-            [], ['approved_count' => $count],
-            "Bulk approved {$count} payslips for {$period->label}");
+        PayrollAuditLog::record(
+            'payroll_period',
+            $periodId,
+            'approved',
+            Auth::id(),
+            [],
+            ['approved_count' => $count],
+            "Bulk approved {$count} payslips for {$period->label}"
+        );
 
         return $this->ok(['count' => $count], "{$count} payslips approved");
     }
@@ -204,8 +234,15 @@ class PayslipController extends Controller
 
             $filename = 'payslip_' . $payslip->employee->id . '_' . preg_replace('/[^a-zA-Z0-9_\-]/', '_', $payslip->period->label) . '.pdf';
 
-            PayrollAuditLog::record('payslip', $payslip->id, 'pdf_generated', Auth::id(),
-                [], [], "PDF generated for {$payslip->employee->full_name}");
+            PayrollAuditLog::record(
+                'payslip',
+                $payslip->id,
+                'pdf_generated',
+                Auth::id(),
+                [],
+                [],
+                "PDF generated for {$payslip->employee->full_name}"
+            );
 
             return $pdf->download($filename);
         } catch (\Throwable $e) {
@@ -225,25 +262,25 @@ class PayslipController extends Controller
      */
     public function summaryPdf(int $periodId): \Symfony\Component\HttpFoundation\Response
     {
-        $period   = PayrollPeriod::with('payslips.employee')->findOrFail($periodId);
+        $period = PayrollPeriod::with('payslips.employee')->findOrFail($periodId);
         $payslips = $period->payslips;
 
-        $totalGross      = round($payslips->sum('gross_pay'), 2);
+        $totalGross = round($payslips->sum('gross_pay'), 2);
         $totalDeductions = round($payslips->sum('total_deductions'), 2);
-        $totalNet        = round($payslips->sum('net_pay'), 2);
-        $totalSSS        = round($payslips->sum('sss_employee') + $payslips->sum('sss_employer'), 2);
-        $totalPH         = round($payslips->sum('philhealth_employee') + $payslips->sum('philhealth_employer'), 2);
-        $totalPIBIG      = round($payslips->sum('pagibig_employee') + $payslips->sum('pagibig_employer'), 2);
-        $totalBIR        = round($payslips->sum('bir_withholding_tax'), 2);
+        $totalNet = round($payslips->sum('net_pay'), 2);
+        $totalSSS = round($payslips->sum('sss_employee') + $payslips->sum('sss_employer'), 2);
+        $totalPH = round($payslips->sum('philhealth_employee') + $payslips->sum('philhealth_employer'), 2);
+        $totalPIBIG = round($payslips->sum('pagibig_employee') + $payslips->sum('pagibig_employer'), 2);
+        $totalBIR = round($payslips->sum('bir_withholding_tax'), 2);
 
         $html = $this->buildSummaryHtml($period, $payslips, [
-            'total_gross'      => $totalGross,
+            'total_gross' => $totalGross,
             'total_deductions' => $totalDeductions,
-            'total_net'        => $totalNet,
-            'total_sss'        => $totalSSS,
+            'total_net' => $totalNet,
+            'total_sss' => $totalSSS,
             'total_philhealth' => $totalPH,
-            'total_pagibig'    => $totalPIBIG,
-            'total_bir'        => $totalBIR,
+            'total_pagibig' => $totalPIBIG,
+            'total_bir' => $totalBIR,
         ]);
 
         $filename = 'payroll_summary_' . preg_replace('/[^a-zA-Z0-9_\-]/', '_', $period->label) . '.pdf';
@@ -256,7 +293,7 @@ class PayslipController extends Controller
             // DomPDF not installed — stream HTML as a downloadable file
             // The browser will prompt "open with" or save; works as a printable report
             return response($html, 200, [
-                'Content-Type'        => 'text/html; charset=utf-8',
+                'Content-Type' => 'text/html; charset=utf-8',
                 'Content-Disposition' => 'attachment; filename="' . str_replace('.pdf', '.html', $filename) . '"',
             ]);
         }
@@ -286,9 +323,9 @@ class PayslipController extends Controller
             </tr>";
         }
 
-        $label  = htmlspecialchars($period->label);
-        $genAt  = now()->format('F d, Y  H:i');
-        $count  = $payslips->count();
+        $label = htmlspecialchars($period->label);
+        $genAt = now()->format('F d, Y  H:i');
+        $count = $payslips->count();
 
         return <<<HTML
 <!DOCTYPE html>
@@ -408,19 +445,25 @@ HTML;
             Mail::raw(
                 "Dear {$payslip->employee->first_name} {$payslip->employee->last_name},\n\n" .
                 "Your payslip for {$payslip->period->label} is ready.\n\n" .
-                "Gross Pay:    ₱" . number_format($payslip->gross_pay, 2)       . "\n" .
+                "Gross Pay:    ₱" . number_format($payslip->gross_pay, 2) . "\n" .
                 "Deductions:   ₱" . number_format($payslip->total_deductions, 2) . "\n" .
-                "Net Pay:      ₱" . number_format($payslip->net_pay, 2)          . "\n\n" .
+                "Net Pay:      ₱" . number_format($payslip->net_pay, 2) . "\n\n" .
                 "Thank you,\nBlue Lotus HR Team",
                 fn($m) => $m->to($payslip->employee->email, $payslip->employee->full_name)
-                            ->subject("Your Payslip — {$payslip->period->label}")
+                    ->subject("Your Payslip — {$payslip->period->label}")
             );
 
             $payslip->update(['email_sent' => true, 'email_sent_at' => now()]);
 
-            PayrollAuditLog::record('payslip', $payslip->id, 'email_sent', Auth::id(),
-                [], ['email' => $payslip->employee->email],
-                "Payslip emailed to {$payslip->employee->email}");
+            PayrollAuditLog::record(
+                'payslip',
+                $payslip->id,
+                'email_sent',
+                Auth::id(),
+                [],
+                ['email' => $payslip->employee->email],
+                "Payslip emailed to {$payslip->employee->email}"
+            );
 
             return $this->ok(null, 'Email sent successfully');
         } catch (\Throwable $e) {
@@ -434,7 +477,7 @@ HTML;
      */
     public function bulkSendEmail(Request $request): JsonResponse
     {
-        $v      = $request->validate(['payroll_period_id' => 'required|exists:payroll_periods,id']);
+        $v = $request->validate(['payroll_period_id' => 'required|exists:payroll_periods,id']);
         $period = PayrollPeriod::findOrFail($v['payroll_period_id']);
 
         $payslips = Payslip::where('payroll_period_id', $period->id)
@@ -442,7 +485,9 @@ HTML;
             ->with(['employee', 'period'])
             ->get();
 
-        $sent = 0; $failed = 0; $errors = [];
+        $sent = 0;
+        $failed = 0;
+        $errors = [];
 
         foreach ($payslips as $payslip) {
             try {
@@ -456,7 +501,7 @@ HTML;
                     "Your payslip for {$payslip->period->label} is ready.\n" .
                     "Net Pay: ₱" . number_format($payslip->net_pay, 2) . "\n\nBlue Lotus HR",
                     fn($m) => $m->to($payslip->employee->email, $payslip->employee->full_name)
-                                ->subject("Your Payslip — {$payslip->period->label}")
+                        ->subject("Your Payslip — {$payslip->period->label}")
                 );
                 $payslip->update(['email_sent' => true, 'email_sent_at' => now()]);
                 $sent++;
@@ -478,24 +523,24 @@ HTML;
 
     public function summary(Request $request): JsonResponse
     {
-        $v        = $request->validate(['payroll_period_id' => 'required|exists:payroll_periods,id']);
-        $period   = PayrollPeriod::with('payslips.employee')->findOrFail($v['payroll_period_id']);
+        $v = $request->validate(['payroll_period_id' => 'required|exists:payroll_periods,id']);
+        $period = PayrollPeriod::with('payslips.employee')->findOrFail($v['payroll_period_id']);
         $payslips = $period->payslips;
 
         return $this->ok([
-            'period'                    => $period,
-            'total_employees'           => $payslips->count(),
-            'total_gross'               => round($payslips->sum('gross_pay'), 2),
-            'total_deductions'          => round($payslips->sum('total_deductions'), 2),
-            'total_net'                 => round($payslips->sum('net_pay'), 2),
-            'total_sss_employee'        => round($payslips->sum('sss_employee'), 2),
-            'total_sss_employer'        => round($payslips->sum('sss_employer'), 2),
+            'period' => $period,
+            'total_employees' => $payslips->count(),
+            'total_gross' => round($payslips->sum('gross_pay'), 2),
+            'total_deductions' => round($payslips->sum('total_deductions'), 2),
+            'total_net' => round($payslips->sum('net_pay'), 2),
+            'total_sss_employee' => round($payslips->sum('sss_employee'), 2),
+            'total_sss_employer' => round($payslips->sum('sss_employer'), 2),
             'total_philhealth_employee' => round($payslips->sum('philhealth_employee'), 2),
             'total_philhealth_employer' => round($payslips->sum('philhealth_employer'), 2),
-            'total_pagibig_employee'    => round($payslips->sum('pagibig_employee'), 2),
-            'total_pagibig_employer'    => round($payslips->sum('pagibig_employer'), 2),
-            'total_bir'                 => round($payslips->sum('bir_withholding_tax'), 2),
-            'by_department'             => $payslips->groupBy(fn($p) => $p->employee->department ?? 'Unknown')
+            'total_pagibig_employee' => round($payslips->sum('pagibig_employee'), 2),
+            'total_pagibig_employer' => round($payslips->sum('pagibig_employer'), 2),
+            'total_bir' => round($payslips->sum('bir_withholding_tax'), 2),
+            'by_department' => $payslips->groupBy(fn($p) => $p->employee->department ?? 'Unknown')
                 ->map(fn($g) => ['count' => $g->count(), 'gross' => round($g->sum('gross_pay'), 2), 'net' => round($g->sum('net_pay'), 2)]),
         ]);
     }
@@ -504,14 +549,17 @@ HTML;
     {
         $q = PayrollAuditLog::with('performer')->orderBy('created_at', 'desc');
 
-        if ($request->filled('entity_type'))       $q->where('entity_type', $request->entity_type);
-        if ($request->filled('entity_id'))         $q->where('entity_id',   $request->entity_id);
+        if ($request->filled('entity_type'))
+            $q->where('entity_type', $request->entity_type);
+        if ($request->filled('entity_id'))
+            $q->where('entity_id', $request->entity_id);
         if ($request->filled('payroll_period_id')) {
             $ids = Payslip::where('payroll_period_id', $request->payroll_period_id)->pluck('id');
             $pid = $request->payroll_period_id;
-            $q->where(fn($x) =>
+            $q->where(
+                fn($x) =>
                 $x->where(fn($a) => $a->where('entity_type', 'payslip')->whereIn('entity_id', $ids))
-                  ->orWhere(fn($b) => $b->where('entity_type', 'payroll_period')->where('entity_id', $pid))
+                    ->orWhere(fn($b) => $b->where('entity_type', 'payroll_period')->where('entity_id', $pid))
             );
         }
 
