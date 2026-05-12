@@ -114,7 +114,7 @@ export function EmployeeTable({
         <div className="flex justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      ) : employees.length === 0 ? (
+      ) : visibleEmployees.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-20">
           <Users className="h-10 w-10 text-muted-foreground/40 mb-3" />
           <p className="font-medium text-muted-foreground">No employees found</p>

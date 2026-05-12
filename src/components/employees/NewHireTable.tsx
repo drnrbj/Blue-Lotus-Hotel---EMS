@@ -292,7 +292,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: New
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button className="bg-gray-200" variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={submitting} className="bg-green-600 hover:bg-green-700">
             {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Complete & Transfer

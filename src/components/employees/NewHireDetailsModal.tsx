@@ -197,12 +197,11 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
     <Dialog open={open} onOpenChange={v => !loading && !v && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5 text-green-600" />
+          <DialogTitle className="text-2xl font-semibold">
             Complete Employee Details — Transfer to Employees
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Fill in all required fields before transferring. A login account will be created automatically.
+            Fill in all required fields before transferring.
           </p>
         </DialogHeader>
 
@@ -349,9 +348,6 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                   </div>
                   <Field label="Reporting Manager" field="reporting_manager" form={form} onChange={handleChange} placeholder="Direct supervisor name" />
                 </div>
-                <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
-                  Login: <strong>{form.email || "—"}</strong> / password: <strong>Employee@123</strong>
-                </div>
               </TabsContent>
 
               <TabsContent value="govids" className="rounded-xl border p-5 space-y-3">
@@ -377,15 +373,15 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
-          <Button
+          <Button className="bg-gray-200" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
+          <Button 
             onClick={handleTransfer}
             disabled={!canTransfer || loading || fetching}
-            className={cn("gap-2 min-w-[160px]", canTransfer ? "bg-green-600 hover:bg-green-700 text-white" : "opacity-60")}
+            className={cn("gap-2 min-w-[160px]", canTransfer ? "bg-[#2B3588] hover:bg-blue-700" : "opacity-60")}
           >
             {loading
               ? <><Loader2 className="h-4 w-4 animate-spin" /> Transferring…</>
-              : <><UserPlus className="h-4 w-4" /> Transfer to Employees</>
+              : <>Transfer to Employees</>
             }
           </Button>
         </DialogFooter>

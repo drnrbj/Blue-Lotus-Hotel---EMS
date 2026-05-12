@@ -55,11 +55,25 @@ export function NewHireTab() {
     try {
       const res = await authFetch("/api/new-hires");
       const body = await res.json();
-      const data = body.data;
-      setHires(Array.isArray(data) ? data : (data?.data ?? []));
-    } catch {
+      console.log("New hires response:", body); // ← check this in browser console
+
+      // Handle all possible response shapes
+      let data = [];
+      if (Array.isArray(body)) {
+        data = body;
+      } else if (Array.isArray(body.data)) {
+        data = body.data;
+      } else if (Array.isArray(body.data?.data)) {
+        data = body.data.data; // paginated
+      }
+
+      setHires(data);
+    } catch (e) {
+      console.error("Failed to fetch new hires:", e);
       setHires([]);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchHires(); }, []);
@@ -93,11 +107,6 @@ export function NewHireTab() {
   return (
     <>
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground px-1">
-          <AlertCircle className="h-4 w-4 text-amber-500" />
-          Click an employee's name or the Transfer button to fill in required details before transferring.
-        </div>
-
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border">

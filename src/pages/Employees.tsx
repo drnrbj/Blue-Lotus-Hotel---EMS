@@ -119,7 +119,7 @@ export default function Employees() {
         <div>
           <h1 className="font-display text-3xl font-semibold text-foreground">Employees</h1>
           <p className="text-muted-foreground mt-1">
-            {employees.length} active employee{employees.length !== 1 ? "s" : ""}
+            {employees.filter(e => e.status !== "onboarding").length} active employee{employees.filter(e => e.status !== "onboarding").length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -128,7 +128,6 @@ export default function Employees() {
         <TabsList>
           <TabsTrigger value="directory">
             Employee Directory
-            <Badge className="ml-2 text-xs bg-blue-100 text-blue-700 border-0">{employees.length}</Badge>
           </TabsTrigger>
           {isHR && <TabsTrigger value="new-hires">New Hires</TabsTrigger>}
           {isHR && (
