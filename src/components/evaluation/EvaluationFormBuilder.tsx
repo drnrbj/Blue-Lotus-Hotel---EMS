@@ -1,27 +1,27 @@
 // src/components/evaluation/EvaluationFormBuilder.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, X, GripVertical, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Plus, X, GripVertical, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authFetch } from "@/hooks/api";
 import type { EvaluationSection, EvaluationQuestion, LikertOption, CreateFormData, EvaluationForm } from "@/hooks/useEvaluation";
 import { cn } from "@/lib/utils";
-
+ 
 interface Props {
-  onSave:      (data: CreateFormData) => Promise<void>;
-  onCancel:    () => void;
+  onSave:       (data: CreateFormData) => Promise<void>;
+  onCancel:     () => void;
   initialData?: EvaluationForm;
 }
-
+ 
 const DEPARTMENTS = [
   "Human Resources","Finance","Front Office","Food & Beverage",
   "Housekeeping","Rooms Division","Security","Engineering",
   "Sales & Marketing","All Departments",
 ];
-
+ 
 const DEFAULT_LIKERT: LikertOption[] = [
   { label: "Excellent", value: 5, order: 0 },
   { label: "Very Good", value: 4, order: 1 },
@@ -29,11 +29,24 @@ const DEFAULT_LIKERT: LikertOption[] = [
   { label: "Fair",      value: 2, order: 3 },
   { label: "Poor",      value: 1, order: 4 },
 ];
-
+ 
 interface HRUser { id: number; name: string; email: string; role: string; }
-
+ 
+// ─── Validation error shape ───────────────────────────────────────────────────
+interface ValidationErrors {
+  title?: string;
+  department?: string;
+  evaluators?: string;
+  questions?: string;
+}
+ 
 export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) {
   const { toast }                     = useToast();
+  const titleRef                      = useRef<HTMLInputElement>(null);
+  const departmentRef                 = useRef<HTMLDivElement>(null);
+  const evaluatorsRef                 = useRef<HTMLDivElement>(null);
+  const questionsRef                  = useRef<HTMLDivElement>(null);
+ 
   const [title,      setTitle]        = useState(initialData?.title ?? "");
   const [department, setDepartment]   = useState(initialData?.department ?? "");
   const [dateStart,  setDateStart]    = useState(initialData?.date_start?.slice(0,10) ?? "");
@@ -42,7 +55,8 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
   const [hrUsers,    setHrUsers]      = useState<HRUser[]>([]);
   const [showUserDD, setShowUserDD]   = useState(false);
   const [saving,     setSaving]       = useState(false);
-
+  const [errors,     setErrors]       = useState<ValidationErrors>({});
+ 
   const [sections, setSections] = useState<EvaluationSection[]>(() => {
     const existing = initialData?.sections?.filter(s => s.type === "likert") ?? [];
     if (existing.length) return existing.map((s,i) => ({
@@ -51,11 +65,10 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
     }));
     return [{ title:"", description:"", type:"likert", likert_options:[...DEFAULT_LIKERT], questions:[], order:0 }];
   });
-
+ 
   const [openQs, setOpenQs] = useState<EvaluationQuestion[]>(() =>
     initialData?.sections?.find(s => s.type === "open_ended")?.questions ?? []);
-
-  // FIX #12: fetch only HR-role employees as evaluator candidates
+ 
   useEffect(() => {
     authFetch("/api/employees?role=HR&status=active")
       .then(r => r.json())
@@ -72,90 +85,123 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
       })
       .catch(() => setHrUsers([]));
   }, []);
-
+ 
+  // Clear individual error as soon as the field is fixed
+  useEffect(() => { if (title.trim())       setErrors(p => ({ ...p, title: undefined })); },      [title]);
+  useEffect(() => { if (department)         setErrors(p => ({ ...p, department: undefined })); }, [department]);
+  useEffect(() => { if (evaluators.length)  setErrors(p => ({ ...p, evaluators: undefined })); }, [evaluators]);
+ 
   // ─── Section helpers ──────────────────────────────────────────────────────
-
+ 
   const addSection = () =>
     setSections(p => [...p, { title:"", description:"", type:"likert", order:p.length, likert_options:[...DEFAULT_LIKERT], questions:[] }]);
-
+ 
   const removeSection = (i: number) =>
     setSections(p => p.filter((_,j) => j !== i));
-
+ 
   const setSection = (i: number, field: keyof EvaluationSection, value: unknown) =>
     setSections(p => p.map((s,j) => j === i ? { ...s, [field]: value } : s));
-
+ 
   const addQuestion = (si: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, questions: [...s.questions, { text:"", type:"likert" as const, order: s.questions.length }],
     } : s));
-
+ 
   const setQuestion = (si: number, qi: number, text: string) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, questions: s.questions.map((q,j) => j === qi ? { ...q, text } : q),
     } : s));
-
+ 
   const removeQuestion = (si: number, qi: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, questions: s.questions.filter((_,j) => j !== qi),
     } : s));
-
+ 
   const addColumn = (si: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, likert_options: [...s.likert_options, { label:"New", value: s.likert_options.length + 1, order: s.likert_options.length }],
     } : s));
-
+ 
   const setColumn = (si: number, oi: number, label: string) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, likert_options: s.likert_options.map((o,j) => j === oi ? { ...o, label } : o),
     } : s));
-
+ 
   const removeColumn = (si: number, oi: number) =>
     setSections(p => p.map((s,i) => i === si ? {
       ...s, likert_options: s.likert_options.filter((_,j) => j !== oi),
     } : s));
-
+ 
+  // ─── Validation ───────────────────────────────────────────────────────────
+ 
+  const validate = (): ValidationErrors => {
+    const errs: ValidationErrors = {};
+    if (!title.trim())        errs.title      = "Evaluation name is required.";
+    if (!department)          errs.department = "Please select a department.";
+    if (evaluators.length === 0) errs.evaluators = "Select at least one HR evaluator.";
+ 
+    const hasLikertQ  = sections.some(s => s.questions.some(q => q.text.trim()));
+    const hasOpenQ    = openQs.some(q => q.text.trim());
+    if (!hasLikertQ && !hasOpenQ)
+      errs.questions = "Add at least one question before sending.";
+ 
+    return errs;
+  };
+ 
   // ─── Submit ───────────────────────────────────────────────────────────────
-
+ 
   const submit = async (asDraft: boolean) => {
-    if (!title.trim())  { toast({ title:"Enter evaluation name",   variant:"destructive"}); return; }
-    if (!department)    { toast({ title:"Select a department",     variant:"destructive"}); return; }
-    if (evaluators.length === 0 && !asDraft) {
-      toast({ title:"Select at least one HR evaluator", variant:"destructive"}); return;
+    if (!asDraft) {
+      const errs = validate();
+      if (Object.keys(errs).length > 0) {
+        setErrors(errs);
+        // Scroll to the first offending field
+        if (errs.title)      titleRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
+        else if (errs.department) departmentRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
+        else if (errs.evaluators) evaluatorsRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
+        else if (errs.questions)  questionsRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
+        return;
+      }
+    } else {
+      if (!title.trim()) {
+        setErrors({ title: "Evaluation name is required." });
+        titleRef.current?.scrollIntoView({ behavior:"smooth", block:"center" });
+        return;
+      }
     }
-
+ 
     const cleanSections: EvaluationSection[] = sections
       .filter(s => s.title.trim() && s.questions.some(q => q.text.trim()))
       .map(s => ({ ...s, questions: s.questions.filter(q => q.text.trim()) }));
-
+ 
     const cleanOpen = openQs.filter(q => q.text.trim());
-
-    if (!asDraft && cleanSections.length === 0 && cleanOpen.length === 0) {
-      toast({ title:"Add at least one question before sending", variant:"destructive"}); return;
-    }
-
+ 
     const allSections: EvaluationSection[] = [
       ...cleanSections,
-      ...(cleanOpen.length ? [{ title:"Feedback Questions", description:"", type:"open_ended" as const, likert_options:[], questions:cleanOpen, order:cleanSections.length }] : []),
+      ...(cleanOpen.length ? [{
+        title: "Feedback Questions", description: "", type: "open_ended" as const,
+        likert_options: [], questions: cleanOpen, order: cleanSections.length,
+      }] : []),
     ];
-
+ 
     setSaving(true);
     try {
       await onSave({
         title, department,
-        deadline:   deadline   || undefined,
-        date_start: dateStart  || undefined,
-        sections:   allSections,
+        deadline:      deadline   || undefined,
+        date_start:    dateStart  || undefined,
+        sections:      allSections,
         evaluator_ids: evaluators,
         save_as_draft: asDraft,
       });
     } finally { setSaving(false); }
   };
-
-  const canSend = title.trim() && department && evaluators.length > 0;
-
+ 
+  const hasErrors = Object.keys(errors).length > 0;
+ 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-
+ 
       {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={onCancel} className="text-muted-foreground hover:text-foreground">
@@ -163,32 +209,94 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
         </button>
         <h1 className="text-xl font-bold">{initialData ? "Edit Evaluation" : "Create Evaluation"}</h1>
       </div>
-
+ 
+      {/* ── Validation warning banner ─────────────────────────────────────── */}
+      {hasErrors && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex gap-3 items-start">
+          <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-red-700">
+              Evaluation form was not created. Please fix the following:
+            </p>
+            <ul className="text-sm text-red-600 list-disc list-inside space-y-0.5">
+              {Object.values(errors).map((msg, i) => (
+                <li key={i}>{msg}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+ 
       {/* Basic info */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+ 
+        {/* Title */}
         <div>
-          <label className="text-sm font-medium">Evaluation Name <span className="text-red-500">*</span></label>
-          <Input className="mt-1" value={title} onChange={e => setTitle(e.target.value)}
-            placeholder="e.g., Q4 2024 Performance Review" />
+          <label className="text-sm font-medium">
+            Evaluation Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            ref={titleRef}
+            className={cn(
+              "mt-1 flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm",
+              "ring-offset-background placeholder:text-muted-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              errors.title
+                ? "border-red-400 bg-red-50 focus-visible:ring-red-400"
+                : "border-input"
+            )}
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="e.g., Q4 2024 Performance Review"
+          />
+          {errors.title && (
+            <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" /> {errors.title}
+            </p>
+          )}
         </div>
+ 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium">Department <span className="text-red-500">*</span></label>
+ 
+          {/* Department */}
+          <div ref={departmentRef}>
+            <label className="text-sm font-medium">
+              Department <span className="text-red-500">*</span>
+            </label>
             <Select value={department} onValueChange={setDepartment}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="Select department" /></SelectTrigger>
+              <SelectTrigger className={cn(
+                "mt-1",
+                errors.department && "border-red-400 bg-red-50 focus:ring-red-400"
+              )}>
+                <SelectValue placeholder="Select department" />
+              </SelectTrigger>
               <SelectContent>
                 {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
+            {errors.department && (
+              <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" /> {errors.department}
+              </p>
+            )}
           </div>
-
-          {/* FIX #12: evaluator dropdown only shows HR-role employees */}
-          <div className="relative">
+ 
+          {/* Evaluators */}
+          <div className="relative" ref={evaluatorsRef}>
             <label className="text-sm font-medium">
               Evaluators (HR only) <span className="text-red-500">*</span>
             </label>
-            <button type="button" onClick={() => setShowUserDD(p => !p)}
-              className="mt-1 flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm">
+            <button
+              type="button"
+              onClick={() => setShowUserDD(p => !p)}
+              className={cn(
+                "mt-1 flex h-10 w-full items-center justify-between rounded-md border px-3 text-sm",
+                "bg-background transition-colors",
+                errors.evaluators
+                  ? "border-red-400 bg-red-50"
+                  : "border-input hover:border-input"
+              )}
+            >
               <span className={evaluators.length === 0 ? "text-muted-foreground" : ""}>
                 {evaluators.length === 0 ? "Select HR evaluators" : `${evaluators.length} selected`}
               </span>
@@ -196,7 +304,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                 ? <ChevronUp className="h-4 w-4 text-muted-foreground" />
                 : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
             </button>
-
+ 
             {showUserDD && (
               <div className="absolute z-20 mt-1 w-full rounded-md border border-border bg-card shadow-lg max-h-52 overflow-y-auto">
                 {hrUsers.length === 0 ? (
@@ -217,7 +325,13 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                 ))}
               </div>
             )}
-
+ 
+            {errors.evaluators && (
+              <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" /> {errors.evaluators}
+              </p>
+            )}
+ 
             {evaluators.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {evaluators.map(id => {
@@ -235,21 +349,19 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
             )}
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium">Start Date</label>
-            <Input type="date" className="mt-1" value={dateStart}
-              onChange={e => setDateStart(e.target.value)} />
+            <Input type="date" className="mt-1" value={dateStart} onChange={e => setDateStart(e.target.value)} />
           </div>
           <div>
             <label className="text-sm font-medium">Deadline</label>
-            <Input type="date" className="mt-1" value={deadline}
-              onChange={e => setDeadline(e.target.value)} />
+            <Input type="date" className="mt-1" value={deadline} onChange={e => setDeadline(e.target.value)} />
           </div>
         </div>
       </div>
-
+ 
       {/* Likert sections */}
       {sections.map((section, si) => (
         <div key={si} className="rounded-xl border border-border bg-card p-5 space-y-3">
@@ -276,8 +388,14 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
               )}
             </div>
           </div>
-
-          <div className="overflow-x-auto rounded-lg border border-border">
+ 
+          <div
+            ref={si === 0 ? questionsRef : undefined}
+            className={cn(
+              "overflow-x-auto rounded-lg border",
+              errors.questions ? "border-red-300" : "border-border"
+            )}
+          >
             <table className="w-full text-sm min-w-[500px]">
               <thead className="bg-muted/30">
                 <tr>
@@ -304,8 +422,13 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                 {section.questions.length === 0 && (
                   <tr>
                     <td colSpan={section.likert_options.length + 1}
-                      className="px-3 py-4 text-center text-xs text-muted-foreground">
-                      No questions yet — click "+ Add Question" below
+                      className={cn(
+                        "px-3 py-4 text-center text-xs",
+                        errors.questions ? "text-red-400" : "text-muted-foreground"
+                      )}>
+                      {errors.questions
+                        ? "⚠ No questions yet — add at least one question before sending"
+                        : "No questions yet — click \"+ Add Question\" below"}
                     </td>
                   </tr>
                 )}
@@ -315,7 +438,10 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                       <div className="flex items-center gap-2">
                         <GripVertical className="h-3 w-3 text-muted-foreground/30 shrink-0" />
                         <input value={q.text}
-                          onChange={e => setQuestion(si, qi, e.target.value)}
+                          onChange={e => {
+                            setQuestion(si, qi, e.target.value);
+                            setErrors(p => ({ ...p, questions: undefined }));
+                          }}
                           className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
                           placeholder="Enter question…" />
                         <button onClick={() => removeQuestion(si, qi)}
@@ -342,11 +468,11 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           </div>
         </div>
       ))}
-
+ 
       <Button variant="outline" className="w-full border-dashed gap-2" onClick={addSection}>
         <Plus className="h-4 w-4" /> Add Likert Section
       </Button>
-
+ 
       {/* Open-ended section */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-3">
         <div className="flex items-center justify-between">
@@ -361,7 +487,10 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
         ) : openQs.map((q, i) => (
           <div key={i} className="group flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
             <input value={q.text}
-              onChange={e => setOpenQs(p => p.map((x,j) => j === i ? { ...x, text: e.target.value } : x))}
+              onChange={e => {
+                setOpenQs(p => p.map((x,j) => j === i ? { ...x, text: e.target.value } : x));
+                setErrors(p => ({ ...p, questions: undefined }));
+              }}
               className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-muted-foreground"
               placeholder="Enter open-ended question…" />
             <button onClick={() => setOpenQs(p => p.filter((_,j) => j !== i))}
@@ -371,15 +500,26 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           </div>
         ))}
       </div>
-
+ 
       {/* Footer */}
       <div className="flex justify-end gap-3 pb-8">
-        <Button variant="outline" className="bg-gray-200 hover:bg-gray-300" onClick={onCancel}>Cancel</Button>
+        <Button variant="outline" className="bg-gray-200 hover:bg-gray-300" onClick={onCancel}>
+          Cancel
+        </Button>
         <Button variant="outline" onClick={() => submit(true)} disabled={saving || !title.trim()}>
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save as Draft
         </Button>
-        <Button onClick={() => submit(false)} disabled={saving || !canSend}
-          className="bg-[#2B3588] hover:bg-blue-700">
+        {/* Always enabled — validation runs on click and shows inline errors */}
+        <Button
+          onClick={() => submit(false)}
+          disabled={saving}
+          className={cn(
+            "transition-colors",
+            hasErrors
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-[#2B3588] hover:bg-blue-700"
+          )}
+        >
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {initialData ? "Update & Send" : "Send to Evaluators"}
         </Button>
