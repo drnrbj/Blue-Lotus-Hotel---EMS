@@ -65,6 +65,16 @@ export default function Employees() {
       let updatedEmployee: Employee | null = null;
 
       if (isAdmin && editEmp) {
+        // 🚫 Prevent same role update
+        if (editEmp.role === data.role) {
+          toast({
+            title: `Role is already set to ${data.role}.`,
+            variant: "destructive", // or "default" if you want softer UX
+          });
+          setSaving(false);
+          return;
+        }
+
         const res = await authFetch(`/api/employees/${editEmp.id}/role`, {
           method: "PATCH",
           body: JSON.stringify({ role: data.role }),
@@ -72,7 +82,7 @@ export default function Employees() {
         const body = await res.json();
         if (!res.ok) throw new Error(body.message ?? "Failed");
         updatedEmployee = body.data;
-        toast({ title: "System role updated successfully", variant: "success" });
+        toast({ title: "Role updated successfully", variant: "success" });
       } else if (editEmp) {
         updatedEmployee = await updateEmployee(editEmp.id, data);
         toast({ title: "Employee updated successfully", variant: "success" });

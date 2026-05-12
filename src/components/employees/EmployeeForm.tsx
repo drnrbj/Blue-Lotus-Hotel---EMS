@@ -128,8 +128,8 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
     middle_name: employee?.middle_name ?? "",
     name_extension: employee?.name_extension ?? "",
     date_of_birth: employee?.date_of_birth
-  ? new Date(employee.date_of_birth).toISOString().split("T")[0]
-  : "",
+      ? new Date(employee.date_of_birth).toISOString().split("T")[0]
+      : "",
     email: employee?.email ?? "",
     phone_number: employee?.phone_number ?? "",
     home_address: employee?.home_address ?? "",
@@ -143,7 +143,9 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
     bank_name: employee?.bank_name ?? "",
     account_name: employee?.account_name ?? "",
     account_number: employee?.account_number ?? "",
-    start_date: employee?.start_date ?? "",
+    start_date: employee?.start_date
+      ? new Date(employee.start_date).toISOString().split("T")[0]
+      : "",
     department: employee?.department ?? "",
     job_category: employee?.job_category ?? "",
     employment_type: employee?.employment_type ?? "probationary",
