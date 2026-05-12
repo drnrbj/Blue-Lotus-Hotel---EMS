@@ -1145,8 +1145,18 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
 
   useEffect(() => { load(); }, []);
 
+  const [trainerError, setTrainerError] = useState(false);
+
+  // Replace the assignTrainer function
   const assignTrainer = async () => {
-    if (!selAssignment || !trainerId) return;
+    if (!selAssignment) return;
+
+    if (!trainerId) {
+      setTrainerError(true);
+      toast({ title: "Please select a trainer", variant: "destructive" });
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await authFetch(`/api/recruitment/training-assignments/${selAssignment.id}/assign-trainer`, {
@@ -1262,22 +1272,38 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
         onPageChange={setCurrentPage}
       />
 
-      <Dialog open={trainerOpen} onOpenChange={setTrainerOpen}>
+      <Dialog open={trainerOpen} onOpenChange={(open) => {
+        setTrainerOpen(open);
+        if (!open) setTrainerError(false);
+      }}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle className="text-2xl font-semibold">Assign Trainer</DialogTitle></DialogHeader>
-          <Select value={trainerId} onValueChange={setTrainerId}>
-            <SelectTrigger><SelectValue placeholder="Select Trainer" /></SelectTrigger>
-            <SelectContent>
-              {employees.map(e => (
-                <SelectItem key={e.id} value={String(e.id)}>
-                  {e.first_name} {e.last_name} — {e.department}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div>
+            <Select
+              value={trainerId}
+              onValueChange={(v) => {
+                setTrainerId(v);
+                setTrainerError(false);
+              }}
+            >
+              <SelectTrigger className={trainerError ? "border-red-500 focus-visible:ring-red-500" : ""}>
+                <SelectValue placeholder="Select Trainer *" />
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map(e => (
+                  <SelectItem key={e.id} value={String(e.id)}>
+                    {e.first_name} {e.last_name} — {e.department}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {trainerError && (
+              <p className="text-xs text-red-500 mt-1 ml-1">Please select a trainer</p>
+            )}
+          </div>
           <DialogFooter>
             <Button variant="outline" className="bg-gray-200" onClick={() => setTrainerOpen(false)}>Cancel</Button>
-            <Button className="bg-[#2B3588]" onClick={assignTrainer} disabled={saving || !trainerId}>
+            <Button className="bg-[#2B3588]" onClick={assignTrainer} disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Assign
             </Button>
           </DialogFooter>
