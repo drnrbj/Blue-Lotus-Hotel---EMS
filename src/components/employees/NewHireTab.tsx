@@ -23,8 +23,8 @@ interface NewHire {
 }
 
 const STATUS_COLORS = {
-  pending:     "bg-yellow-100 text-yellow-700",
-  complete:    "bg-green-100 text-green-700",
+  pending: "bg-yellow-100 text-yellow-700",
+  complete: "bg-green-100 text-green-700",
   transferred: "bg-blue-100 text-blue-700",
 };
 
@@ -45,15 +45,15 @@ function getCompletionPct(hire: NewHire): number {
 
 export function NewHireTab() {
   const { toast } = useToast();
-  const [hires,       setHires]       = useState<NewHire[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [modalOpen,   setModalOpen]   = useState(false);
-  const [selectedId,  setSelectedId]  = useState<number | null>(null);
+  const [hires, setHires] = useState<NewHire[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const fetchHires = async () => {
     setLoading(true);
     try {
-      const res  = await authFetch("/api/new-hires");
+      const res = await authFetch("/api/new-hires");
       const body = await res.json();
       const data = body.data;
       setHires(Array.isArray(data) ? data : (data?.data ?? []));
@@ -71,7 +71,6 @@ export function NewHireTab() {
   };
 
   const handleModalSuccess = () => {
-    toast({ title: "Success!", description: "Employee transferred and account created." });
     fetchHires();
   };
 
