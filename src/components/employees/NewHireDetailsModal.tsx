@@ -183,7 +183,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
       const txBody = await txRes.json();
       if (!txRes.ok) throw new Error(txBody.message ?? "Transfer failed");
 
-      toast({ title: "🎉 Transferred!", description: `${form.first_name} ${form.last_name} is now an active employee.` });
+      toast({ title: "Transferred!", description: `${form.first_name} ${form.last_name} is now an active employee.`, variant: "success" });
       onSuccess();
       onClose();
     } catch (e) {
@@ -356,7 +356,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                   <Field label="SSS Number" field="sss_number"        form={form} onChange={handleChange} />
                   <Field label="PhilHealth" field="philhealth_number" form={form} onChange={handleChange} />
                   <Field label="Pag-IBIG"   field="pagibig_number"    form={form} onChange={handleChange} />
-                </div>
+                </div>  
                 <p className="text-xs text-muted-foreground">Optional now, required for payroll later.</p>
               </TabsContent>
 

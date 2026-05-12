@@ -43,7 +43,7 @@ function getCompletionPct(hire: NewHire): number {
   return Math.round((filled / REQUIRED_FIELDS.length) * 100);
 }
 
-export function NewHireTab() {
+export function NewHireTab({ onTransferSuccess }: { onTransferSuccess: () => void }) {
   const { toast } = useToast();
   const [hires, setHires] = useState<NewHire[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,8 @@ export function NewHireTab() {
   };
 
   const handleModalSuccess = () => {
-    fetchHires();
+    fetchHires();            
+    onTransferSuccess();    
   };
 
   if (loading) {

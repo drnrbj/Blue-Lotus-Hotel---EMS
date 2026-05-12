@@ -159,7 +159,7 @@ export default function Employees() {
         {/* New Hires — Admin only */}
         {isHR && (
           <TabsContent value="new-hires" className="mt-6">
-            <NewHireTab />
+            <NewHireTab onTransferSuccess={fetchEmployees} />
           </TabsContent>
         )}
 
