@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Users, CheckCircle, Clock, Briefcase,
   CalendarDays, UserPlus, Loader2, AlertCircle, ChevronRight,
+  DollarSign, FileText, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,11 @@ interface DashboardData {
   absent_today: number;
   pending_leaves: number;
   open_jobs: number;
+  total_payroll_this_month: number;
+  pending_payslips: number;
+  approved_payslips: number;
+  unpaid_payslips: number;
+  avg_salary: number;
   dept_headcount: { department: string; count: number }[];
   recent_hires: { id: number; full_name: string; department: string; job_category: string; start_date: string }[];
   pending_leave_list: { id: number; employee: string; leave_type: string; start_date: string; end_date: string; reason: string }[];
@@ -69,8 +75,130 @@ function Section({ title, icon: Icon, to, children }: {
   );
 }
 
+
+function AccountantDashboard() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    authFetch("/api/dashboard/stats")
+      .then(r => r.json())
+      .then(body => setData(body.data ?? body))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <DashboardLayout>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    </DashboardLayout>
+  );
+
+  if (error || !data) return (
+    <DashboardLayout>
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
+        <AlertCircle className="h-10 w-10" />
+        <p>Could not load dashboard data.</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>Retry</Button>
+      </div>
+    </DashboardLayout>
+  );
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+
+        {/* Payroll KPI cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard
+            icon={Users}       label="Total Employees"
+            value={data.total_employees ?? 0}
+            iconBg="bg-blue-100 text-blue-600"
+          />
+          <StatCard
+            icon={DollarSign}  label="Total Payroll This Month"
+            value={data.total_payroll_this_month > 0
+              ? `₱${(data.total_payroll_this_month / 1000).toFixed(1)}k`
+              : "₱0"}
+            sub="Net pay"
+            iconBg="bg-teal-100 text-teal-600"
+            to="/payroll"
+          />
+          <StatCard
+            icon={FileText}    label="Pending Payslips"
+            value={data.pending_payslips ?? 0}
+            sub={data.pending_payslips > 0 ? "Needs processing" : "All processed"}
+            iconBg={data.pending_payslips > 0 ? "bg-amber-100 text-amber-600" : "bg-muted text-muted-foreground"}
+            to="/payroll"
+          />
+          <StatCard
+            icon={CheckCircle} label="Approved Payslips"
+            value={data.approved_payslips ?? 0}
+            iconBg="bg-green-100 text-green-600"
+            to="/payroll"
+          />
+          <StatCard
+            icon={AlertCircle} label="Unpaid Payslips"
+            value={data.unpaid_payslips ?? 0}
+            iconBg={data.unpaid_payslips > 0 ? "bg-red-100 text-red-600" : "bg-muted text-muted-foreground"}
+            to="/payroll"
+          />
+          <StatCard
+            icon={TrendingUp}  label="Avg Salary"
+            value={data.avg_salary > 0
+              ? `₱${(data.avg_salary / 1000).toFixed(1)}k`
+              : "₱0"}
+            sub="Per employee"
+            iconBg="bg-purple-100 text-purple-600"
+          />
+        </div>
+
+        {/* Quick action */}
+        <div className="rounded-xl border border-border bg-card p-5">
+          <p className="text-sm font-medium mb-3">Payroll Actions</p>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/payroll">
+              <Button className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white text-sm">
+                <DollarSign className="h-4 w-4" /> Go to Payroll
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Dept headcount — useful for payroll context */}
+        {data.dept_headcount && data.dept_headcount.length > 0 && (
+          <div className="rounded-xl border border-border bg-card p-4">
+            <span className="text-sm font-medium text-foreground mb-3 block">Headcount by Department</span>
+            <div className="space-y-2">
+              {data.dept_headcount.map((dept: { department: string; count: number }) => {
+                const max = Math.max(...data.dept_headcount.map((d: { count: number }) => d.count));
+                const pct = max > 0 ? (dept.count / max) * 100 : 0;
+                return (
+                  <div key={dept.department} className="flex items-center gap-3 text-sm">
+                    <span className="w-36 text-muted-foreground truncate text-xs">{dept.department}</span>
+                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full bg-teal-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="w-6 text-right text-xs font-medium">{dept.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
+
+  if (user?.role === "Accountant") return <AccountantDashboard />;
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
