@@ -96,7 +96,7 @@ function PayslipDetailSheet({
         payslip.id, adjForm.category, adjForm.label,
         parseFloat(adjForm.amount), adjForm.note,
       );
-      toast({ title: "Adjustment added" });
+      toast({ title: "Adjustment added successfully", variant: "success" });
       setAdjOpen(false);
       setAdjForm({ category: "earning", label: "", amount: "", note: "" });
     } catch (e) {
@@ -547,8 +547,9 @@ export default function Accounting() {
     try {
       const r = await computeAll(activePeriodId);
       toast({
-        title:       "Payroll computed",
+        title:       "Payroll computed successfully",
         description: `${r.success.length} payslips generated. ${r.failed.length} failed.`,
+        variant:     "success"
       });
       fetchSummary(activePeriodId);
       fetchPayslips(activePeriodId);
@@ -562,7 +563,7 @@ export default function Accounting() {
     setApproveAllLoading(true);
     try {
       const r = await approveAll(activePeriodId);
-      toast({ title: `${r.count} payslips approved` });
+      toast({ title: `${r.count} payslips approved`, variant: "success" });
       fetchPeriods();
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
@@ -574,7 +575,7 @@ export default function Accounting() {
     setEmailing(true);
     try {
       const r = await bulkSendEmail(activePeriodId);
-      toast({ title: "Emails sent", description: `${r.sent_count} sent, ${r.failed_count} failed` });
+      toast({ title: "Emails sent", description: `${r.sent_count} sent, ${r.failed_count} failed`, variant: "success" });
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
     } finally { setEmailing(false); }
@@ -585,7 +586,7 @@ export default function Accounting() {
     try {
       const p = await generateNextPeriod("semi_monthly");
       setActivePeriodId(p.id);
-      toast({ title: `${p.label} created` });
+      toast({ title: `${p.label} created`, variant: "success" });
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
     } finally { setGenerating(false); }
@@ -597,7 +598,7 @@ export default function Accounting() {
     setDownloadingReport(true);
     try {
       await downloadSummaryPdf(activePeriodId, activePeriod?.label);
-      toast({ title: "Report downloaded" });
+      toast({ title: "Report downloaded successfully", variant: "success" });
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Download failed", variant: "destructive" });
     } finally { setDownloadingReport(false); }
@@ -709,7 +710,6 @@ export default function Accounting() {
               </Button>
             )}
 
-            {/* ✅ FIXED: uses handleDownloadReport which calls downloadSummaryPdf */}
             {activePeriodId && (
               <Button variant="outline" size="sm" className="gap-1"
                 onClick={handleDownloadReport} disabled={downloadingReport}>
