@@ -208,24 +208,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-xl font-bold">{initialData ? "Edit Evaluation" : "Create Evaluation"}</h1>
-      </div>
- 
-      {/* ── Validation warning banner ─────────────────────────────────────── */}
-      {hasErrors && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex gap-3 items-start">
-          <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-red-700">
-              Evaluation form was not created. Please fix the following:
-            </p>
-            <ul className="text-sm text-red-600 list-disc list-inside space-y-0.5">
-              {Object.values(errors).map((msg, i) => (
-                <li key={i}>{msg}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      </div>  
  
       {/* Basic info */}
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
@@ -510,15 +493,9 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save as Draft
         </Button>
         {/* Always enabled — validation runs on click and shows inline errors */}
-        <Button
+        <Button className="bg-[#2B3588]"
           onClick={() => submit(false)}
           disabled={saving}
-          className={cn(
-            "transition-colors",
-            hasErrors
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-[#2B3588] hover:bg-blue-700"
-          )}
         >
           {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {initialData ? "Update & Send" : "Send to Evaluators"}
