@@ -66,12 +66,12 @@ const DEPARTMENTS = [
 ];
 
 const JOB_CATEGORIES_BY_DEPT: Record<string, string[]> = {
-  "Front Office":      ["Front Desk Agent", "Concierge", "Reservations Agent", "Guest Relations Officer", "Bell Staff"],
-  "Housekeeping":      ["Room Attendant", "Laundry Attendant", "Housekeeping Supervisor", "Public Area Cleaner"],
-  "Food & Beverage":   ["Waiter/Waitress", "Bartender", "Chef de Partie", "Sous Chef", "Executive Chef", "Kitchen Steward"],
-  "Maintenance":       ["Maintenance Technician", "Electrician", "Plumber", "Maintenance Supervisor"],
-  "Administration":    ["HR Officer", "Accounting Staff", "Payroll Officer", "General Manager", "Department Manager", "Supervisor"],
-  "Security":          ["Security Guard", "Security Supervisor"],
+  "Front Office": ["Front Desk Agent", "Concierge", "Reservations Agent", "Guest Relations Officer", "Bell Staff"],
+  "Housekeeping": ["Room Attendant", "Laundry Attendant", "Housekeeping Supervisor", "Public Area Cleaner"],
+  "Food & Beverage": ["Waiter/Waitress", "Bartender", "Chef de Partie", "Sous Chef", "Executive Chef", "Kitchen Steward"],
+  "Maintenance": ["Maintenance Technician", "Electrician", "Plumber", "Maintenance Supervisor"],
+  "Administration": ["HR Officer", "Accounting Staff", "Payroll Officer", "General Manager", "Department Manager", "Supervisor"],
+  "Security": ["Security Guard", "Security Supervisor"],
   "Sales & Marketing": ["Sales Manager", "Marketing Officer", "Reservations Manager"],
 };
 
@@ -93,37 +93,42 @@ interface FieldProps {
   required?: boolean;
   type?: string;
   placeholder?: string;
+  attempted?: boolean;
 }
 
-function Field({ label, field, form, onChange, required, type = "text", placeholder }: FieldProps) {
+function Field({ label, field, form, onChange, required, type = "text", placeholder, attempted }: FieldProps) {
+  const isEmpty = required && (!form[field] || form[field] === "");
+  const showError = attempted && isEmpty;
   return (
     <div>
       <label className="text-xs font-medium text-foreground/80">
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <Input
-        className={cn("mt-1 h-9", required && !form[field] ? "border-amber-300" : "")}
+        className={cn("mt-1 h-9", showError ? "border-red-400 bg-red-50" : "")}
         type={type}
         value={form[field]}
         onChange={e => onChange(field, e.target.value)}
         placeholder={placeholder}
       />
+      {showError && <p className="text-red-500 text-xs mt-0.5">This field is required</p>}
     </div>
   );
 }
 
 export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Props) {
-  const { toast }               = useToast();
-  const [form, setForm]         = useState<Form>(EMPTY);
-  const [loading, setLoading]   = useState(false);
+  const { toast } = useToast();
+  const [form, setForm] = useState<Form>(EMPTY);
+  const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [tab, setTab]           = useState("personal");
+  const [tab, setTab] = useState("personal");
+  const [attempted, setAttempted] = useState(false);
 
   const handleChange = (field: keyof Form, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }));
 
-  const pct         = getPct(form);
-  const missing     = getMissing(form);
+  const pct = getPct(form);
+  const missing = getMissing(form);
   const canTransfer = pct === 100;
 
   useEffect(() => {
@@ -136,32 +141,32 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
         const nh = body.data;
         if (!nh) return;
         setForm({
-          first_name:               nh.first_name ?? "",
-          last_name:                nh.last_name ?? "",
-          middle_name:              nh.middle_name ?? "",
-          name_extension:           nh.name_extension ?? "",
-          date_of_birth:            nh.date_of_birth ?? "",
-          email:                    nh.email ?? "",
-          phone_number:             nh.phone_number ?? "",
-          home_address:             nh.home_address ?? "",
-          emergency_contact_name:   nh.emergency_contact_name ?? "",
+          first_name: nh.first_name ?? "",
+          last_name: nh.last_name ?? "",
+          middle_name: nh.middle_name ?? "",
+          name_extension: nh.name_extension ?? "",
+          date_of_birth: nh.date_of_birth ?? "",
+          email: nh.email ?? "",
+          phone_number: nh.phone_number ?? "",
+          home_address: nh.home_address ?? "",
+          emergency_contact_name: nh.emergency_contact_name ?? "",
           emergency_contact_number: nh.emergency_contact_number ?? "",
-          relationship:             nh.relationship ?? "",
-          tin:                      nh.tin ?? "",
-          sss_number:               nh.sss_number ?? "",
-          pagibig_number:           nh.pagibig_number ?? "",
-          philhealth_number:        nh.philhealth_number ?? "",
-          bank_name:                nh.bank_name ?? "",
-          account_name:             nh.account_name ?? "",
-          account_number:           nh.account_number ?? "",
-          start_date:               nh.start_date ?? "",
-          department:               nh.department ?? "",
-          job_category:             nh.job_category ?? "",
-          employment_type:          nh.employment_type ?? "probationary",
-          role:                     nh.role ?? "Employee",
-          basic_salary:             nh.basic_salary ? String(nh.basic_salary) : "",
-          reporting_manager:        nh.reporting_manager ?? "",
-          shift_sched:              nh.shift_sched ?? "morning",
+          relationship: nh.relationship ?? "",
+          tin: nh.tin ?? "",
+          sss_number: nh.sss_number ?? "",
+          pagibig_number: nh.pagibig_number ?? "",
+          philhealth_number: nh.philhealth_number ?? "",
+          bank_name: nh.bank_name ?? "",
+          account_name: nh.account_name ?? "",
+          account_number: nh.account_number ?? "",
+          start_date: nh.start_date ?? "",
+          department: nh.department ?? "",
+          job_category: nh.job_category ?? "",
+          employment_type: nh.employment_type ?? "probationary",
+          role: nh.role ?? "Employee",
+          basic_salary: nh.basic_salary ? String(nh.basic_salary) : "",
+          reporting_manager: nh.reporting_manager ?? "",
+          shift_sched: nh.shift_sched ?? "morning",
         });
       })
       .catch(() => toast({ title: "Failed to load new hire data", variant: "destructive" }))
@@ -169,25 +174,49 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
   }, [open, newHireId]);
 
   const handleTransfer = async () => {
-    if (!canTransfer || !newHireId) return;
+    setAttempted(true);
+
+    // Check only the critical required fields
+    const criticalFields: (keyof Form)[] = [
+      "first_name", "last_name", "email",
+      "department", "job_category", "start_date",
+    ];
+    const emptyCritical = criticalFields.filter(f => !form[f] || form[f] === "");
+
+    if (emptyCritical.length > 0) {
+      toast({
+        title: "Please fill up this form",
+        description: `Missing: ${emptyCritical.map(f => FIELD_LABELS[f] ?? f).join(", ")}`,
+        variant: "destructive",
+      });
+      // Navigate to the tab that has the first missing field
+      const personalFields = ["first_name", "last_name", "email", "date_of_birth", "phone_number", "home_address", "emergency_contact_name", "emergency_contact_number", "relationship"];
+      const employmentFields = ["department", "job_category", "start_date", "basic_salary", "shift_sched"];
+      if (emptyCritical.some(f => personalFields.includes(f))) setTab("personal");
+      else if (emptyCritical.some(f => employmentFields.includes(f))) setTab("employment");
+      return;
+    }
+
+    if (!newHireId) return;
     setLoading(true);
     try {
-      const saveRes  = await authFetch(`/api/new-hires/${newHireId}/complete-details`, {
+      const saveRes = await authFetch(`/api/new-hires/${newHireId}/complete-details`, {
         method: "POST",
         body: JSON.stringify({ ...form, basic_salary: parseFloat(form.basic_salary) }),
       });
       const saveBody = await saveRes.json();
       if (!saveRes.ok) throw new Error(saveBody.message ?? "Failed to save details");
 
-      const txRes  = await authFetch(`/api/new-hires/${newHireId}/transfer`, { method: "POST" });
+      const txRes = await authFetch(`/api/new-hires/${newHireId}/transfer`, { method: "POST" });
       const txBody = await txRes.json();
       if (!txRes.ok) throw new Error(txBody.message ?? "Transfer failed");
 
       toast({ title: "Transferred!", description: `${form.first_name} ${form.last_name} is now an active employee.`, variant: "success" });
+      setAttempted(false);
       onSuccess();
       onClose();
     } catch (e) {
-      toast({ title: "Transfer failed", description: e instanceof Error ? e.message : "Unknown error", variant: "destructive" });
+      toast({ title: "Please fill up this form", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -245,25 +274,25 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
 
               <TabsContent value="personal" className="rounded-xl border p-5 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="First Name" field="first_name" form={form} onChange={handleChange} required />
-                  <Field label="Last Name"  field="last_name"  form={form} onChange={handleChange} required />
+                  <Field label="First Name" field="first_name" form={form} onChange={handleChange} required attempted={attempted} />
+                  <Field label="Last Name" field="last_name" form={form} onChange={handleChange} required attempted={attempted} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Middle Name"    field="middle_name"    form={form} onChange={handleChange} />
+                  <Field label="Middle Name" field="middle_name" form={form} onChange={handleChange} />
                   <Field label="Name Extension" field="name_extension" form={form} onChange={handleChange} placeholder="Jr., Sr., III" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Date of Birth" field="date_of_birth" form={form} onChange={handleChange} required type="date" />
-                  <Field label="Email"         field="email"         form={form} onChange={handleChange} required type="email" />
+                  <Field label="Date of Birth" field="date_of_birth" form={form} onChange={handleChange} required type="date" attempted={attempted} />
+                  <Field label="Email" field="email" form={form} onChange={handleChange} required type="email" attempted={attempted} />
                 </div>
-                <Field label="Phone Number" field="phone_number" form={form} onChange={handleChange} required placeholder="+63 9XX XXX XXXX" />
-                <Field label="Home Address" field="home_address" form={form} onChange={handleChange} required />
+                <Field label="Phone Number" field="phone_number" form={form} onChange={handleChange} required placeholder="+63 9XX XXX XXXX" attempted={attempted} />
+                <Field label="Home Address" field="home_address" form={form} onChange={handleChange} required attempted={attempted} />
                 <div className="pt-2 border-t border-border">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Emergency Contact</p>
                   <div className="grid grid-cols-3 gap-3">
-                    <Field label="Contact Name"   field="emergency_contact_name"   form={form} onChange={handleChange} required />
-                    <Field label="Contact Number" field="emergency_contact_number" form={form} onChange={handleChange} required />
-                    <Field label="Relationship"   field="relationship"             form={form} onChange={handleChange} required placeholder="Spouse, Parent…" />
+                    <Field label="Contact Name" field="emergency_contact_name" form={form} onChange={handleChange} required attempted={attempted} />
+                    <Field label="Contact Number" field="emergency_contact_number" form={form} onChange={handleChange} required attempted={attempted} />
+                    <Field label="Relationship" field="relationship" form={form} onChange={handleChange} required placeholder="Spouse, Parent…" attempted={attempted} />
                   </div>
                 </div>
               </TabsContent>
@@ -273,7 +302,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                   <div>
                     <label className="text-xs font-medium">Department<span className="text-red-500 ml-0.5">*</span></label>
                     <Select value={form.department} onValueChange={v => { handleChange("department", v); handleChange("job_category", ""); }}>
-                      <SelectTrigger className={cn("mt-1 h-9", !form.department ? "border-amber-300" : "")}>
+                      <SelectTrigger className={cn("mt-1 h-9", attempted && !form.department ? "border-red-400 bg-red-50" : "")}>
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
                       <SelectContent>{DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
@@ -282,7 +311,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                   <div>
                     <label className="text-xs font-medium">Job Category<span className="text-red-500 ml-0.5">*</span></label>
                     <Select value={form.job_category} onValueChange={v => handleChange("job_category", v)} disabled={!form.department}>
-                      <SelectTrigger className={cn("mt-1 h-9", !form.job_category ? "border-amber-300" : "")}>
+                      <SelectTrigger className={cn("mt-1 h-9", attempted && !form.job_category ? "border-red-400 bg-red-50" : "")}>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -320,7 +349,7 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Start Date" field="start_date" form={form} onChange={handleChange} required type="date" />
+                  <Field label="Start Date" field="start_date" form={form} onChange={handleChange} required type="date" attempted={attempted} />
                   <div>
                     <label className="text-xs font-medium">Basic Salary (₱)<span className="text-red-500 ml-0.5">*</span></label>
                     <Input
@@ -352,17 +381,17 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
 
               <TabsContent value="govids" className="rounded-xl border p-5 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="TIN"        field="tin"               form={form} onChange={handleChange} placeholder="Tax Identification Number" />
-                  <Field label="SSS Number" field="sss_number"        form={form} onChange={handleChange} />
+                  <Field label="TIN" field="tin" form={form} onChange={handleChange} placeholder="Tax Identification Number" />
+                  <Field label="SSS Number" field="sss_number" form={form} onChange={handleChange} />
                   <Field label="PhilHealth" field="philhealth_number" form={form} onChange={handleChange} />
-                  <Field label="Pag-IBIG"   field="pagibig_number"    form={form} onChange={handleChange} />
-                </div>  
+                  <Field label="Pag-IBIG" field="pagibig_number" form={form} onChange={handleChange} />
+                </div>
                 <p className="text-xs text-muted-foreground">Optional now, required for payroll later.</p>
               </TabsContent>
 
               <TabsContent value="banking" className="rounded-xl border p-5 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Bank Name"    field="bank_name"    form={form} onChange={handleChange} placeholder="BDO, BPI, Metrobank…" />
+                  <Field label="Bank Name" field="bank_name" form={form} onChange={handleChange} placeholder="BDO, BPI, Metrobank…" />
                   <Field label="Account Name" field="account_name" form={form} onChange={handleChange} />
                 </div>
                 <Field label="Account Number" field="account_number" form={form} onChange={handleChange} />
@@ -374,10 +403,9 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
 
         <DialogFooter>
           <Button className="bg-gray-200" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
-          <Button 
+          <Button
             onClick={handleTransfer}
-            disabled={!canTransfer || loading || fetching}
-            className={cn("gap-2 min-w-[160px]", canTransfer ? "bg-[#2B3588] hover:bg-blue-700" : "opacity-60")}
+            className="gap-2 min-w-[160px] bg-[#2B3588] hover:bg-blue-700"
           >
             {loading
               ? <><Loader2 className="h-4 w-4 animate-spin" /> Transferring…</>
