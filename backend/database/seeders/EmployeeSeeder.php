@@ -355,6 +355,61 @@ class EmployeeSeeder extends Seeder
         $this->command->info('Seeding employees and user accounts...');
 
         foreach ($employees as $data) {
+
+            // Random emergency contact data
+            $emergencyNames = [
+                'Maria Santos',
+                'John Cruz',
+                'Angela Reyes',
+                'Michael Garcia',
+                'Rose Dela Cruz',
+                'Carlo Mendoza',
+                'Anne Flores',
+                'Joshua Ramos',
+            ];
+
+            $relationships = [
+                'Mother',
+                'Father',
+                'Brother',
+                'Sister',
+                'Spouse',
+                'Guardian',
+                'Cousin',
+            ];
+
+            // Auto-fill missing emergency contact fields
+            $data['employee']['emergency_contact_name'] =
+                $data['employee']['emergency_contact_name']
+                ?? $emergencyNames[array_rand($emergencyNames)];
+
+            $data['employee']['emergency_contact_number'] =
+                $data['employee']['emergency_contact_number']
+                ?? '09' . rand(100000000, 999999999);
+
+            $data['employee']['relationship'] =
+                $data['employee']['relationship']
+                ?? $relationships[array_rand($relationships)];
+
+            // Create or update employee record
+            $employee = Employee::updateOrCreate(
+                ['email' => $data['employee']['email']],
+                $data['employee']
+            );
+
+            // Create matching user account so they can log in
+            User::updateOrCreate(
+                ['email' => $data['employee']['email']],
+                [
+                    'name' => $data['employee']['first_name'] . ' ' . $data['employee']['last_name'],
+                    'email' => $data['employee']['email'],
+                    'password' => Hash::make($data['password']),
+                    'role' => $data['employee']['role'],
+                ]
+            );
+        }
+
+        foreach ($employees as $data) {
             // Create or update employee record
             $employee = Employee::updateOrCreate(
                 ['email' => $data['employee']['email']],
