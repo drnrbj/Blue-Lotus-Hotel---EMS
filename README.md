@@ -168,17 +168,6 @@ MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=noreply@hrharmony.com
 MAIL_FROM_NAME="HR Harmony Suite"
 ```
-
-## 🔑 Default Login Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@hrharmony.com | Admin@1234 |
-| HR | hr@hrharmony.com | Hr@12345 |
-| Accountant | accountant@hrharmony.com | Account@1 |
-| Manager | manager@hrharmony.com | Manager@1 |
-| Employee | employee@hrharmony.com | Employee@1 |
-
 ## 📱 API Endpoints
 
 ### Authentication
