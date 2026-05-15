@@ -149,15 +149,23 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
   const [tab, setTab] = useState("personal");
   const [attempted, setAttempted] = useState(false);
 
-  const handleChange = (field: keyof Form, value: string) => {
-    if (NAME_FIELDS.includes(field)) {
-      if (value && !LETTERS_ONLY.test(value)) return; // block silently
-    }
-    if (PHONE_FIELDS.includes(field)) {
-      if (value && !PHONE_FORMAT.test(value)) return; // block silently
-    }
+const handleChange = (field: keyof Form, value: string) => {
+  if (NAME_FIELDS.includes(field)) {
+    if (value && !LETTERS_ONLY.test(value)) return; // block silently
+  }
+  if (PHONE_FIELDS.includes(field)) {
+    if (value && !PHONE_FORMAT.test(value)) return; // block silently
+    
+    // For phone fields, strip non-digits and enforce max 11 digits
+    const digitsOnly = value.replace(/\D/g, '');
+    if (digitsOnly.length > 11) return; // Block if more than 11 digits
+    
+    // Keep the formatted value as user types
     setForm(prev => ({ ...prev, [field]: value }));
-  };
+    return;
+  }
+  setForm(prev => ({ ...prev, [field]: value }));
+};
 
   const pct = getPct(form);
   const missing = getMissing(form);
