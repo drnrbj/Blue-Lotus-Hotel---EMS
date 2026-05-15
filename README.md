@@ -38,7 +38,7 @@ Blue Lotus Hotel EMS is a comprehensive Human Resource Management System designe
 
 ### 📊 Performance Evaluation
 - Custom evaluation form builder (Likert scale + open-ended questions)
-- Assign evaluators (HR users only)
+- Assign evaluators (Admin only)
 - Evaluation submission and tracking
 - Analytics dashboard with charts and response summaries
 - Auto-close evaluations after deadline
