@@ -251,12 +251,14 @@ export default function Performance() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Performance Management</h1>
           </div>
-          <Button
-            onClick={() => setView("create")}
-            className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white"
-          >
-            <Plus className="h-4 w-4" /> New Evaluation
-          </Button>
+          {role === "Admin" && (
+            <Button
+              onClick={() => setView("create")}
+              className="gap-2 bg-[#2B3588] hover:bg-[#232c70] text-white"
+            >
+              <Plus className="h-4 w-4" /> New Evaluation
+            </Button>
+          )}
         </div>
 
         {/* ── HR: My Assignments ───────────────────────────────────────────── */}
