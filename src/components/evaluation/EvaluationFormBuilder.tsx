@@ -97,14 +97,35 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
     const template = getTemplateForDepartment(department);
     if (!template) return;
 
-    const likertSections = template.sections.filter(s => s.type === "likert");
-    const openSection    = template.sections.find(s => s.type === "open_ended");
+    // Transform template sections to match EvaluationSection type
+    const likertSections: EvaluationSection[] = template.sections
+      .filter(s => s.type === "likert")
+      .map((s, idx) => ({
+        title: s.title,
+        description: s.description || "",
+        type: "likert" as const,
+        likert_options: [...DEFAULT_LIKERT],
+        questions: s.questions.map((text, qIdx) => ({ text, type: "likert" as const, order: qIdx })),
+        order: idx,
+      }));
 
-    setSections(likertSections.length > 0
-      ? likertSections
-      : [{ title:"", description:"", type:"likert", likert_options:[...DEFAULT_LIKERT], questions:[], order:0 }]
-    );
-    setOpenQs(openSection?.questions ?? []);
+    const openSection = template.sections.find(s => s.type === "open_ended");
+    const openQuestions: EvaluationQuestion[] = openSection?.questions.map((text, idx) => ({
+      text,
+      type: "open_ended" as const,
+      order: idx,
+    })) ?? [];
+
+    setSections(likertSections.length > 0 ? likertSections : [{
+      title: "",
+      description: "",
+      type: "likert" as const,
+      likert_options: [...DEFAULT_LIKERT],
+      questions: [],
+      order: 0,
+    }]);
+    
+    setOpenQs(openQuestions);
     if (!title.trim()) setTitle(template.title);
     setShowTemplateConfirm(false);
     toast({
