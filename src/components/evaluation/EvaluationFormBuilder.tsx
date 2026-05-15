@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, X, GripVertical, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, X, GripVertical, Loader2, ChevronDown, ChevronUp, AlertTriangle, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authFetch } from "@/hooks/api";
 import type { EvaluationSection, EvaluationQuestion, LikertOption, CreateFormData, EvaluationForm } from "@/hooks/useEvaluation";
 import { cn } from "@/lib/utils";
+import { getTemplateForDepartment } from "@/data/evaluationTemplates";
 
 interface Props {
   onSave:       (data: CreateFormData) => Promise<void>;
@@ -55,7 +56,9 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
   const [showUserDD, setShowUserDD] = useState(false);
   const [errors,     setErrors]     = useState<ValidationErrors>({});
 
-  // ── Each button has its own loading state so spinners are independent ─────
+  // Template state
+  const [showTemplateConfirm, setShowTemplateConfirm] = useState(false);
+
   const [savingDraft, setSavingDraft] = useState(false);
   const [sendingForm, setSendingForm] = useState(false);
   const isBusy = savingDraft || sendingForm;
@@ -84,10 +87,32 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
       .catch(() => setHrUsers([]));
   }, []);
 
-  // Clear individual errors as fields are fixed
   useEffect(() => { if (title.trim())      setErrors(p => ({ ...p, title: undefined })); },      [title]);
   useEffect(() => { if (department)        setErrors(p => ({ ...p, department: undefined })); }, [department]);
   useEffect(() => { if (evaluators.length) setErrors(p => ({ ...p, evaluators: undefined })); }, [evaluators]);
+
+  // ─── Template application ─────────────────────────────────────────────────
+
+  const applyTemplate = () => {
+    const template = getTemplateForDepartment(department);
+    if (!template) return;
+
+    const likertSections = template.sections.filter(s => s.type === "likert");
+    const openSection    = template.sections.find(s => s.type === "open_ended");
+
+    setSections(likertSections.length > 0
+      ? likertSections
+      : [{ title:"", description:"", type:"likert", likert_options:[...DEFAULT_LIKERT], questions:[], order:0 }]
+    );
+    setOpenQs(openSection?.questions ?? []);
+    if (!title.trim()) setTitle(template.title);
+    setShowTemplateConfirm(false);
+    toast({
+      title: "Template applied!",
+      description: `Loaded ${template.sections.length} sections for ${department}.`,
+      variant: "success",
+    });
+  };
 
   // ─── Section helpers ──────────────────────────────────────────────────────
 
@@ -154,7 +179,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
     const allSections: EvaluationSection[] = [
       ...cleanSections,
       ...(cleanOpen.length ? [{
-        title: "Feedback Questions", description: "", type: "open_ended" as const,
+        title: "Feedback & Observations", description: "", type: "open_ended" as const,
         likert_options: [], questions: cleanOpen, order: cleanSections.length,
       }] : []),
     ];
@@ -179,11 +204,7 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
     setSavingDraft(true);
     try {
       await onSave(buildPayload(true));
-      toast({
-        title: "Draft saved",
-        description: "Your evaluation has been saved as a draft.",
-        variant: "success",
-      });
+      toast({ title: "Draft saved", description: "Your evaluation has been saved as a draft.", variant: "success" });
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Failed to save draft", variant: "destructive" });
     } finally {
@@ -212,8 +233,6 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
       setSendingForm(false);
     }
   };
-
-  const hasErrors = Object.keys(errors).length > 0;
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
@@ -256,11 +275,18 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
 
         <div className="grid grid-cols-2 gap-4">
 
+          {/* ── Department + Template picker ─────────────────────────────── */}
           <div ref={departmentRef}>
             <label className="text-sm font-medium">
               Department <span className="text-red-500">*</span>
             </label>
-            <Select value={department} onValueChange={setDepartment}>
+            <Select
+              value={department}
+              onValueChange={v => {
+                setDepartment(v);
+                setShowTemplateConfirm(false);
+              }}
+            >
               <SelectTrigger className={cn(
                 "mt-1",
                 errors.department && "border-red-400 bg-red-50 focus:ring-red-400"
@@ -271,13 +297,59 @@ export function EvaluationFormBuilder({ onSave, onCancel, initialData }: Props) 
                 {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
+
             {errors.department && (
               <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" /> {errors.department}
               </p>
             )}
+
+            {/* Template suggestion — only shows when a template exists for the dept */}
+            {department && getTemplateForDepartment(department) && (
+              <div className="mt-2">
+                {!showTemplateConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplateConfirm(true)}
+                    className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Use {department} evaluation template
+                  </button>
+                ) : (
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
+                    <p className="text-xs font-semibold text-blue-800">
+                      Apply the {department} template?
+                    </p>
+                    <p className="text-xs text-blue-700">
+                      {getTemplateForDepartment(department)?.description}
+                    </p>
+                    <p className="text-xs text-blue-500">
+                      This will replace your current sections and questions.
+                    </p>
+                    <div className="flex gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={applyTemplate}
+                        className="rounded-md bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                      >
+                        Yes, apply template
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowTemplateConfirm(false)}
+                        className="rounded-md border border-blue-300 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
+          {/* ── Evaluators ───────────────────────────────────────────────── */}
           <div className="relative" ref={evaluatorsRef}>
             <label className="text-sm font-medium">
               Evaluators (HR only) <span className="text-red-500">*</span>
