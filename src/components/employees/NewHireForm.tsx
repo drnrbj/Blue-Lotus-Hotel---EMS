@@ -37,35 +37,44 @@ const FIELD_LABELS: Record<string, string> = {
 
 type FormState = Partial<NewHireFormData>;
 
+const LETTERS_ONLY = /^[a-zA-ZÀ-ÿñÑ\s.\-']*$/;
+const PHONE_FORMAT = /^[0-9+\-\s()]*$/;
+
+const NAME_FIELDS = [
+  "first_name", "last_name", "middle_name",
+  "emergency_contact_name", "relationship", "reporting_manager",
+];
+const PHONE_FIELDS = ["phone_number", "emergency_contact_number"];
+
 export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props) {
   const isEdit = !!initialData;
 
   const [form, setForm] = useState<FormState>({
-    first_name:               initialData?.first_name ?? "",
-    last_name:                initialData?.last_name ?? "",
-    middle_name:              initialData?.middle_name ?? "",
-    name_extension:           initialData?.name_extension ?? "",
-    date_of_birth:            initialData?.date_of_birth ?? "",
-    email:                    initialData?.email ?? "",
-    phone_number:             initialData?.phone_number ?? "",
-    home_address:             initialData?.home_address ?? "",
-    emergency_contact_name:   initialData?.emergency_contact_name ?? "",
+    first_name: initialData?.first_name ?? "",
+    last_name: initialData?.last_name ?? "",
+    middle_name: initialData?.middle_name ?? "",
+    name_extension: initialData?.name_extension ?? "",
+    date_of_birth: initialData?.date_of_birth ?? "",
+    email: initialData?.email ?? "",
+    phone_number: initialData?.phone_number ?? "",
+    home_address: initialData?.home_address ?? "",
+    emergency_contact_name: initialData?.emergency_contact_name ?? "",
     emergency_contact_number: initialData?.emergency_contact_number ?? "",
-    relationship:             initialData?.relationship ?? "",
-    tin:                      initialData?.tin ?? "",
-    sss_number:               initialData?.sss_number ?? "",
-    pagibig_number:           initialData?.pagibig_number ?? "",
-    philhealth_number:        initialData?.philhealth_number ?? "",
-    bank_name:                initialData?.bank_name ?? "",
-    account_name:             initialData?.account_name ?? "",
-    account_number:           initialData?.account_number ?? "",
-    start_date:               initialData?.start_date ?? "",
-    department:               initialData?.department ?? "",
-    job_category:             initialData?.job_category ?? "",
-    employment_type:          initialData?.employment_type ?? "probationary",
-    role:                     initialData?.role ?? "Employee",
-    basic_salary:             initialData?.basic_salary ?? undefined,
-    reporting_manager:        initialData?.reporting_manager ?? "",
+    relationship: initialData?.relationship ?? "",
+    tin: initialData?.tin ?? "",
+    sss_number: initialData?.sss_number ?? "",
+    pagibig_number: initialData?.pagibig_number ?? "",
+    philhealth_number: initialData?.philhealth_number ?? "",
+    bank_name: initialData?.bank_name ?? "",
+    account_name: initialData?.account_name ?? "",
+    account_number: initialData?.account_number ?? "",
+    start_date: initialData?.start_date ?? "",
+    department: initialData?.department ?? "",
+    job_category: initialData?.job_category ?? "",
+    employment_type: initialData?.employment_type ?? "probationary",
+    role: initialData?.role ?? "Employee",
+    basic_salary: initialData?.basic_salary ?? undefined,
+    reporting_manager: initialData?.reporting_manager ?? "",
   });
 
   // Fetch departments and job categories from API
@@ -86,10 +95,19 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
     fetchOptions();
   }, []);
 
-  const set = (field: keyof FormState, value: unknown) =>
+  const set = (field: keyof FormState, value: unknown) => {
+    if (typeof value === "string") {
+      if (NAME_FIELDS.includes(field as string)) {
+        if (value && !LETTERS_ONLY.test(value)) return; // block invalid chars silently
+      }
+      if (PHONE_FIELDS.includes(field as string)) {
+        if (value && !PHONE_FORMAT.test(value as string)) return; // block non-phone chars
+      }
+    }
     setForm(prev => ({ ...prev, [field]: value }));
+  };
 
-  const pct     = getCompletionPct(form);
+  const pct = getCompletionPct(form);
   const missing = getMissingFields(form);
 
   const handleSubmit = async () => {
@@ -150,11 +168,11 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
         {/* Personal Info */}
         <TabsContent value="personal" className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="First Name *" required value={form.first_name ?? ""} onChange={v => set("first_name", v)} />
-            <Field label="Last Name *"  required value={form.last_name ?? ""}  onChange={v => set("last_name", v)}  />
+            <Field label="First Name *" required fieldKey="first_name" value={form.first_name ?? ""} onChange={v => set("first_name", v)} />
+            <Field label="Last Name *" required fieldKey="last_name" value={form.last_name ?? ""} onChange={v => set("last_name", v)} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Middle Name"    value={form.middle_name ?? ""}    onChange={v => set("middle_name", v)}    />
+            <Field label="Middle Name" value={form.middle_name ?? ""} onChange={v => set("middle_name", v)} />
             <Field label="Name Extension" value={form.name_extension ?? ""} onChange={v => set("name_extension", v)} placeholder="Jr., Sr., III" />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -162,16 +180,16 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
             <Field label="Email *" required type="email" value={form.email ?? ""} onChange={v => set("email", v)} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Phone Number *" required value={form.phone_number ?? ""} onChange={v => set("phone_number", v)} />
+            <Field label="Phone Number *" required fieldKey="phone_number" value={form.phone_number ?? ""} onChange={v => set("phone_number", v)} />
             <Field label="Home Address *" required value={form.home_address ?? ""} onChange={v => set("home_address", v)} />
           </div>
 
           <div className="pt-2 border-t border-border">
             <p className="text-sm font-semibold mb-3">Emergency Contact</p>
             <div className="grid grid-cols-3 gap-4">
-              <Field label="Contact Name *"   required value={form.emergency_contact_name ?? ""}   onChange={v => set("emergency_contact_name", v)}   />
-              <Field label="Contact Number *" required value={form.emergency_contact_number ?? ""} onChange={v => set("emergency_contact_number", v)} />
-              <Field label="Relationship *"   required value={form.relationship ?? ""}             onChange={v => set("relationship", v)}             />
+              <Field label="Contact Name *" required fieldKey="emergency_contact_name" value={form.emergency_contact_name ?? ""} onChange={v => set("emergency_contact_name", v)} />
+              <Field label="Contact Number *" required fieldKey="emergency_contact_number" value={form.emergency_contact_number ?? ""} onChange={v => set("emergency_contact_number", v)}  placeholder="Phone Number or Landline"/>
+              <Field label="Relationship *" required fieldKey="relationship" value={form.relationship ?? ""} onChange={v => set("relationship", v)} />
             </div>
           </div>
         </TabsContent>
@@ -194,8 +212,8 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
               <Select value={form.employment_type} onValueChange={v => set("employment_type", v as NewHire["employment_type"])}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {(["regular","probationary","contractual","part_time","intern"] as const).map(t => (
-                    <SelectItem key={t} value={t}>{t.replace("_"," ").replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
+                  {(["regular", "probationary", "contractual", "part_time", "intern"] as const).map(t => (
+                    <SelectItem key={t} value={t}>{t.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -205,7 +223,7 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
               <Select value={form.role ?? "Employee"} onValueChange={v => set("role", v)}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {["Employee","HR","Manager","Accountant","Admin"].map(r => (
+                  {["Employee", "HR", "Manager", "Accountant", "Admin"].map(r => (
                     <SelectItem key={r} value={r}>{r}</SelectItem>
                   ))}
                 </SelectContent>
@@ -227,12 +245,12 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
         {/* Government IDs */}
         <TabsContent value="government" className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="TIN"         value={form.tin ?? ""}              onChange={v => set("tin", v)}              placeholder="Tax Identification Number" />
-            <Field label="SSS Number"  value={form.sss_number ?? ""}       onChange={v => set("sss_number", v)}       placeholder="Social Security System" />
+            <Field label="TIN" value={form.tin ?? ""} onChange={v => set("tin", v)} placeholder="Tax Identification Number" />
+            <Field label="SSS Number" value={form.sss_number ?? ""} onChange={v => set("sss_number", v)} placeholder="Social Security System" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="PhilHealth"  value={form.philhealth_number ?? ""} onChange={v => set("philhealth_number", v)} placeholder="PhilHealth Number" />
-            <Field label="Pag-IBIG"    value={form.pagibig_number ?? ""}    onChange={v => set("pagibig_number", v)}    placeholder="Pag-IBIG Fund Number" />
+            <Field label="PhilHealth" value={form.philhealth_number ?? ""} onChange={v => set("philhealth_number", v)} placeholder="PhilHealth Number" />
+            <Field label="Pag-IBIG" value={form.pagibig_number ?? ""} onChange={v => set("pagibig_number", v)} placeholder="Pag-IBIG Fund Number" />
           </div>
           <p className="text-xs text-muted-foreground">Government IDs are optional but required for payroll processing.</p>
         </TabsContent>
@@ -240,8 +258,8 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
         {/* Banking */}
         <TabsContent value="banking" className="rounded-xl border border-border bg-card p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Bank Name"      value={form.bank_name ?? ""}     onChange={v => set("bank_name", v)}     placeholder="e.g. BDO, BPI, Metrobank" />
-            <Field label="Account Name"   value={form.account_name ?? ""}  onChange={v => set("account_name", v)}  placeholder="Name on account" />
+            <Field label="Bank Name" value={form.bank_name ?? ""} onChange={v => set("bank_name", v)} placeholder="e.g. BDO, BPI, Metrobank" />
+            <Field label="Account Name" value={form.account_name ?? ""} onChange={v => set("account_name", v)} placeholder="Name on account" />
           </div>
           <Field label="Account Number" value={form.account_number ?? ""} onChange={v => set("account_number", v)} placeholder="Bank account number" />
           <p className="text-xs text-muted-foreground">Required for payroll disbursement.</p>
@@ -261,17 +279,41 @@ export function NewHireForm({ initialData, onSave, onCancel, isLoading }: Props)
 
 // ── Small helper components ───────────────────────────────────────────────────
 
-function Field({ label, value, onChange, required, type = "text", placeholder }: {
+function Field({ label, value, onChange, required, type = "text", placeholder, fieldKey }: {
   label: string; value: string; onChange: (v: string) => void;
-  required?: boolean; type?: string; placeholder?: string;
+  required?: boolean; type?: string; placeholder?: string; fieldKey?: string;
 }) {
+  const [error, setError] = useState("");
+
+  const handleChange = (v: string) => {
+    if (fieldKey && NAME_FIELDS.includes(fieldKey)) {
+      if (v && !LETTERS_ONLY.test(v)) {
+        setError("Only letters are allowed");
+        return;
+      }
+    }
+    if (fieldKey && PHONE_FIELDS.includes(fieldKey)) {
+      if (v && !PHONE_FORMAT.test(v)) {
+        setError("Only numbers, +, -, spaces, and () are allowed");
+        return;
+      }
+    }
+    setError("");
+    onChange(v);
+  };
+
   return (
     <div>
-      <label className="text-sm font-medium">{label}{required && " *"}</label>
-      <Input className="mt-1" type={type} value={value}
-        onChange={e => onChange(e.target.value)}
+      <label className="text-sm font-medium">{label}</label>
+      <Input
+        className={cn("mt-1", error ? "border-red-400 bg-red-50" : "")}
+        type={type}
+        value={value}
+        onChange={e => handleChange(e.target.value)}
         placeholder={placeholder}
-        required={required} />
+        required={required}
+      />
+      {error && <p className="text-red-500 text-xs mt-0.5">{error}</p>}
     </div>
   );
 }

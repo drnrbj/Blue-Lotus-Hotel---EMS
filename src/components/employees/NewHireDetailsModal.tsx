@@ -96,22 +96,47 @@ interface FieldProps {
   attempted?: boolean;
 }
 
+const LETTERS_ONLY = /^[a-zA-ZÀ-ÿñÑ\s.\-']*$/;
+const PHONE_FORMAT = /^[0-9+\-\s()]*$/;
+
+const NAME_FIELDS: (keyof Form)[] = [
+  "first_name", "last_name", "middle_name",
+  "emergency_contact_name", "relationship", "reporting_manager",
+];
+const PHONE_FIELDS: (keyof Form)[] = [
+  "phone_number", "emergency_contact_number",
+];
+
+// REPLACE the Field component entirely:
 function Field({ label, field, form, onChange, required, type = "text", placeholder, attempted }: FieldProps) {
-  const isEmpty = required && (!form[field] || form[field] === "");
-  const showError = attempted && isEmpty;
+  const isEmpty   = required && (!form[field] || form[field] === "");
+  const showEmpty = attempted && isEmpty;
+
+  // Format hint for phone fields
+  const isPhoneField = PHONE_FIELDS.includes(field);
+  const isNameField  = NAME_FIELDS.includes(field);
+
   return (
     <div>
       <label className="text-xs font-medium text-foreground/80">
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <Input
-        className={cn("mt-1 h-9", showError ? "border-red-400 bg-red-50" : "")}
+        className={cn("mt-1 h-9", showEmpty ? "border-red-400 bg-red-50" : "")}
         type={type}
         value={form[field]}
         onChange={e => onChange(field, e.target.value)}
         placeholder={placeholder}
       />
-      {showError && <p className="text-red-500 text-xs mt-0.5">This field is required</p>}
+      {showEmpty && (
+        <p className="text-red-500 text-xs mt-0.5">This field is required</p>
+      )}
+      {isPhoneField && form[field] && form[field].replace(/\D/g, "").length > 12 && (
+        <p className="text-red-500 text-xs mt-0.5">Number is too long</p>
+      )}
+      {isNameField && form[field] && !LETTERS_ONLY.test(form[field]) && (
+        <p className="text-red-500 text-xs mt-0.5">Only letters are allowed</p>
+      )}
     </div>
   );
 }
@@ -124,8 +149,15 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
   const [tab, setTab] = useState("personal");
   const [attempted, setAttempted] = useState(false);
 
-  const handleChange = (field: keyof Form, value: string) =>
+  const handleChange = (field: keyof Form, value: string) => {
+    if (NAME_FIELDS.includes(field)) {
+      if (value && !LETTERS_ONLY.test(value)) return; // block silently
+    }
+    if (PHONE_FIELDS.includes(field)) {
+      if (value && !PHONE_FORMAT.test(value)) return; // block silently
+    }
     setForm(prev => ({ ...prev, [field]: value }));
+  };
 
   const pct = getPct(form);
   const missing = getMissing(form);
@@ -315,13 +347,13 @@ export function NewHireDetailsModal({ open, onClose, newHireId, onSuccess }: Pro
                   <Field label="Date of Birth" field="date_of_birth" form={form} onChange={handleChange} required type="date" attempted={attempted} />
                   <Field label="Email" field="email" form={form} onChange={handleChange} required type="email" attempted={attempted} />
                 </div>
-                <Field label="Phone Number" field="phone_number" form={form} onChange={handleChange} required placeholder="+63 9XX XXX XXXX" attempted={attempted} />
+                <Field label="Phone Number" field="phone_number" form={form} onChange={handleChange} required placeholder="e.g. 09171234567" attempted={attempted} />
                 <Field label="Home Address" field="home_address" form={form} onChange={handleChange} required attempted={attempted} />
                 <div className="pt-2 border-t border-border">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Emergency Contact</p>
                   <div className="grid grid-cols-3 gap-3">
                     <Field label="Contact Name" field="emergency_contact_name" form={form} onChange={handleChange} required attempted={attempted} />
-                    <Field label="Contact Number" field="emergency_contact_number" form={form} onChange={handleChange} required attempted={attempted} />
+                    <Field label="Phone / Landline No." field="emergency_contact_number" form={form} onChange={handleChange} required placeholder="e.g. 09XX or (02) 8XXX" attempted={attempted} />
                     <Field label="Relationship" field="relationship" form={form} onChange={handleChange} required placeholder="Spouse, Parent…" attempted={attempted} />
                   </div>
                 </div>
