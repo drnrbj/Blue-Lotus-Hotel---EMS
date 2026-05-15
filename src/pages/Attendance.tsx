@@ -263,11 +263,11 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editRow, setEditRow] = useState<Partial<AttendanceRecord>>({});
   const [saving, setSaving] = useState(false);
- 
+
   // ── Pagination state ──────────────────────────────────────────────────────
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
- 
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -279,12 +279,12 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setLoading(false); }
   }, [startDate, endDate, statusF]);
- 
+
   useEffect(() => { load(); }, [load]);
- 
+
   // Reset page when search changes
   useEffect(() => { setPage(1); }, [search]);
- 
+
   const handleExport = async () => {
     try {
       const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
@@ -301,7 +301,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
       toast({ title: e instanceof Error ? e.message : "Export failed", variant: "destructive" });
     }
   };
- 
+
   const handleSave = async () => {
     if (!editRow.employee_id || !editRow.date) {
       toast({ title: "Employee ID and date are required", variant: "destructive" }); return;
@@ -314,7 +314,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
     finally { setSaving(false); }
   };
- 
+
   // ── Filtering + pagination derivations ───────────────────────────────────
   const filtered = records.filter(r => {
     if (!search) return true;
@@ -322,11 +322,11 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     return name.toLowerCase().includes(search.toLowerCase())
       || (r.employee?.department ?? "").toLowerCase().includes(search.toLowerCase());
   });
- 
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
- 
+
   // Build page number array with ellipsis: [1, …, 4, 5, 6, …, 12]
   const pageNumbers = (() => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -343,7 +343,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
     if (totalPages > 1) pages.push(totalPages);
     return pages;
   })();
- 
+
   return (
     <div className="space-y-4">
       {/* ── Filters ─────────────────────────────────────────────────────── */}
@@ -382,7 +382,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
           </Button>
         )}
       </div>
- 
+
       {/* ── Table ───────────────────────────────────────────────────────── */}
       {loading ? (
         <div className="flex justify-center py-16">
@@ -459,7 +459,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
               </tbody>
             </table>
           </div>
- 
+
           {/* ── Pagination footer ────────────────────────────────────────── */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <p className="text-xs text-muted-foreground">
@@ -469,7 +469,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
               </span>{" "}
               of <span className="font-medium text-foreground">{filtered.length}</span> records
             </p>
- 
+
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 {/* Prev */}
@@ -488,7 +488,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
- 
+
                 {/* Page numbers */}
                 {pageNumbers.map((p, i) =>
                   p === "…" ? (
@@ -510,7 +510,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                     </button>
                   )
                 )}
- 
+
                 {/* Next */}
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
@@ -532,7 +532,7 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
           </div>
         </>
       )}
- 
+
       {/* ── Manual entry dialog ──────────────────────────────────────────── */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-sm">
@@ -784,6 +784,33 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
     if (!form.start_date || !form.end_date || !form.reason) {
       toast({ title: "Fill all required fields", variant: "destructive" }); return;
     }
+
+    // Validate date range
+    if (new Date(form.end_date) < new Date(form.start_date)) {
+      toast({ title: "End date cannot be before start date", variant: "destructive" }); return;
+    }
+
+    // Check leave balance before submitting
+    const leaveBalance = balances.find(b => b.leave_type === form.leave_type);
+    if (leaveBalance) {
+      if (leaveBalance.remaining_days <= 0 && form.leave_type !== "unpaid") {
+        toast({
+          title: "Insufficient leave balance",
+          description: `You have no remaining ${LEAVE_LABELS[form.leave_type] ?? form.leave_type} days. Consider filing Unpaid Leave instead.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    } else if (!["unpaid", "emergency", "maternity", "paternity", "bereavement", "solo_parent"].includes(form.leave_type)) {
+      // No balance record found — likely probationary/not yet entitled
+      toast({
+        title: "Not yet eligible",
+        description: "You may not be eligible for this leave type yet. Probationary employees are not entitled to Service Incentive Leave. Please contact HR.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setActing(-1);
     try {
       const payload: Record<string, string> = { ...form };
@@ -840,10 +867,15 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
       {balances.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {balances.filter(b => ["vacation", "sick", "emergency", "unpaid"].includes(b.leave_type)).map(b => (
-            <div key={b.id} className="rounded-xl border border-border bg-card p-3">
+            <div key={b.id} className={cn("rounded-xl border bg-card p-3", b.remaining_days <= 0 && b.leave_type !== "unpaid" ? "border-red-200 bg-red-50/40" : "border-border")}>
               <p className="text-xs text-muted-foreground">{LEAVE_LABELS[b.leave_type] ?? b.leave_type}</p>
-              <p className="text-xl font-bold mt-1">{b.remaining_days}</p>
+              <p className={cn("text-xl font-bold mt-1", b.remaining_days <= 0 && b.leave_type !== "unpaid" ? "text-red-500" : "")}>
+                {b.remaining_days}
+              </p>
               <p className="text-xs text-muted-foreground">of {b.entitled_days + b.carried_over} days</p>
+              {b.remaining_days <= 0 && b.leave_type !== "unpaid" && (
+                <p className="text-[10px] text-red-500 mt-1 font-medium">No balance</p>
+              )}
               <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full bg-blue-500 rounded-full"
@@ -933,6 +965,17 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {balances.length === 0 && !canManage && (
+        <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+          <p className="text-xs text-amber-700 font-medium">⚠ No leave balance found</p>
+          <p className="text-xs text-amber-600 mt-0.5">
+            You may be on probationary status and not yet entitled to paid leave.
+            Only Emergency, Maternity, Paternity, Bereavement, and Solo Parent leaves may be available.
+            Contact HR for clarification.
+          </p>
         </div>
       )}
 
