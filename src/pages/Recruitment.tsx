@@ -1065,15 +1065,11 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
     onPageChange={setCurrentPage}
   />
 
-
-
   const load = async () => {
     setLoading(true);
     setInterviews(await safeFetch("/api/recruitment/interviews"));
     setLoading(false);
   };
-
-
 
   useEffect(() => { load(); }, []);
 
@@ -1137,7 +1133,6 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
                 <th className="px-4 py-3 text-left font-semibold">Date & Time</th>
                 <th className="px-4 py-3 text-left font-semibold">Interviewer</th>
                 <th className="px-4 py-3 text-left font-semibold">Status</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -1343,7 +1338,39 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {/* Actions */}
+                      <div className="flex items-center justify-end gap-2">
+                        {a.status === "pending" && canManage && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 gap-1"
+                            onClick={() => {
+                              setSelAssignment(a);
+                              setTrainerId("");
+                              setTrainerError(false);
+                              setTrainerOpen(true);
+                            }}
+                          >
+                            <UserCheck className="h-3 w-3" /> Assign Trainer
+                          </Button>
+                        )}
+                        {a.status === "in_progress" && canManage && (
+                          <Button
+                            size="sm"
+                            className="text-xs h-7 gap-1 bg-green-600 hover:bg-green-700 text-white"
+                            disabled={completing === a.id}
+                            onClick={() => completeTraining(a.id)}
+                          >
+                            {completing === a.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
+                            Complete Training
+                          </Button>
+                        )}
+                        {a.status === "completed" && (
+                          <Badge className="bg-green-100 text-green-700 border-0 text-xs">
+                            ✓ Ready for Transfer
+                          </Badge>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
