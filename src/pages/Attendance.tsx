@@ -762,6 +762,11 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
   const [form, setForm] = useState({
     leave_type: "vacation", start_date: "", end_date: "", reason: "", employee_id: "",
   });
+  // ADD these states with the other useState declarations:
+  const [empSearch, setEmpSearch] = useState("");
+  const [employees, setEmployees] = useState<{ id: number; first_name: string; last_name: string; department: string }[]>([]);
+  const [empDropOpen, setEmpDropOpen] = useState(false);
+  const [selectedEmp, setSelectedEmp] = useState<{ id: number; first_name: string; last_name: string; department: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -779,6 +784,24 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
   }, [currentEmployeeId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const close = () => setEmpDropOpen(false);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, []);
+
+  // ADD this useEffect to fetch employees (only for HR/canManage):
+  useEffect(() => {
+    if (!canManage) return;
+    authFetch("/api/employees?per_page=200")
+      .then(r => r.json())
+      .then(body => {
+        const data = body.data?.data ?? body.data ?? [];
+        setEmployees(Array.isArray(data) ? data : []);
+      })
+      .catch(() => { });
+  }, [canManage]);
 
   const submit = async () => {
     if (!form.start_date || !form.end_date || !form.reason) {
@@ -986,11 +1009,69 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
           <div className="space-y-3">
             {/* FIX #9: HR sees employee_id field to submit on behalf */}
             {canManage && (
-              <div>
-                <label className="text-sm font-medium">Employee ID</label>
-                <Input className="mt-1" type="number" value={form.employee_id}
-                  onChange={e => setForm(p => ({ ...p, employee_id: e.target.value }))}
-                  placeholder="Optional — submits for your account if blank" />
+              <div className="relative">
+                <label className="text-sm font-medium">Employee</label>
+                <div className="relative mt-1">
+                  <Input
+                    placeholder="Search by name, ID, or department..."
+                    value={selectedEmp
+                      ? `${selectedEmp.first_name} ${selectedEmp.last_name} — ${selectedEmp.department}`
+                      : empSearch}
+                    onChange={e => {
+                      setEmpSearch(e.target.value);
+                      setSelectedEmp(null);
+                      setForm(p => ({ ...p, employee_id: "" }));
+                      setEmpDropOpen(true);
+                    }}
+                    onFocus={() => setEmpDropOpen(true)}
+                    className="pr-8"
+                  />
+                  {selectedEmp && (
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => { setSelectedEmp(null); setEmpSearch(""); setForm(p => ({ ...p, employee_id: "" })); }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                {empDropOpen && !selectedEmp && (
+                  <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-border bg-white shadow-lg">
+                    {employees
+                      .filter(e => {
+                        const q = empSearch.toLowerCase();
+                        return !q ||
+                          `${e.first_name} ${e.last_name}`.toLowerCase().includes(q) ||
+                          e.department?.toLowerCase().includes(q) ||
+                          String(e.id).includes(q);
+                      })
+                      .slice(0, 20)
+                      .map(e => (
+                        <button
+                          key={e.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 flex items-center justify-between gap-2"
+                          onMouseDown={ev => ev.preventDefault()}
+                          onClick={() => {
+                            setSelectedEmp(e);
+                            setEmpSearch("");
+                            setForm(p => ({ ...p, employee_id: String(e.id) }));
+                            setEmpDropOpen(false);
+                          }}
+                        >
+                          <span className="font-medium">{e.first_name} {e.last_name}</span>
+                          <span className="text-xs text-muted-foreground">{e.department} · ID {e.id}</span>
+                        </button>
+                      ))}
+                    {employees.filter(e => {
+                      const q = empSearch.toLowerCase();
+                      return !q || `${e.first_name} ${e.last_name}`.toLowerCase().includes(q) || e.department?.toLowerCase().includes(q) || String(e.id).includes(q);
+                    }).length === 0 && (
+                        <p className="px-3 py-4 text-sm text-muted-foreground text-center">No employees found</p>
+                      )}
+                  </div>
+                )}
               </div>
             )}
             <div>
@@ -998,9 +1079,75 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
               <Select value={form.leave_type} onValueChange={v => setForm(p => ({ ...p, leave_type: v }))}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(LEAVE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                  {Object.entries(LEAVE_LABELS).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      <div className="flex flex-col">
+                        <span>{v}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {/* Requirement notes per leave type */}
+              {form.leave_type === "sick" && (
+                <div className="mt-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
+                  <p className="text-xs text-blue-700 font-medium">Sick Leave Requirements</p>
+                  <p className="text-xs text-blue-600 mt-0.5">
+                    • Medical certificate required for absences of 3 or more consecutive days.<br />
+                    • Must be filed within 5 days of return from absence.<br />
+                    • Available to regular employees only.
+                  </p>
+                </div>
+              )}
+              {form.leave_type === "emergency" && (
+                <div className="mt-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+                  <p className="text-xs text-amber-700 font-medium">Emergency Leave Requirements</p>
+                  <p className="text-xs text-amber-600 mt-0.5">
+                    • Must provide supporting documents (e.g. incident report, hospital records).<br />
+                    • Notify your supervisor or HR as soon as possible.<br />
+                    • Limited to 3 days per year.
+                  </p>
+                </div>
+              )}
+              {form.leave_type === "maternity" && (
+                <div className="mt-2 rounded-lg bg-pink-50 border border-pink-200 px-3 py-2">
+                  <p className="text-xs text-pink-700 font-medium">Maternity Leave Requirements</p>
+                  <p className="text-xs text-pink-600 mt-0.5">
+                    • Must submit medical certificate confirming pregnancy.<br />
+                    • File at least 30 days before expected leave date.<br />
+                    • Entitled to 105 days per RA 11210.
+                  </p>
+                </div>
+              )}
+              {form.leave_type === "paternity" && (
+                <div className="mt-2 rounded-lg bg-sky-50 border border-sky-200 px-3 py-2">
+                  <p className="text-xs text-sky-700 font-medium">Paternity Leave Requirements</p>
+                  <p className="text-xs text-sky-600 mt-0.5">
+                    • Must be a married male employee.<br />
+                    • Submit marriage certificate and birth/delivery documents.<br />
+                    • Entitled to 7 days per RA 8187.
+                  </p>
+                </div>
+              )}
+              {form.leave_type === "bereavement" && (
+                <div className="mt-2 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
+                  <p className="text-xs text-gray-700 font-medium">Bereavement Leave Requirements</p>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    • Must submit death certificate of the deceased.<br />
+                    • Applicable for immediate family members only.<br />
+                    • Limited to 3 days.
+                  </p>
+                </div>
+              )}
+              {form.leave_type === "solo_parent" && (
+                <div className="mt-2 rounded-lg bg-purple-50 border border-purple-200 px-3 py-2">
+                  <p className="text-xs text-purple-700 font-medium">Solo Parent Leave Requirements</p>
+                  <p className="text-xs text-purple-600 mt-0.5">
+                    • Must present valid Solo Parent ID issued by DSWD.<br />
+                    • Entitled to 7 working days per year per RA 8972.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
