@@ -1,7 +1,5 @@
 # Blue Lotus Hotel Employee Management System
 
-## 📋 Overview
-
 Blue Lotus Hotel EMS is a comprehensive Human Resource Management System designed for hotel and hospitality businesses. It provides tools for employee management, recruitment, training, attendance tracking, payroll processing, and performance evaluation.
 
 ## ✨ Features
@@ -168,17 +166,6 @@ MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=noreply@hrharmony.com
 MAIL_FROM_NAME="HR Harmony Suite"
 ```
-
-## 🔑 Default Login Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@hrharmony.com | Admin@1234 |
-| HR | hr@hrharmony.com | Hr@12345 |
-| Accountant | accountant@hrharmony.com | Account@1 |
-| Manager | manager@hrharmony.com | Manager@1 |
-| Employee | employee@hrharmony.com | Employee@1 |
-
 ## 📱 API Endpoints
 
 ### Authentication
