@@ -118,6 +118,40 @@ interface Props {
   isAdminView?: boolean;
 }
 
+// ADD these helper functions before the EmployeeForm component:
+
+const LETTERS_ONLY = /^[a-zA-ZÀ-ÿñÑ\s.\-']*$/;
+const PHONE_FORMAT = /^[0-9+\-\s()]*$/;
+
+function validateField(field: keyof FormData, value: string): string | undefined {
+  const nameFields: (keyof FormData)[] = [
+    "first_name", "last_name", "middle_name", "name_extension",
+    "emergency_contact_name", "relationship",
+  ];
+
+  if (nameFields.includes(field)) {
+    if (value && !LETTERS_ONLY.test(value)) {
+      return "Only letters are allowed";
+    }
+  }
+
+  if (field === "phone_number" || field === "emergency_contact_number") {
+    if (value && !PHONE_FORMAT.test(value)) {
+      return "Only numbers, +, -, spaces, and () are allowed";
+    }
+    if (value && value.replace(/\D/g, "").length > 0) {
+      const digits = value.replace(/\D/g, "");
+      // Philippine mobile: 11 digits (09XXXXXXXXX) or with country code (639XXXXXXXXX)
+      // Landline: 7–8 digits local, or with area code (02XXXXXXXX = 10 digits)
+      if (digits.length > 12) {
+        return "Phone number is too long";
+      }
+    }
+  }
+
+  return undefined;
+}
+
 export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminView }: Props) {
   const { toast } = useToast();
   const [tab, setTab] = useState("personal");
@@ -158,9 +192,27 @@ export function EmployeeForm({ employee, onSubmit, onCancel, isLoading, isAdminV
 
 
   const handleChange = (field: keyof FormData, value: string) => {
+    const validationError = validateField(field, value);
+
+    // For letters-only fields: block the keystroke entirely if invalid character typed
+    const nameFields: (keyof FormData)[] = [
+      "first_name", "last_name", "middle_name", "name_extension",
+      "emergency_contact_name", "relationship",
+    ];
+    if (nameFields.includes(field) && value && !LETTERS_ONLY.test(value)) {
+      // Don't update the form — character is rejected silently
+      setErrors(prev => ({ ...prev, [field]: "Only letters are allowed" }));
+      return;
+    }
+
+    // For phone fields: block non-phone characters
+    if ((field === "phone_number" || field === "emergency_contact_number") && value && !/^[0-9+\-\s()]*$/.test(value)) {
+      setErrors(prev => ({ ...prev, [field]: "Only numbers, +, -, spaces, and () are allowed" }));
+      return;
+    }
+
     setForm(prev => ({ ...prev, [field]: value }));
-    // Clear error for this field as soon as user fills it in
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
+    setErrors(prev => ({ ...prev, [field]: validationError }));
   };
 
   // Auto-fill salary when job_category changes

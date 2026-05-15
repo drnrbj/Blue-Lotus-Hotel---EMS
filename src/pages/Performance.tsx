@@ -508,7 +508,7 @@ export default function Performance() {
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-20">
                 <TrendingUp className="h-10 w-10 text-muted-foreground/30 mb-3" />
                 <p className="font-medium text-muted-foreground">No evaluations yet</p>
-                <Button className="mt-4 gap-2" onClick={() => setView("create")}>
+                <Button className="bg-[#2B3588] hover:bg-blue-700 mt-4 gap-2" onClick={() => setView("create")}>
                   <Plus className="h-4 w-4" /> Create First Evaluation
                 </Button>
               </div>

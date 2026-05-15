@@ -19,7 +19,7 @@ class EmployeeSeeder extends Seeder
     {
         $employees = [
 
-            // ── HR ─────────────────────────────
+            // ── HR DEPARTMENT (Morning Shift) ─────────────────────────────
             [
                 'employee' => [
                     'role' => 'HR',
@@ -31,10 +31,11 @@ class EmployeeSeeder extends Seeder
                     'phone_number' => '09170000001',
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'HR Officer',
+                    'department' => 'Human Resources',
+                    'job_category' => 'HR Manager',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
-                    'basic_salary' => 25000,
+                    'basic_salary' => 35000,
                 ],
                 'password' => 'hr123',
             ],
@@ -49,15 +50,16 @@ class EmployeeSeeder extends Seeder
                     'phone_number' => '09170000002',
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'HR Officer',
+                    'department' => 'Human Resources',
+                    'job_category' => 'Recruitment Specialist',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
-                    'basic_salary' => 25000,
+                    'basic_salary' => 28000,
                 ],
                 'password' => 'hr123',
             ],
 
-            // ── ADMIN ──────────────────────────
+            // ── ADMIN / GENERAL MANAGEMENT (Morning Shift) ──────────────────────────
             [
                 'employee' => [
                     'role' => 'Admin',
@@ -69,10 +71,11 @@ class EmployeeSeeder extends Seeder
                     'phone_number' => '09170000003',
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
+                    'department' => 'Executive Office',
                     'job_category' => 'General Manager',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
-                    'basic_salary' => 60000,
+                    'basic_salary' => 80000,
                 ],
                 'password' => 'admin123',
             ],
@@ -87,15 +90,16 @@ class EmployeeSeeder extends Seeder
                     'phone_number' => '09170000004',
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'Department Manager',
+                    'department' => 'Executive Office',
+                    'job_category' => 'Assistant General Manager',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
-                    'basic_salary' => 42000,
+                    'basic_salary' => 55000,
                 ],
                 'password' => 'admin123',
             ],
 
-            // ── ACCOUNTANT ─────────────────────
+            // ── ACCOUNTING & FINANCE (Morning Shift) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Accountant',
@@ -107,10 +111,11 @@ class EmployeeSeeder extends Seeder
                     'phone_number' => '09170000005',
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
+                    'department' => 'Accounting & Finance',
                     'job_category' => 'Accounting Staff',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
-                    'basic_salary' => 24000,
+                    'basic_salary' => 27000,
                 ],
                 'password' => 'acc123',
             ],
@@ -125,16 +130,16 @@ class EmployeeSeeder extends Seeder
                     'phone_number' => '09170000006',
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
+                    'department' => 'Accounting & Finance',
                     'job_category' => 'Payroll Officer',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
-                    'basic_salary' => 26000,
+                    'basic_salary' => 28000,
                 ],
                 'password' => 'acc123',
             ],
 
-
-
+            // ── FRONT OFFICE DEPARTMENT (Mixed Shifts - 24/7 operation) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -150,15 +155,15 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Front Office',
+                    'job_category' => 'Front Desk Agent',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 20000,
                 ],
                 'password' => 'Employee@1',
             ],
-
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -174,15 +179,17 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Front Office',
+                    'job_category' => 'Guest Service Agent',
+                    'shift_sched' => 'Afternoon',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 20000,
                 ],
                 'password' => 'Employee@2',
             ],
 
+            // ── HOUSEKEEPING DEPARTMENT (Morning & Afternoon Shifts) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -198,15 +205,15 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Housekeeping',
+                    'job_category' => 'Room Attendant',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 17000,
                 ],
                 'password' => 'Employee@3',
             ],
-
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -222,15 +229,17 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Housekeeping',
+                    'job_category' => 'Housekeeping Supervisor',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 25000,
                 ],
                 'password' => 'Employee@4',
             ],
 
+            // ── FOOD & BEVERAGE DEPARTMENT (All Shifts - 24/7 operation) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -246,15 +255,15 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Food & Beverage',
+                    'job_category' => 'Restaurant Server',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
                     'basic_salary' => 18000,
                 ],
                 'password' => 'Employee@5',
             ],
-
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -270,15 +279,17 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Food & Beverage',
+                    'job_category' => 'Line Cook',
+                    'shift_sched' => 'Afternoon',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 19000,
                 ],
                 'password' => 'Employee@6',
             ],
 
+            // ── SALES & MARKETING (Morning Shift) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -294,15 +305,17 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Sales & Marketing',
+                    'job_category' => 'Sales Coordinator',
+                    'shift_sched' => 'Morning',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 23000,
                 ],
                 'password' => 'Employee@7',
             ],
 
+            // ── MAINTENANCE / ENGINEERING (Night Shift for overnight repairs) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -318,15 +331,17 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Engineering & Maintenance',
+                    'job_category' => 'Maintenance Technician',
+                    'shift_sched' => 'Night',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 22000,
                 ],
                 'password' => 'Employee@8',
             ],
 
+            // ── SECURITY DEPARTMENT (Night Shift for overnight coverage) ─────────────────────
             [
                 'employee' => [
                     'role' => 'Employee',
@@ -342,11 +357,12 @@ class EmployeeSeeder extends Seeder
                     'emergency_contact_number' => '09100000000',
                     'relationship' => 'N/A',
                     'start_date' => '2024-01-01',
-                    'department' => 'Administration',
-                    'job_category' => 'staff',
+                    'department' => 'Security',
+                    'job_category' => 'Security Guard',
+                    'shift_sched' => 'Night',
                     'employment_type' => 'regular',
                     'reporting_manager' => null,
-                    'basic_salary' => 18000,
+                    'basic_salary' => 19000,
                 ],
                 'password' => 'Employee@9',
             ],
@@ -409,37 +425,36 @@ class EmployeeSeeder extends Seeder
             );
         }
 
-        foreach ($employees as $data) {
-            // Create or update employee record
-            $employee = Employee::updateOrCreate(
-                ['email' => $data['employee']['email']],
-                $data['employee']
-            );
-
-            // Create matching user account so they can log in
-            User::updateOrCreate(
-                ['email' => $data['employee']['email']],
-                [
-                    'name' => $data['employee']['first_name'] . ' ' . $data['employee']['last_name'],
-                    'email' => $data['employee']['email'],
-                    'password' => Hash::make($data['password']),
-                    'role' => $data['employee']['role'],
-                ]
-            );
-        }
-
         // Print login credentials table
         $this->command->info('');
         $this->command->info('✅ Employees and user accounts seeded successfully!');
+        
+        // Shift hours mapping for display
+        $shiftHours = [
+            'Morning' => '07:00-15:00',
+            'Afternoon' => '15:00-23:00',
+            'Night' => '23:00-07:00',
+        ];
+        
         $this->command->table(
-            ['Name', 'Role', 'Department', 'Email', 'Password'],
+            ['Name', 'Role', 'Department', 'Job Category', 'Shift', 'Hours', 'Email', 'Password'],
             collect($employees)->map(fn($d) => [
                 $d['employee']['first_name'] . ' ' . $d['employee']['last_name'],
                 $d['employee']['role'],
                 $d['employee']['department'],
+                $d['employee']['job_category'],
+                $d['employee']['shift_sched'],
+                $shiftHours[$d['employee']['shift_sched']],
                 $d['employee']['email'],
                 $d['password'],
             ])->toArray()
         );
+        
+        // Print shift summary
+        $this->command->info('');
+        $this->command->info('📋 Shift Assignment Summary:');
+        $this->command->info('   🌅 Morning Shift (07:00-15:00): ' . collect($employees)->where('employee.shift_sched', 'Morning')->count() . ' employees');
+        $this->command->info('   ☀️ Afternoon Shift (15:00-23:00): ' . collect($employees)->where('employee.shift_sched', 'Afternoon')->count() . ' employees');
+        $this->command->info('   🌙 Night Shift (23:00-07:00): ' . collect($employees)->where('employee.shift_sched', 'Night')->count() . ' employees');
     }
 }

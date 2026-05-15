@@ -1084,7 +1084,7 @@ export default function Attendance() {
       </div>
       <Tabs defaultValue="dashboard">
         <TabsList className={`grid w-full ${isHR ? "grid-cols-3" : "grid-cols-3"}`}>
-          <TabsTrigger value="dashboard">Live Attendance</TabsTrigger>
+          <TabsTrigger value="dashboard">Live Dashboard</TabsTrigger>
           {(isHR || isAdmin) && <TabsTrigger value="history">History</TabsTrigger>}
           <TabsTrigger value="leave">Leave Requests</TabsTrigger>
         </TabsList>
