@@ -1098,9 +1098,6 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
     cancelled: "bg-red-100 text-red-700",
   };
 
-  const totalPages = Math.ceil(interviews.length / itemsPerPage);
-  const paginated = interviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3 items-center">
