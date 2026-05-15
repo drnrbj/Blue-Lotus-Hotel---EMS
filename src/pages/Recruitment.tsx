@@ -599,7 +599,14 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(addForm.email.trim())) errors.email = true;
     }
-    if (!addForm.phone.trim()) errors.phone = true;  // ADD THIS LINE
+    if (!addForm.phone.trim()) {
+      errors.phone = true;
+    } else {
+      const phoneRegex = /^09\d{9}$/;
+      if (!phoneRegex.test(addForm.phone.trim().replace(/\s/g, ""))) {
+        errors.phone = true;
+      }
+    }
     if (!addForm.job_posting_id) errors.job_posting_id = true;
     setAddFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -732,6 +739,17 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
   const updateStage = async (app: Applicant, stage: string) => {
     setActing(app.id);
     try {
+      // If marking as interviewed, also complete the scheduled interview
+      if (stage === "interviewed") {
+        const interviews = await safeFetch<Interview>("/api/recruitment/interviews");
+        const scheduled = interviews.find(
+          iv => iv.applicant_id === app.id && iv.status === "scheduled"
+        );
+        if (scheduled) {
+          await authFetch(`/api/recruitment/interviews/${scheduled.id}/complete`, { method: "POST" });
+        }
+      }
+
       const res = await authFetch(`/api/recruitment/applicants/${app.id}/stage`, {
         method: "PATCH",
         body: JSON.stringify({ pipeline_stage: stage }),
@@ -904,16 +922,20 @@ function ApplicantManagementTab({ canManage, isAdmin }: { canManage: boolean; is
             </div>
             <div>
               <Input
-                placeholder="Phone *"
+                placeholder="Phone * (09XXXXXXXXX)"
                 value={addForm.phone}
+                maxLength={11}
                 onChange={e => {
-                  setAddForm(p => ({ ...p, phone: e.target.value }));
+                  const val = e.target.value.replace(/\D/g, "");
+                  setAddForm(p => ({ ...p, phone: val }));
                   clearAddFieldError("phone");
                 }}
                 className={addFieldErrors.phone ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
               {addFieldErrors.phone && (
-                <p className="text-xs text-red-500 mt-1 ml-1">Phone number is required</p>
+                <p className="text-xs text-red-500 mt-1 ml-1">
+                  {addForm.phone.trim() ? "Must be 11 digits starting with 09 (e.g. 09171234567)" : "Phone number is required"}
+                </p>
               )}
             </div>
             <div>
@@ -1018,12 +1040,40 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // ADD before the loading check in ScheduledInterviewsTab return:
+  const filteredInterviews = interviews.filter(iv => {
+    const name = `${iv.applicant?.first_name ?? ""} ${iv.applicant?.last_name ?? ""}`.toLowerCase();
+    const position = (iv.applicant?.job_posting?.title ?? "").toLowerCase();
+    const interviewer = (iv.interviewer?.name ?? "").toLowerCase();
+    const q = search.toLowerCase();
+    const matchSearch = !q || name.includes(q) || position.includes(q) || interviewer.includes(q);
+    const matchStatus = statusFilter === "all" || iv.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const totalPages = Math.ceil(filteredInterviews.length / itemsPerPage);
+  const paginated = filteredInterviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  <Pagination
+    currentPage={currentPage}
+    totalPages={Math.ceil(filteredInterviews.length / itemsPerPage)}
+    totalItems={filteredInterviews.length}
+    itemsPerPage={itemsPerPage}
+    onPageChange={setCurrentPage}
+  />
+
+
 
   const load = async () => {
     setLoading(true);
     setInterviews(await safeFetch("/api/recruitment/interviews"));
     setLoading(false);
   };
+
+
 
   useEffect(() => { load(); }, []);
 
@@ -1053,6 +1103,26 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search applicant, position, interviewer..."
+            value={search}
+            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
+          <SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="scheduled">Scheduled</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
       ) : interviews.length === 0 ? (
@@ -1131,6 +1201,8 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
   const [trainerId, setTrainerId] = useState("");
   const [saving, setSaving] = useState(false);
   const [completing, setCompleting] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const load = async () => {
     setLoading(true);
@@ -1144,6 +1216,24 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Filter assignments based on search and status
+  const filteredAssignments = assignments.filter(a => {
+    const name = `${a.employee?.first_name ?? ""} ${a.employee?.last_name ?? ""}`.toLowerCase();
+    const title = (a.training?.title ?? "").toLowerCase();
+    const trainer = a.trainer ? `${a.trainer.first_name} ${a.trainer.last_name}`.toLowerCase() : "";
+    const q = search.toLowerCase();
+    const matchSearch = !q || name.includes(q) || title.includes(q) || trainer.includes(q);
+    const matchStatus = statusFilter === "all" || a.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  // Calculate pagination based on FILTERED assignments
+  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+  const paginated = filteredAssignments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Reset page when search/filter changes
+  useEffect(() => { setCurrentPage(1); }, [search, statusFilter]);
 
   const [trainerError, setTrainerError] = useState(false);
 
@@ -1196,81 +1286,83 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
     completed: "bg-green-100 text-green-700"
   };
 
-  const totalPages = Math.ceil(assignments.length / itemsPerPage);
-  const paginated = assignments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   return (
     <div className="space-y-4">
+      {/* Search and filter controls */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search training, new hire, trainer..."
+            value={search}
+            onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
+          <SelectTrigger className="w-36"><SelectValue placeholder="All statuses" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-      ) : assignments.length === 0 ? (
+      ) : filteredAssignments.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
           <GraduationCap className="h-10 w-10 text-muted-foreground/40 mb-3" />
-          <p className="text-muted-foreground font-medium">No training records yet</p>
-          <p className="text-sm text-muted-foreground mt-1">Training is auto-created when an applicant is hired</p>
+          <p className="text-muted-foreground font-medium">No training records found</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/30 border-b border-border">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold">Training</th>
-                <th className="px-4 py-3 text-left font-semibold">New Hire</th>
-                <th className="px-4 py-3 text-left font-semibold">Trainer</th>
-                <th className="px-4 py-3 text-left font-semibold">Status</th>
-                <th className="px-4 py-3 text-right font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {paginated.map(a => (
-                <tr key={a.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3 font-medium">{a.training?.title ?? "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {a.employee?.first_name} {a.employee?.last_name}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {a.trainer ? `${a.trainer.first_name} ${a.trainer.last_name}` : <span className="text-orange-500 text-xs">Not assigned</span>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge className={cn("text-xs border-0", statusColors[a.status])}>
-                      {a.status === "in_progress" ? "In Progress" : a.status.charAt(0).toUpperCase() + a.status.slice(1)}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {a.status === "pending" && canManage && (
-                        <Button size="sm" variant="outline" className="text-xs h-7 gap-1"
-                          onClick={() => { setSelAssignment(a); setTrainerId(""); setTrainerOpen(true); }}>
-                          <UserCheck className="h-3 w-3" /> Assign Trainer
-                        </Button>
-                      )}
-                      {a.status === "in_progress" && canManage && (
-                        <Button size="sm" className="text-xs h-7 gap-1 bg-green-600 hover:bg-green-700"
-                          disabled={completing === a.id}
-                          onClick={() => completeTraining(a.id)}>
-                          {completing === a.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3" />}
-                          Complete Training
-                        </Button>
-                      )}
-                      {a.status === "completed" && (
-                        <Badge className="bg-green-100 text-green-700 border-0 text-xs">✓ Ready for Transfer</Badge>
-                      )}
-                    </div>
-                  </td>
+        <>
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/30 border-b border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">Training</th>
+                  <th className="px-4 py-3 text-left font-semibold">New Hire</th>
+                  <th className="px-4 py-3 text-left font-semibold">Trainer</th>
+                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y divide-border">
+                {paginated.map(a => (
+                  <tr key={a.id} className="hover:bg-muted/20 transition-colors">
+                    <td className="px-4 py-3 font-medium">{a.training?.title ?? "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {a.employee?.first_name} {a.employee?.last_name}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {a.trainer ? `${a.trainer.first_name} ${a.trainer.last_name}` : <span className="text-orange-500 text-xs">Not assigned</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge className={cn("text-xs border-0", statusColors[a.status])}>
+                        {a.status === "in_progress" ? "In Progress" : a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {/* Actions */}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={Math.ceil(assignments.length / itemsPerPage)}
-        totalItems={assignments.length}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-      />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredAssignments.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </>
+      )}
 
       <Dialog open={trainerOpen} onOpenChange={(open) => {
         setTrainerOpen(open);
@@ -1290,11 +1382,28 @@ function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
                 <SelectValue placeholder="Select Trainer *" />
               </SelectTrigger>
               <SelectContent>
-                {employees.map(e => (
-                  <SelectItem key={e.id} value={String(e.id)}>
-                    {e.first_name} {e.last_name} — {e.department}
-                  </SelectItem>
-                ))}
+                {employees
+                  .filter(e => {
+                    // Must be same department as the new hire
+                    const sameDept = !selAssignment?.employee?.department ||
+                      e.department === selAssignment.employee.department;
+                    // Cannot be the same person as the new hire
+                    const notSelf = e.id !== selAssignment?.employee?.id;
+                    return sameDept && notSelf;
+                  })
+                  .map(e => (
+                    <SelectItem key={e.id} value={String(e.id)}>
+                      {e.first_name} {e.last_name} — {e.department}
+                    </SelectItem>
+                  ))}
+                {employees.filter(e =>
+                  (!selAssignment?.employee?.department || e.department === selAssignment.employee.department) &&
+                  e.id !== selAssignment?.employee?.id
+                ).length === 0 && (
+                    <SelectItem value="" disabled>
+                      No eligible trainers in {selAssignment?.employee?.department ?? "this department"}
+                    </SelectItem>
+                  )}
               </SelectContent>
             </Select>
             {trainerError && (
