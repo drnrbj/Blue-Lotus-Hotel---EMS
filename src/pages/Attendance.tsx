@@ -41,6 +41,7 @@ interface LeaveRequest {
   start_date: string;
   end_date: string;
   days_requested: number;
+  number_of_days?: number;
   reason: string;
   status: "pending" | "approved" | "rejected" | "cancelled";
   rejected_reason?: string | null;
@@ -961,7 +962,21 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
                     </Badge>
                   </td>
                   <td className="px-4 py-2.5 text-xs text-muted-foreground">{r.start_date} → {r.end_date}</td>
-                  <td className="px-4 py-2.5 text-center font-semibold">{r.days_requested}</td>
+                  <td className="px-4 py-2.5 text-center font-semibold">
+                    {r.days_requested > 0 ? r.days_requested : (() => {
+                      // Calculate days if days_requested is 0
+                      const start = new Date(r.start_date);
+                      const end = new Date(r.end_date);
+                      let days = 0;
+                      const current = new Date(start);
+                      while (current <= end) {
+                        const dayOfWeek = current.getDay();
+                        if (dayOfWeek >= 1 && dayOfWeek <= 5) days++;
+                        current.setDate(current.getDate() + 1);
+                      }
+                      return days;
+                    })()}
+                  </td>
                   <td className="px-4 py-2.5 text-xs text-muted-foreground max-w-[150px] truncate">{r.reason}</td>
                   <td className="px-4 py-2.5">
                     <Badge className={cn("text-xs border-0 capitalize", statusColors[r.status])}>{r.status}</Badge>

@@ -28,8 +28,8 @@ class LeaveRequest extends Model
     ];
 
     protected $casts = [
-        'start_date'  => 'date',
-        'end_date'    => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'approved_at' => 'datetime',
         'days_requested' => 'float',
         'number_of_days' => 'float',
@@ -98,11 +98,11 @@ class LeaveRequest extends Model
     {
         return $query->where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('start_date', [$startDate, $endDate])
-              ->orWhereBetween('end_date', [$startDate, $endDate])
-              ->orWhere(function ($q) use ($startDate, $endDate) {
-                  $q->where('start_date', '<=', $startDate)
-                    ->where('end_date', '>=', $endDate);
-              });
+                ->orWhereBetween('end_date', [$startDate, $endDate])
+                ->orWhere(function ($q) use ($startDate, $endDate) {
+                    $q->where('start_date', '<=', $startDate)
+                        ->where('end_date', '>=', $endDate);
+                });
         });
     }
 
@@ -148,7 +148,7 @@ class LeaveRequest extends Model
         if ($this->status !== 'approved') {
             return false;
         }
-        
+
         $today = Carbon::today();
         return $today->between($this->start_date, $this->end_date);
     }
@@ -161,7 +161,7 @@ class LeaveRequest extends Model
         if ($this->status !== 'approved') {
             return false;
         }
-        
+
         return Carbon::today()->lt($this->start_date);
     }
 
@@ -185,10 +185,10 @@ class LeaveRequest extends Model
         }
 
         $this->update([
-            'status'          => 'approved',
-            'approver_id'     => $approverId,
-            'approved_by'     => $approverId,
-            'approved_at'     => now(),
+            'status' => 'approved',
+            'approver_id' => $approverId,
+            'approved_by' => $approverId,
+            'approved_at' => now(),
             'approval_reason' => $reason,
         ]);
     }
@@ -203,10 +203,10 @@ class LeaveRequest extends Model
         }
 
         $this->update([
-            'status'          => 'rejected',
-            'approver_id'     => $approverId,
-            'approved_by'     => $approverId,
-            'approved_at'     => now(),
+            'status' => 'rejected',
+            'approver_id' => $approverId,
+            'approved_by' => $approverId,
+            'approved_at' => now(),
             'rejected_reason' => $reason,
         ]);
     }
@@ -233,7 +233,7 @@ class LeaveRequest extends Model
         $start = Carbon::parse($this->start_date);
         $end = Carbon::parse($this->end_date);
         $days = 0;
-        
+
         while ($start->lte($end)) {
             // Skip weekends (Saturday = 6, Sunday = 7)
             if (!in_array($start->dayOfWeek, [6, 7])) {
@@ -241,7 +241,7 @@ class LeaveRequest extends Model
             }
             $start->addDay();
         }
-        
+
         return (float) $days;
     }
 
@@ -263,7 +263,7 @@ class LeaveRequest extends Model
         if ($this->status !== 'approved') {
             return false;
         }
-        
+
         $checkDate = $date instanceof Carbon ? $date : Carbon::parse($date);
         return $checkDate->between($this->start_date, $this->end_date);
     }
@@ -274,15 +274,15 @@ class LeaveRequest extends Model
     public function getLeaveTypeLabel(): string
     {
         return match ($this->leave_type) {
-            'vacation'    => 'Vacation Leave',
-            'sick'        => 'Sick Leave',
-            'emergency'   => 'Emergency Leave',
-            'unpaid'      => 'Unpaid Leave',
-            'maternity'   => 'Maternity Leave',
-            'paternity'   => 'Paternity Leave',
+            'vacation' => 'Vacation Leave',
+            'sick' => 'Sick Leave',
+            'emergency' => 'Emergency Leave',
+            'unpaid' => 'Unpaid Leave',
+            'maternity' => 'Maternity Leave',
+            'paternity' => 'Paternity Leave',
             'bereavement' => 'Bereavement Leave',
             'solo_parent' => 'Solo Parent Leave',
-            default       => ucfirst(str_replace('_', ' ', $this->leave_type)),
+            default => ucfirst(str_replace('_', ' ', $this->leave_type)),
         };
     }
 
@@ -292,11 +292,11 @@ class LeaveRequest extends Model
     public function getStatusColor(): string
     {
         return match ($this->status) {
-            'pending'   => 'yellow',
-            'approved'  => 'green',
-            'rejected'  => 'red',
+            'pending' => 'yellow',
+            'approved' => 'green',
+            'rejected' => 'red',
             'cancelled' => 'gray',
-            default     => 'gray',
+            default => 'gray',
         };
     }
 
@@ -306,11 +306,11 @@ class LeaveRequest extends Model
     public function getStatusLabel(): string
     {
         return match ($this->status) {
-            'pending'   => 'Pending Approval',
-            'approved'  => 'Approved',
-            'rejected'  => 'Rejected',
+            'pending' => 'Pending Approval',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
             'cancelled' => 'Cancelled',
-            default     => ucfirst($this->status),
+            default => ucfirst($this->status),
         };
     }
 
@@ -321,11 +321,11 @@ class LeaveRequest extends Model
     {
         $start = Carbon::parse($this->start_date)->format('M d, Y');
         $end = Carbon::parse($this->end_date)->format('M d, Y');
-        
+
         if ($start === $end) {
             return $start;
         }
-        
+
         return "{$start} - {$end}";
     }
 
@@ -340,6 +340,13 @@ class LeaveRequest extends Model
     /**
      * Get remaining days for this leave type (if balance is tracked)
      */
+
+    protected $appends = ['days_count'];
+
+    public function getDaysCountAttribute(): float
+    {
+        return (float) ($this->days_requested ?? $this->number_of_days ?? $this->calculateDaysRequested());
+    }
     public function getRemainingBalance(?LeaveBalance $balance = null): ?float
     {
         if (!$balance) {
@@ -348,11 +355,11 @@ class LeaveRequest extends Model
                 ->where('year', now()->year)
                 ->first();
         }
-        
+
         if (!$balance) {
             return null;
         }
-        
+
         return max(0, $balance->entitled_days + $balance->carried_over - $balance->used_days);
     }
 }
