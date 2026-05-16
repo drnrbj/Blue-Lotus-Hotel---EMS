@@ -23,23 +23,23 @@ import { cn } from "@/lib/utils";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PERIOD_STATUS_STYLES: Record<string, string> = {
-  open:       "bg-gray-100 text-gray-700",
+  open: "bg-gray-100 text-gray-700",
   processing: "bg-blue-100 text-blue-700",
-  computed:   "bg-amber-100 text-amber-700",
-  approved:   "bg-green-100 text-green-700",
-  paid:       "bg-emerald-100 text-emerald-700",
+  computed: "bg-amber-100 text-amber-700",
+  approved: "bg-green-100 text-green-700",
+  paid: "bg-emerald-100 text-emerald-700",
 };
 
 const SLIP_STATUS_STYLES: Record<string, string> = {
-  draft:     "bg-gray-100 text-gray-700",
-  computed:  "bg-amber-100 text-amber-700",
-  approved:  "bg-blue-100 text-blue-700",
-  paid:      "bg-green-100 text-green-700",
+  draft: "bg-gray-100 text-gray-700",
+  computed: "bg-amber-100 text-amber-700",
+  approved: "bg-blue-100 text-blue-700",
+  paid: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
 };
 
-const fmt = (n: number) =>
-  `₱${(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
+const fmt = (n: number | null | undefined) =>
+  `₱${(n ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PAYSLIP DETAIL SHEET
@@ -65,7 +65,7 @@ function PayslipDetailSheet({
   ) => Promise<Payslip>;
 }) {
   const { toast } = useToast();
-  const [acting,  setActing]  = useState(false);
+  const [acting, setActing] = useState(false);
   const [adjOpen, setAdjOpen] = useState(false);
   const [adjForm, setAdjForm] = useState({
     category: "earning" as "earning" | "deduction",
@@ -74,16 +74,16 @@ function PayslipDetailSheet({
 
   if (!payslip) return null;
 
-const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
-  setActing(true);
-  try   { await fn(); toast({ title: successMsg, variant: "success" }); }
-  catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
-  finally { setActing(false); }
-};
+  const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
+    setActing(true);
+    try { await fn(); toast({ title: successMsg, variant: "success" }); }
+    catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
+    finally { setActing(false); }
+  };
 
   const doApprove = wrap(() => onApprove(payslip.id), "Approved");
-  const doPay     = wrap(() => onMarkPaid(payslip.id), "Marked as paid");
-  const doEmail   = wrap(() => onSendEmail(payslip.id), "Email sent");
+  const doPay = wrap(() => onMarkPaid(payslip.id), "Marked as paid");
+  const doEmail = wrap(() => onSendEmail(payslip.id), "Email sent");
 
   const doAdj = async () => {
     if (!adjForm.label || !adjForm.amount || !adjForm.note) {
@@ -105,27 +105,27 @@ const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
   };
 
   const earnings = [
-    { label: "Basic Pay",           amount: payslip.basic_pay },
-    { label: "Overtime Pay",        amount: payslip.overtime_pay },
+    { label: "Basic Pay", amount: payslip.basic_pay },
+    { label: "Overtime Pay", amount: payslip.overtime_pay },
     { label: "Transport Allowance", amount: payslip.transport_allowance },
-    { label: "Meal Allowance",      amount: payslip.meal_allowance },
-    { label: "Other Allowances",    amount: payslip.other_allowances },
-    { label: "Bonuses",             amount: payslip.bonuses },
-    { label: "13th Month Pay",      amount: payslip.thirteenth_month_pay },
+    { label: "Meal Allowance", amount: payslip.meal_allowance },
+    { label: "Other Allowances", amount: payslip.other_allowances },
+    { label: "Bonuses", amount: payslip.bonuses },
+    { label: "13th Month Pay", amount: payslip.thirteenth_month_pay },
   ].filter(e => e.amount > 0);
 
   const deductions = [
-    { label: "Late Deduction",        amount: payslip.late_deduction },
-    { label: "Absent Deduction",      amount: payslip.absent_deduction },
-    { label: "Unpaid Leave",          amount: payslip.unpaid_leave_deduction },
-    { label: "SSS Employee",          amount: payslip.sss_employee },
-    { label: "PhilHealth Employee",   amount: payslip.philhealth_employee },
-    { label: "Pag-IBIG Employee",     amount: payslip.pagibig_employee },
+    { label: "Late Deduction", amount: payslip.late_deduction },
+    { label: "Absent Deduction", amount: payslip.absent_deduction },
+    { label: "Unpaid Leave", amount: payslip.unpaid_leave_deduction },
+    { label: "SSS Employee", amount: payslip.sss_employee },
+    { label: "PhilHealth Employee", amount: payslip.philhealth_employee },
+    { label: "Pag-IBIG Employee", amount: payslip.pagibig_employee },
     { label: "Withholding Tax (BIR)", amount: payslip.bir_withholding_tax },
-    { label: "SSS Loan",              amount: payslip.sss_loan_deduction },
-    { label: "Pag-IBIG Loan",         amount: payslip.pagibig_loan_deduction },
-    { label: "Company Loan",          amount: payslip.company_loan_deduction },
-    { label: "Other Deductions",      amount: payslip.other_deductions },
+    { label: "SSS Loan", amount: payslip.sss_loan_deduction },
+    { label: "Pag-IBIG Loan", amount: payslip.pagibig_loan_deduction },
+    { label: "Company Loan", amount: payslip.company_loan_deduction },
+    { label: "Other Deductions", amount: payslip.other_deductions },
   ].filter(d => d.amount > 0);
 
   return (
@@ -144,10 +144,10 @@ const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
           {/* Attendance summary */}
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Status",      value: <Badge className={cn("text-xs border-0 capitalize", SLIP_STATUS_STYLES[payslip.status])}>{payslip.status}</Badge> },
+              { label: "Status", value: <Badge className={cn("text-xs border-0 capitalize", SLIP_STATUS_STYLES[payslip.status])}>{payslip.status}</Badge> },
               { label: "Days Worked", value: `${payslip.days_worked}/${payslip.working_days_in_period}` },
               { label: "Days Absent", value: payslip.days_absent },
-              { label: "Mins Late",   value: payslip.minutes_late > 0 ? `${payslip.minutes_late}m` : "0" },
+              { label: "Mins Late", value: payslip.minutes_late > 0 ? `${payslip.minutes_late}m` : "0" },
             ].map(({ label, value }) => (
               <div key={label} className="bg-muted/30 rounded-lg p-3">
                 <div className="text-xs text-muted-foreground">{label}</div>
@@ -201,9 +201,9 @@ const wrap = (fn: () => Promise<void>, successMsg: string) => async () => {
             <div>
               <div className="font-semibold text-sm mb-2">Employer Contributions</div>
               {[
-                { label: "SSS Employer",       amount: payslip.sss_employer },
+                { label: "SSS Employer", amount: payslip.sss_employer },
                 { label: "PhilHealth Employer", amount: payslip.philhealth_employer },
-                { label: "Pag-IBIG Employer",  amount: payslip.pagibig_employer },
+                { label: "Pag-IBIG Employer", amount: payslip.pagibig_employer },
               ].filter(e => e.amount > 0).map(e => (
                 <div key={e.label} className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{e.label}</span>
@@ -323,10 +323,10 @@ function SummaryTab({ summary, isLoading }: { summary: PayrollSummary | null; is
     <div className="space-y-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Employees",        value: String(summary.total_employees), color: "text-foreground" },
-          { label: "Total Gross Pay",  value: fmt(summary.total_gross),        color: "text-green-600" },
-          { label: "Total Deductions", value: fmt(summary.total_deductions),   color: "text-red-600"   },
-          { label: "Total Net Pay",    value: fmt(summary.total_net),          color: "text-blue-700"  },
+          { label: "Employees", value: String(summary.total_employees), color: "text-foreground" },
+          { label: "Total Gross Pay", value: fmt(summary.total_gross), color: "text-green-600" },
+          { label: "Total Deductions", value: fmt(summary.total_deductions), color: "text-red-600" },
+          { label: "Total Net Pay", value: fmt(summary.total_net), color: "text-blue-700" },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-xl border border-border bg-card p-4">
             <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{label}</div>
@@ -350,10 +350,10 @@ function SummaryTab({ summary, isLoading }: { summary: PayrollSummary | null; is
           </thead>
           <tbody className="divide-y divide-border">
             {[
-              ["SSS",        summary.total_sss_employee,        summary.total_sss_employer],
+              ["SSS", summary.total_sss_employee, summary.total_sss_employer],
               ["PhilHealth", summary.total_philhealth_employee, summary.total_philhealth_employer],
-              ["Pag-IBIG",   summary.total_pagibig_employee,    summary.total_pagibig_employer],
-              ["BIR / Tax",  summary.total_bir,                 0],
+              ["Pag-IBIG", summary.total_pagibig_employee, summary.total_pagibig_employer],
+              ["BIR / Tax", summary.total_bir, 0],
             ].map(([lbl, emp, er]) => (
               <tr key={lbl as string} className="hover:bg-muted/20">
                 <td className="px-5 py-3 font-medium">{lbl}</td>
@@ -406,11 +406,11 @@ function SummaryTab({ summary, isLoading }: { summary: PayrollSummary | null; is
 // ═══════════════════════════════════════════════════════════════════════════
 
 const ACTION_STYLES: Record<string, string> = {
-  computed:      "bg-amber-100 text-amber-700",
-  adjusted:      "bg-purple-100 text-purple-700",
-  approved:      "bg-blue-100 text-blue-700",
-  paid:          "bg-green-100 text-green-700",
-  email_sent:    "bg-cyan-100 text-cyan-700",
+  computed: "bg-amber-100 text-amber-700",
+  adjusted: "bg-purple-100 text-purple-700",
+  approved: "bg-blue-100 text-blue-700",
+  paid: "bg-green-100 text-green-700",
+  email_sent: "bg-cyan-100 text-cyan-700",
   pdf_generated: "bg-indigo-100 text-indigo-700",
 };
 
@@ -476,10 +476,10 @@ function AuditTab({ logs, isLoading }: { logs: AuditLog[]; isLoading: boolean })
 // ═══════════════════════════════════════════════════════════════════════════
 
 export default function Accounting() {
-  const { toast }  = useToast();
-  const { user }   = useAuth();
-  const role       = user?.role ?? "";
-  const canManage  = ["Admin", "Accountant", "HR"].includes(role);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const role = user?.role ?? "";
+  const canManage = ["Admin", "Accountant", "HR"].includes(role);
 
   const {
     periods, payslips, selectedPayslip, summary, auditLogs, isLoading, error,
@@ -490,15 +490,15 @@ export default function Accounting() {
     clearSelected, clearError,
   } = useAccounting();
 
-  const [activePeriodId,     setActivePeriodId]     = useState<number | null>(null);
-  const [activeTab,          setActiveTab]          = useState("payslips");
-  const [slipOpen,           setSlipOpen]           = useState(false);
-  const [computing,          setComputing]          = useState(false);
-  const [emailing,           setEmailing]           = useState(false);
-  const [generating,         setGenerating]         = useState(false);
-  const [approveAllLoading,  setApproveAllLoading]  = useState(false);
-  const [downloadingReport,  setDownloadingReport]  = useState(false);
-  const [employees,          setEmployees]          = useState<any[]>([]);
+  const [activePeriodId, setActivePeriodId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState("payslips");
+  const [slipOpen, setSlipOpen] = useState(false);
+  const [computing, setComputing] = useState(false);
+  const [emailing, setEmailing] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [approveAllLoading, setApproveAllLoading] = useState(false);
+  const [downloadingReport, setDownloadingReport] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
 
   const activePeriod = periods.find(p => p.id === activePeriodId);
 
@@ -507,7 +507,7 @@ export default function Accounting() {
     (async () => {
       try {
         const { authFetch } = await import("@/hooks/api");
-        const res  = await authFetch("/api/employees");
+        const res = await authFetch("/api/employees");
         const data = await res.json();
         if (data.success) setEmployees(data.data?.data ?? data.data ?? []);
       } catch { /* silent */ }
@@ -543,9 +543,9 @@ export default function Accounting() {
     try {
       const r = await computeAll(activePeriodId);
       toast({
-        title:       "Payroll computed successfully",
+        title: "Payroll computed successfully",
         description: `${r.success.length} payslips generated. ${r.failed.length} failed.`,
-        variant:     "success"
+        variant: "success"
       });
       fetchSummary(activePeriodId);
       fetchPayslips(activePeriodId);
@@ -616,14 +616,14 @@ export default function Accounting() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Accounting & Payroll</h1>
         </div>
-    
+
         {/* Workflow steps */}
         <div className="flex items-center gap-2 text-xs flex-wrap">
           {[
-            { n: 1, label: "Select Period",  done: !!activePeriod },
-            { n: 2, label: "Compute",        done: !!step2Done    },
-            { n: 3, label: "Approve All",    done: !!step3Done    },
-            { n: 4, label: "Email Payslips", done: !!step4Done    },
+            { n: 1, label: "Select Period", done: !!activePeriod },
+            { n: 2, label: "Compute", done: !!step2Done },
+            { n: 3, label: "Approve All", done: !!step3Done },
+            { n: 4, label: "Email Payslips", done: !!step4Done },
           ].map(({ n, label, done }, i, arr) => (
             <span key={n} className="flex items-center gap-1.5">
               <span className={cn(
@@ -779,8 +779,8 @@ export default function Accounting() {
                     <thead className="bg-muted/30 border-b border-border">
                       <tr>
                         <th className="px-4 py-3 text-left font-semibold">Employee</th>
-                        <th className="px-4 py-3 text-left font-semibold">Department</th>
-                        <th className="px-4 py-3 text-right font-semibold">Monthly Salary</th>
+                        <th className="px-4 py-3 text-left font-semibold">Department / Job Category</th>
+                        <th className="px-4 py-3 text-right font-semibold">Monthly Rate</th>
                         <th className="px-4 py-3 text-right font-semibold">Period Pay (est.)</th>
                         <th className="px-4 py-3 text-center font-semibold">Status</th>
                       </tr>
@@ -797,7 +797,10 @@ export default function Accounting() {
                           <td className="px-4 py-3 font-medium">
                             {emp.first_name} {emp.last_name}
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground">{emp.department}</td>
+                          <td className="px-4 py-3 text-xs">
+                            <p className="text-muted-foreground">{emp.department}</p>
+                            <p className="text-muted-foreground/60">{emp.job_category}</p>
+                          </td>
                           <td className="px-4 py-3 text-right font-mono">{fmt(emp.basic_salary)}</td>
                           <td className="px-4 py-3 text-right font-mono text-muted-foreground">
                             {fmt(emp.basic_salary / 2)} (est.)
@@ -825,10 +828,10 @@ export default function Accounting() {
                 <table className="w-full text-sm">
                   <thead className="bg-muted/30 border-b border-border">
                     <tr>
-                      {["Employee","Department","Days Worked","Gross Pay","Deductions","Net Pay","Status",""].map(h => (
+                      {["Employee", "Department / Job Category", "Rate", "Days Worked", "Gross Pay", "Deductions", "Net Pay", "Status", ""].map(h => (
                         <th key={h} className={cn(
                           "px-4 py-3 font-semibold text-xs",
-                          ["Gross Pay","Deductions","Net Pay"].includes(h) ? "text-right" : "text-left",
+                          ["Gross Pay", "Deductions", "Net Pay"].includes(h) ? "text-right" : "text-left",
                           h === "" ? "text-center" : "",
                         )}>{h}</th>
                       ))}
@@ -841,8 +844,12 @@ export default function Accounting() {
                         <td className="px-4 py-2.5 font-medium">
                           {p.employee?.first_name} {p.employee?.last_name}
                         </td>
-                        <td className="px-4 py-2.5 text-muted-foreground text-xs">
-                          {p.employee?.department}
+                        <td className="px-4 py-2.5 text-xs">
+                          <p className="text-muted-foreground">{p.employee?.department}</p>
+                          <p className="text-muted-foreground/60">{p.employee?.job_category}</p>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-mono text-xs text-muted-foreground">
+                          {fmt(p.employee?.basic_salary ?? 0)}<span className="text-muted-foreground/50">/mo</span>
                         </td>
                         <td className="px-4 py-2.5 text-center">
                           {p.days_worked}/{p.working_days_in_period}
