@@ -1178,7 +1178,7 @@ function ScheduledInterviewsTab({ canComplete }: { canComplete: boolean }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// TAB 4 — TRAINING PROGRAMS
+// TAB 4 — APPLICANT TRAINING
 // ═══════════════════════════════════════════════════════════════════════
 
 function TrainingProgramsTab({ canManage }: { canManage: boolean }) {
