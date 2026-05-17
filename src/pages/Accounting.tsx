@@ -71,6 +71,7 @@ function PayslipDetailSheet({
     category: "earning" as "earning" | "deduction",
     label: "", amount: "", note: "",
   });
+  
 
   if (!payslip) return null;
 
@@ -499,6 +500,8 @@ export default function Accounting() {
   const [approveAllLoading, setApproveAllLoading] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
+  const [payslipPage, setPayslipPage] = useState(1);
+  const PAYSLIPS_PER_PAGE = 7;
 
   const activePeriod = periods.find(p => p.id === activePeriodId);
 
@@ -522,6 +525,7 @@ export default function Accounting() {
 
   useEffect(() => {
     if (!activePeriodId) return;
+    setPayslipPage(1);
     fetchPayslips(activePeriodId);
     fetchSummary(activePeriodId);
     if (activeTab === "audit") fetchAuditLogs(activePeriodId);
@@ -603,6 +607,14 @@ export default function Accounting() {
   const filteredPayslips = payslips.filter(
     p => !activePeriodId || p.payroll_period_id === activePeriodId
   );
+
+  const payslipTotalPages = Math.max(1, Math.ceil(filteredPayslips.length / PAYSLIPS_PER_PAGE));
+  const paginatedPayslips = filteredPayslips.slice(
+    (payslipPage - 1) * PAYSLIPS_PER_PAGE,
+    payslipPage * PAYSLIPS_PER_PAGE
+  );
+
+  
 
   const step2Done = activePeriod && ["computed", "approved", "paid"].includes(activePeriod.status);
   const step3Done = activePeriod && ["approved", "paid"].includes(activePeriod.status);
@@ -838,7 +850,7 @@ export default function Accounting() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {filteredPayslips.map(p => (
+                    {paginatedPayslips.map(p => (
                       <tr key={p.id} className="hover:bg-muted/20 cursor-pointer"
                         onClick={() => fetchPayslip(p.id).then(() => setSlipOpen(true))}>
                         <td className="px-4 py-2.5 font-medium">
@@ -885,6 +897,87 @@ export default function Accounting() {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Pagination */}
+                {payslipTotalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      Showing{" "}
+                      <span className="font-medium text-foreground">
+                        {(payslipPage - 1) * PAYSLIPS_PER_PAGE + 1}–{Math.min(payslipPage * PAYSLIPS_PER_PAGE, filteredPayslips.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-medium text-foreground">{filteredPayslips.length}</span> payslips
+                    </p>
+                    <div className="flex items-center gap-1">
+                      {/* Prev */}
+                      <button
+                        onClick={() => setPayslipPage(p => Math.max(1, p - 1))}
+                        disabled={payslipPage === 1}
+                        className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                          payslipPage === 1
+                            ? "text-muted-foreground/40 cursor-not-allowed"
+                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Page numbers with ellipsis */}
+                      {(() => {
+                        const pages: (number | "…")[] = [];
+                        if (payslipTotalPages <= 7) {
+                          for (let i = 1; i <= payslipTotalPages; i++) pages.push(i);
+                        } else {
+                          pages.push(1);
+                          if (payslipPage > 4) pages.push("…");
+                          const start = Math.max(2, payslipPage - 1);
+                          const end = Math.min(payslipTotalPages - 1, payslipPage + 1);
+                          for (let i = start; i <= end; i++) pages.push(i);
+                          if (payslipPage < payslipTotalPages - 3) pages.push("…");
+                          pages.push(payslipTotalPages);
+                        }
+                        return pages.map((p, i) =>
+                          p === "…" ? (
+                            <span key={`e-${i}`} className="h-8 w-8 flex items-center justify-center text-xs text-muted-foreground">…</span>
+                          ) : (
+                            <button
+                              key={p}
+                              onClick={() => setPayslipPage(p as number)}
+                              className={cn(
+                                "h-8 w-8 rounded-lg flex items-center justify-center text-xs font-medium transition-colors",
+                                payslipPage === p
+                                  ? "bg-[#2B3588] text-white shadow-sm"
+                                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {p}
+                            </button>
+                          )
+                        );
+                      })()}
+
+                      {/* Next */}
+                      <button
+                        onClick={() => setPayslipPage(p => Math.min(payslipTotalPages, p + 1))}
+                        disabled={payslipPage === payslipTotalPages}
+                        className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                          payslipPage === payslipTotalPages
+                            ? "text-muted-foreground/40 cursor-not-allowed"
+                            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>
