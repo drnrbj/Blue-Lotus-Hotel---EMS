@@ -143,7 +143,7 @@ npm run dev
 Create `.env` file in backend directory:
 
 ```env
-APP_NAME="HR Harmony Suite"
+APP_NAME="Blue Lotus Hotel"
 APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost:8000
