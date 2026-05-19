@@ -763,11 +763,10 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
   const [form, setForm] = useState({
     leave_type: "vacation", start_date: "", end_date: "", reason: "", employee_id: "",
   });
-  // ADD these states with the other useState declarations:
   const [empSearch, setEmpSearch] = useState("");
-  const [employees, setEmployees] = useState<{ id: number; first_name: string; last_name: string; department: string }[]>([]);
+  const [employees, setEmployees] = useState<{ id: number; first_name: string; last_name: string; department: string; employee_code: string | null; admin_code: string | null; role: string }[]>([]);
   const [empDropOpen, setEmpDropOpen] = useState(false);
-  const [selectedEmp, setSelectedEmp] = useState<{ id: number; first_name: string; last_name: string; department: string } | null>(null);
+  const [selectedEmp, setSelectedEmp] = useState<{ id: number; first_name: string; last_name: string; department: string; employee_code: string | null; admin_code: string | null; role: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -792,7 +791,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
     return () => document.removeEventListener("click", close);
   }, []);
 
-  // ADD this useEffect to fetch employees (only for HR/canManage):
+  // Fetch employees with their custom codes
   useEffect(() => {
     if (!canManage) return;
     authFetch("/api/employees?per_page=200")
@@ -803,6 +802,13 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
       })
       .catch(() => { });
   }, [canManage]);
+
+  // Helper function to get employee code
+  const getEmployeeCode = (emp: any) => {
+    if (emp.admin_code) return emp.admin_code;
+    if (emp.employee_code) return emp.employee_code;
+    return null;
+  };
 
   const submit = async () => {
     if (!form.start_date || !form.end_date || !form.reason) {
@@ -936,7 +942,8 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
           <table className="w-full text-sm">
             <thead className="bg-muted/30 border-b border-border">
               <tr>
-                {canManage && <th className="px-4 py-3 text-left font-semibold">Employee</th>}
+                {canManage && <th className="px-4 py-3 text-left font-semibold">Employee ID</th>}
+                {canManage && <th className="px-4 py-3 text-left font-semibold">Employee Name</th>}
                 <th className="px-4 py-3 text-left font-semibold">Type</th>
                 <th className="px-4 py-3 text-left font-semibold">Dates</th>
                 <th className="px-4 py-3 text-center font-semibold">Days</th>
@@ -947,14 +954,26 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
-                <tr><td colSpan={canManage ? 7 : 6} className="text-center py-12 text-muted-foreground">No requests found</td></tr>
+                <tr><td colSpan={canApprove ? 8 : 7} className="text-center py-12 text-muted-foreground">No requests found</td></tr>
               ) : filtered.map(r => (
                 <tr key={r.id} className="hover:bg-muted/20">
                   {canManage && (
-                    <td className="px-4 py-2.5">
-                      <p className="font-medium">{r.employee_name ?? "—"}</p>
-                      <p className="text-xs text-muted-foreground">{r.department}</p>
-                    </td>
+                    <>
+                      <td className="px-4 py-2.5">
+                        <Badge className="text-xs border-0 bg-blue-100 text-blue-700 font-mono">
+                          {(() => {
+                            const emp = employees.find(e => e.id === r.employee_id);
+                            if (emp?.admin_code) return emp.admin_code;
+                            if (emp?.employee_code) return emp.employee_code;
+                            return `#${r.employee_id}`;
+                          })()}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <p className="font-medium">{r.employee_name ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">{r.department}</p>
+                      </td>
+                    </>
                   )}
                   <td className="px-4 py-2.5">
                     <Badge className="text-xs border-0 bg-blue-100 text-blue-700">
@@ -1022,15 +1041,15 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle className="text-2xl font-semibold">Request Leave</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            {/* FIX #9: HR sees employee_id field to submit on behalf */}
+            {/* HR sees employee_id field to submit on behalf */}
             {canManage && (
               <div className="relative">
                 <label className="text-sm font-medium">Employee</label>
                 <div className="relative mt-1">
                   <Input
-                    placeholder="Search by name, ID, or department..."
+                    placeholder="Search by id, name, or department..."
                     value={selectedEmp
-                      ? `${selectedEmp.first_name} ${selectedEmp.last_name} — ${selectedEmp.department}`
+                      ? `${getEmployeeCode(selectedEmp) || `#${selectedEmp.id}`} — ${selectedEmp.first_name} ${selectedEmp.last_name} — ${selectedEmp.department}`
                       : empSearch}
                     onChange={e => {
                       setEmpSearch(e.target.value);
@@ -1056,10 +1075,11 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
                     {employees
                       .filter(e => {
                         const q = empSearch.toLowerCase();
-                        return !q ||
-                          `${e.first_name} ${e.last_name}`.toLowerCase().includes(q) ||
-                          e.department?.toLowerCase().includes(q) ||
-                          String(e.id).includes(q);
+                        const employeeCode = getEmployeeCode(e)?.toLowerCase() || "";
+                        const fullName = `${e.first_name} ${e.last_name}`.toLowerCase();
+                        const department = e.department?.toLowerCase() || "";
+                        const id = String(e.id);
+                        return !q || fullName.includes(q) || department.includes(q) || id.includes(q) || employeeCode.includes(q);
                       })
                       .slice(0, 20)
                       .map(e => (
@@ -1075,13 +1095,26 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
                             setEmpDropOpen(false);
                           }}
                         >
-                          <span className="font-medium">{e.first_name} {e.last_name}</span>
-                          <span className="text-xs text-muted-foreground">{e.department} · ID {e.id}</span>
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {e.first_name} {e.last_name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {e.department}
+                            </span>
+                          </div>
+                          <Badge className="text-xs font-mono bg-blue-100 text-blue-700">
+                            {getEmployeeCode(e) || `#${e.id}`}
+                          </Badge>
                         </button>
                       ))}
                     {employees.filter(e => {
                       const q = empSearch.toLowerCase();
-                      return !q || `${e.first_name} ${e.last_name}`.toLowerCase().includes(q) || e.department?.toLowerCase().includes(q) || String(e.id).includes(q);
+                      const employeeCode = getEmployeeCode(e)?.toLowerCase() || "";
+                      const fullName = `${e.first_name} ${e.last_name}`.toLowerCase();
+                      const department = e.department?.toLowerCase() || "";
+                      const id = String(e.id);
+                      return !q || fullName.includes(q) || department.includes(q) || id.includes(q) || employeeCode.includes(q);
                     }).length === 0 && (
                         <p className="px-3 py-4 text-sm text-muted-foreground text-center">No employees found</p>
                       )}
