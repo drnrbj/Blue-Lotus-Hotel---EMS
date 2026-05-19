@@ -157,11 +157,7 @@ function LiveDashboard() {
       </div>
 
       {/* Attendance rate bar */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <div className="flex justify-between text-sm mb-2">
-          <span className="font-medium">Today's Attendance Rate</span>
-          <span className="text-muted-foreground">{status.present + status.late}/{status.total_employees} ({rate}%)</span>
-        </div>
+      {/* <div className="rounded-xl border border-border bg-card p-4">
         <div className="h-3 rounded-full bg-muted overflow-hidden flex gap-0.5">
           {status.total_employees > 0 && (<>
             <div className="h-full bg-green-500" style={{ width: `${(status.present / status.total_employees) * 100}%` }} />
@@ -181,7 +177,7 @@ function LiveDashboard() {
             </span>
           ))}
         </div>
-      </div>
+      </div> */}
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Recent clock-ins */}
