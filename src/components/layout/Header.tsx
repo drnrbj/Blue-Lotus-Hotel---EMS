@@ -41,7 +41,7 @@ export function Header({ collapsed = false, onToggleCollapse }: HeaderProps) {
         <Avatar className="h-8 w-8">
           <AvatarFallback
             className="text-white text-xs font-semibold"
-            style={{ backgroundColor: "#2B3588" }}
+            style={{ backgroundColor: "#44AFE4" }}
           >
             {initials}
           </AvatarFallback>
