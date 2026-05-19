@@ -403,7 +403,6 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                   <th className="px-4 py-3 text-right font-semibold">Hours</th>
                   <th className="px-4 py-3 text-center font-semibold">Late</th>
                   <th className="px-4 py-3 text-center font-semibold">Status</th>
-                  {canManage && <th className="px-4 py-3 text-right font-semibold">Edit</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -438,23 +437,6 @@ function AttendanceHistory({ canManage }: { canManage: boolean }) {
                         {r.status.replace("_", " ")}
                       </Badge>
                     </td>
-                    {canManage && (
-                      <td className="px-4 py-2.5 text-right">
-                        <Button
-                          variant="ghost" size="sm" className="h-7 w-7 p-0"
-                          onClick={() => {
-                            setEditRow({
-                              employee_id: r.employee_id, date: r.date,
-                              time_in: r.time_in ?? "", time_out: r.time_out ?? "",
-                              status: r.status, notes: r.notes ?? "",
-                            });
-                            setEditOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    )}
                   </tr>
                 ))}
               </tbody>
