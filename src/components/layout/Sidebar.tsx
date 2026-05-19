@@ -9,6 +9,7 @@ import {
   BarChart3,
   Briefcase,
   LogOut,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,6 +54,11 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps = {}) {
     (item) => !item.roles || item.roles.includes(role)
   );
 
+  // Get user initials for avatar
+  const userInitials = user?.name
+    ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "SA";
+
   return (
     <aside
       style={{ backgroundColor: "#2B3588" }}
@@ -69,7 +75,6 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps = {}) {
         )}
         style={{ borderColor: "rgba(250,236,29,0.15)" }}
       >
-        {/* Logo image */}
         <img
           src={logo}
           alt="Blue Lotus Hotel"
@@ -103,8 +108,52 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps = {}) {
         )}
       </div>
 
+      {/* ── Profile Section (moved to top of nav) ── */}
+      {collapsed ? (
+        /* Collapsed profile - shows avatar only */
+        <div className="flex justify-center py-4 border-b" style={{ borderColor: "rgba(250,236,29,0.15)" }}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold cursor-pointer"
+                style={{ backgroundColor: "#44AFE4", color: "#FFFFFF" }}
+              >
+                {userInitials}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
+              <div className="text-center">
+                <p className="font-semibold">{user?.name}</p>
+                <p className="text-xs opacity-90">{user?.role}</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      ) : (
+        /* Expanded profile - shows full info */
+        <div
+          className="flex items-center gap-3 mx-3 mt-4 mb-2 p-3 rounded-lg"
+          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+        >
+          <div
+            className="h-10 w-10 rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
+            style={{ backgroundColor: "#44AFE4", color: "#FFFFFF" }}
+          >
+            {userInitials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {user?.name || "System Admin"}
+            </p>
+            <p className="text-xs truncate" style={{ color: "#FFFFFF", opacity: 0.8 }}>
+              {user?.role || "Admin"}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto py-6 px-3">
+      <nav className="flex-1 overflow-y-auto py-4 px-3">
         <TooltipProvider delayDuration={300}>
           <div className="space-y-1">
             {visibleItems.map((item) => {
@@ -169,7 +218,7 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps = {}) {
         style={{ borderColor: "rgba(250,236,29,0.15)" }}
       >
         {collapsed ? (
-          /* Collapsed state - only logout button */
+          /* Collapsed state - logout button only */
           <div className="flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -189,46 +238,18 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps = {}) {
             </Tooltip>
           </div>
         ) : (
-          /* Expanded state - user info + logout */
-          <div
-            className="flex items-center gap-2 rounded-lg px-2 py-2"
-            style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
-          >
-            {/* Avatar */}
-            <div
-              className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-              style={{ backgroundColor: "#2B3588", color: "#FFFFFF" }}
+          /* Expanded state - logout button only (profile is now at top) */
+          <div className="flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full gap-2 text-white/70 hover:text-red-400 hover:bg-white/10"
+              style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+              onClick={logout}
             >
-              {user?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) || "SA"}
-            </div>
-
-            {/* Name + Role */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {user?.name || "System Admin"}
-              </p>
-              <p className="text-xs truncate" style={{ color: "#FFFFFF", opacity: 0.8 }}>
-                {user?.role || "Admin"}
-              </p>
-            </div>
-
-            {/* Logout button */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 shrink-0 text-white/40 hover:text-red-400"
-                  style={{ backgroundColor: "transparent" }}
-                  onClick={logout}
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
-                Logout
-              </TooltipContent>
-            </Tooltip>
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </Button>
           </div>
         )}
       </div>
