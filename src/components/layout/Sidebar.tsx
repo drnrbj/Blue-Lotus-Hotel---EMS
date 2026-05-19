@@ -1,6 +1,5 @@
 // src/components/layout/Sidebar.tsx
 import logo from "@/assets/logo.png";
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,7 +8,6 @@ import {
   DollarSign,
   BarChart3,
   Briefcase,
-  ChevronLeft,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,17 +37,16 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 interface SidebarProps {
+  collapsed?: boolean;
   onNavigate?: (path: string) => void;
 }
 
-export function Sidebar({ onNavigate }: SidebarProps = {}) {
+export function Sidebar({ collapsed = false, onNavigate }: SidebarProps = {}) {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
 
   const role = user?.role ?? "";
 
-  // ADD right after:
   if (!user) return null;
 
   const visibleItems = NAV_ITEMS.filter(
@@ -72,7 +69,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
         )}
         style={{ borderColor: "rgba(250,236,29,0.15)" }}
       >
-        {/* Logo image — replace src with your actual logo path */}
+        {/* Logo image */}
         <img
           src={logo}
           alt="Blue Lotus Hotel"
@@ -82,24 +79,22 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
 
         {!collapsed && (
           <div className="leading-tight">
-            {/* Changed: Using Playfair Display for hotel name */}
             <p
               className="font-extrabold text-white tracking-wide"
               style={{
                 fontSize: "15px",
                 lineHeight: "1.2",
-                fontFamily: "'Playfair Display', serif"  // ← Added
+                fontFamily: "'Playfair Display', serif"
               }}
             >
               BLUE LOTUS HOTEL
             </p>
-            {/* Changed: Using Inter for subtitle */}
             <p
               className="font-bold text-white/80"
               style={{
                 fontSize: "11px",
                 letterSpacing: "0.05em",
-                fontFamily: "'Playfair Display', serif"  // ← Added
+                fontFamily: "'Playfair Display', serif"
               }}
             >
               EMPLOYEE MANAGEMENT
@@ -168,35 +163,19 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
         </TooltipProvider>
       </nav>
 
+      {/* ── Footer / Logout ── */}
       <div
         className="flex-shrink-0 px-3 py-4 border-t"
         style={{ borderColor: "rgba(250,236,29,0.15)" }}
       >
         {collapsed ? (
-          /* Collapsed state */
-          <div className="flex flex-col items-center gap-3">
-            {/* Collapse toggle */}
+          /* Collapsed state - only logout button */
+          <div className="flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost" size="sm"
-                  className="h-8 w-8 p-0 text-white/50 hover:text-white rotate-180"
-                  style={{ backgroundColor: "transparent" }}
-                  onClick={() => setCollapsed(false)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
-                Expand
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Logout */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost" size="sm"
+                  variant="ghost"
+                  size="sm"
                   className="h-8 w-8 p-0 text-white/50 hover:text-red-400"
                   style={{ backgroundColor: "transparent" }}
                   onClick={logout}
@@ -210,7 +189,7 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
             </Tooltip>
           </div>
         ) : (
-          /* Expanded state */
+          /* Expanded state - user info + logout */
           <div
             className="flex items-center gap-2 rounded-lg px-2 py-2"
             style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
@@ -233,28 +212,12 @@ export function Sidebar({ onNavigate }: SidebarProps = {}) {
               </p>
             </div>
 
-            {/* Collapse toggle */}
+            {/* Logout button */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="ghost" size="sm"
-                  className="h-7 w-7 p-0 shrink-0 text-white/40 hover:text-white"
-                  style={{ backgroundColor: "transparent" }}
-                  onClick={() => setCollapsed(true)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right" style={{ backgroundColor: "#44AFE4", color: "#fff" }} className="border-none">
-                Collapse
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Logout */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost" size="sm"
+                  variant="ghost"
+                  size="sm"
                   className="h-7 w-7 p-0 shrink-0 text-white/40 hover:text-red-400"
                   style={{ backgroundColor: "transparent" }}
                   onClick={logout}
