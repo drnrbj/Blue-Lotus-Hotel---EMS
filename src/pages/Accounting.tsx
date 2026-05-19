@@ -244,7 +244,7 @@ function PayslipDetailSheet({
                 onChange={e => setAdjForm(p => ({ ...p, note: e.target.value }))}
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={doAdj} disabled={acting} className="flex-1">
+                <Button size="sm" onClick={doAdj} disabled={acting} className="flex-1 bg-[#2B3588] hover:bg-blue-700">
                   {acting && <Loader2 className="mr-2 h-3 w-3 animate-spin" />} Add
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setAdjOpen(false)} className="flex-1">
@@ -276,7 +276,7 @@ function PayslipDetailSheet({
                   </Button>
                 )}
                 {payslip.status === "computed" && (
-                  <Button size="sm" className="flex-1 gap-1"
+                  <Button size="sm" className="flex-1 gap-1 bg-[#2B3588] hover:bg-blue-700"
                     onClick={doApprove} disabled={acting}>
                     {acting
                       ? <Loader2 className="h-4 w-4 animate-spin" />
