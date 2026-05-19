@@ -17,361 +17,319 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
-        $employees = [
+        $employees = [];
 
-            // ── HR DEPARTMENT (Morning Shift) ─────────────────────────────
+        // ── HR DEPARTMENT (5 employees) ─────────────────────────────
+        $hrEmployees = [
             [
-                'employee' => [
-                    'role' => 'HR',
-                    'status' => 'active',
-                    'first_name' => 'Hazeljoy',
-                    'last_name' => 'Hingpit',
-                    'date_of_birth' => '1998-01-01',
-                    'email' => 'h.hingpit.545666@umindanao.edu.ph',
-                    'phone_number' => '09170000001',
-                    'home_address' => 'Davao City',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Human Resources',
-                    'job_category' => 'HR Manager',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'basic_salary' => 35000,
-                ],
-                'password' => 'hr123',
+                'first_name' => 'Hazeljoy',
+                'last_name' => 'Hingpit',
+                'email' => 'h.hingpit.545666@umindanao.edu.ph',
+                'job_category' => 'HR Manager',
+                'basic_salary' => 35000,
             ],
             [
-                'employee' => [
-                    'role' => 'HR',
-                    'status' => 'active',
-                    'first_name' => 'Kiarra Mae',
-                    'last_name' => 'Guradillo',
-                    'date_of_birth' => '1999-01-01',
-                    'email' => 'k.guradillo.548474@umindanao.edu.ph',
-                    'phone_number' => '09170000002',
-                    'home_address' => 'Davao City',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Human Resources',
-                    'job_category' => 'Recruitment Specialist',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'basic_salary' => 28000,
-                ],
-                'password' => 'hr123',
-            ],
-
-            // ── ADMIN / GENERAL MANAGEMENT (Morning Shift) ──────────────────────────
-            [
-                'employee' => [
-                    'role' => 'Admin',
-                    'status' => 'active',
-                    'first_name' => 'Angelo',
-                    'last_name' => 'Lozano',
-                    'date_of_birth' => '1997-01-01',
-                    'email' => 'a.lozano.547237@umindanao.edu.ph',
-                    'phone_number' => '09170000003',
-                    'home_address' => 'Davao City',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Executive Office',
-                    'job_category' => 'General Manager',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'basic_salary' => 80000,
-                ],
-                'password' => 'admin123',
+                'first_name' => 'Kiarra Mae',
+                'last_name' => 'Guradillo',
+                'email' => 'k.guradillo.548474@umindanao.edu.ph',
+                'job_category' => 'Recruitment Specialist',
+                'basic_salary' => 28000,
             ],
             [
-                'employee' => [
-                    'role' => 'Admin',
-                    'status' => 'active',
-                    'first_name' => 'Mark Jade',
-                    'last_name' => 'Palma',
-                    'date_of_birth' => '1996-01-01',
-                    'email' => 'm.palma.546616@umindanao.edu.ph',
-                    'phone_number' => '09170000004',
-                    'home_address' => 'Davao City',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Executive Office',
-                    'job_category' => 'Assistant General Manager',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'basic_salary' => 55000,
-                ],
-                'password' => 'admin123',
-            ],
-
-            // ── ACCOUNTING & FINANCE (Morning Shift) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Accountant',
-                    'status' => 'active',
-                    'first_name' => 'Princess Mae',
-                    'last_name' => 'Planas',
-                    'date_of_birth' => '1998-01-01',
-                    'email' => 'p.planas.548892@umindanao.edu.ph',
-                    'phone_number' => '09170000005',
-                    'home_address' => 'Davao City',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Accounting & Finance',
-                    'job_category' => 'Accounting Staff',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'basic_salary' => 27000,
-                ],
-                'password' => 'acc123',
+                'first_name' => 'Kevin John',
+                'last_name' => 'Anga',
+                'email' => 'k.anga.543642@umindanao.edu.ph',
+                'job_category' => 'HR Coordinator',
+                'basic_salary' => 27000,
             ],
             [
-                'employee' => [
-                    'role' => 'Accountant',
-                    'status' => 'active',
-                    'first_name' => 'John Llorie',
-                    'last_name' => 'Sarmiento',
-                    'date_of_birth' => '1997-01-01',
-                    'email' => 'j.sarmiento.545495@umindanao.edu.ph',
-                    'phone_number' => '09170000006',
-                    'home_address' => 'Davao City',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Accounting & Finance',
-                    'job_category' => 'Payroll Officer',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'basic_salary' => 28000,
-                ],
-                'password' => 'acc123',
-            ],
-
-            // ── FRONT OFFICE DEPARTMENT (Mixed Shifts - 24/7 operation) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Zander',
-                    'last_name' => 'Duhaylungsod',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'z.duhaylungsod.547209@umindanao.edu.ph',
-                    'phone_number' => '09100000001',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Front Office',
-                    'job_category' => 'Front Desk Agent',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 20000,
-                ],
-                'password' => 'Employee@1',
+                'first_name' => 'Yosh',
+                'last_name' => 'Batula',
+                'email' => 'y.batula.544580@umindanao.edu.ph',
+                'job_category' => 'HR Assistant',
+                'basic_salary' => 25000,
             ],
             [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Nicole',
-                    'last_name' => 'Ednilan',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'n.ednilan.549690@umindanao.edu.ph',
-                    'phone_number' => '09100000002',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Front Office',
-                    'job_category' => 'Guest Service Agent',
-                    'shift_sched' => 'Afternoon',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 20000,
-                ],
-                'password' => 'Employee@2',
-            ],
-
-            // ── HOUSEKEEPING DEPARTMENT (Morning & Afternoon Shifts) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'DM Rashid',
-                    'last_name' => 'Ferrer',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'd.ferrer.545481@umindanao.edu.ph',
-                    'phone_number' => '09100000003',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Housekeeping',
-                    'job_category' => 'Room Attendant',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 17000,
-                ],
-                'password' => 'Employee@3',
-            ],
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Karylle Mish',
-                    'last_name' => 'Gellica',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'k.gellica.544337@umindanao.edu.ph',
-                    'phone_number' => '09100000004',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Housekeeping',
-                    'job_category' => 'Housekeeping Supervisor',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 25000,
-                ],
-                'password' => 'Employee@4',
-            ],
-
-            // ── FOOD & BEVERAGE DEPARTMENT (All Shifts - 24/7 operation) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Aaron',
-                    'last_name' => 'Jalapon',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'a.jalapon.548769@umindanao.edu.ph',
-                    'phone_number' => '09100000005',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Food & Beverage',
-                    'job_category' => 'Restaurant Server',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 18000,
-                ],
-                'password' => 'Employee@5',
-            ],
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Nazlah',
-                    'last_name' => 'Nanding',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'n.nanding.545627@umindanao.edu.ph',
-                    'phone_number' => '09100000006',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Food & Beverage',
-                    'job_category' => 'Line Cook',
-                    'shift_sched' => 'Afternoon',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 19000,
-                ],
-                'password' => 'Employee@6',
-            ],
-
-            // ── SALES & MARKETING (Morning Shift) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Jan Loren',
-                    'last_name' => 'Odiong',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'j.odiong.544579@umindanao.edu.ph',
-                    'phone_number' => '09100000007',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Sales & Marketing',
-                    'job_category' => 'Sales Coordinator',
-                    'shift_sched' => 'Morning',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 23000,
-                ],
-                'password' => 'Employee@7',
-            ],
-
-            // ── MAINTENANCE / ENGINEERING (Night Shift for overnight repairs) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Eduard Anthony',
-                    'last_name' => 'Pechayco',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'e.pechayco.546282@umindanao.edu.ph',
-                    'phone_number' => '09100000008',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Engineering & Maintenance',
-                    'job_category' => 'Maintenance Technician',
-                    'shift_sched' => 'Night',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 22000,
-                ],
-                'password' => 'Employee@8',
-            ],
-
-            // ── SECURITY DEPARTMENT (Night Shift for overnight coverage) ─────────────────────
-            [
-                'employee' => [
-                    'role' => 'Employee',
-                    'status' => 'active',
-                    'first_name' => 'Julie Anne',
-                    'last_name' => 'Pesana',
-                    'middle_name' => null,
-                    'date_of_birth' => '2000-01-01',
-                    'email' => 'j.pesana.547304@umindanao.edu.ph',
-                    'phone_number' => '09100000009',
-                    'home_address' => 'Davao City',
-                    'emergency_contact_name' => 'N/A',
-                    'emergency_contact_number' => '09100000000',
-                    'relationship' => 'N/A',
-                    'start_date' => '2024-01-01',
-                    'department' => 'Security',
-                    'job_category' => 'Security Guard',
-                    'shift_sched' => 'Night',
-                    'employment_type' => 'regular',
-                    'reporting_manager' => null,
-                    'basic_salary' => 19000,
-                ],
-                'password' => 'Employee@9',
+                'first_name' => 'Joevan',
+                'last_name' => 'Capote',
+                'email' => 'j.capote.545089@umindanao.edu.ph',
+                'job_category' => 'Training Specialist',
+                'basic_salary' => 27000,
             ],
         ];
 
+        // ── ACCOUNTING & FINANCE DEPARTMENT (5 employees) ─────────────────────
+        $accountants = [
+            [
+                'first_name' => 'Princess Mae',
+                'last_name' => 'Planas',
+                'email' => 'p.planas.548892@umindanao.edu.ph',
+                'job_category' => 'Accounting Staff',
+                'basic_salary' => 27000,
+            ],
+            [
+                'first_name' => 'John Llorie',
+                'last_name' => 'Sarmiento',
+                'email' => 'j.sarmiento.545495@umindanao.edu.ph',
+                'job_category' => 'Payroll Officer',
+                'basic_salary' => 28000,
+            ],
+            [
+                'first_name' => 'Mheil Andrei',
+                'last_name' => 'Cenita',
+                'email' => 'm.cenita.545045@umindanao.edu.ph',
+                'job_category' => 'Accounts Payable',
+                'basic_salary' => 26000,
+            ],
+            [
+                'first_name' => 'Ryan Jay',
+                'last_name' => 'Compuesto',
+                'email' => 'r.compuesto.545237@umindanao.edu.ph',
+                'job_category' => 'Accounts Receivable',
+                'basic_salary' => 26000,
+            ],
+            [
+                'first_name' => 'Fe Anne',
+                'last_name' => 'Malasarte',
+                'email' => 'f.malasarte.543849@umindanao.edu.ph',
+                'job_category' => 'Senior Accountant',
+                'basic_salary' => 35000,
+            ],
+        ];
+
+        // ── ADMIN / GENERAL MANAGEMENT ──────────────────────────
+        $adminEmployees = [
+            [
+                'role' => 'Admin',
+                'first_name' => 'Angelo',
+                'last_name' => 'Lozano',
+                'email' => 'a.lozano.547237@umindanao.edu.ph',
+                'job_category' => 'General Manager',
+                'basic_salary' => 80000,
+                'password' => 'admin123',
+            ],
+            [
+                'role' => 'Admin',
+                'first_name' => 'Mark Jade',
+                'last_name' => 'Palma',
+                'email' => 'm.palma.546616@umindanao.edu.ph',
+                'job_category' => 'Assistant General Manager',
+                'basic_salary' => 55000,
+                'password' => 'admin123',
+            ],
+        ];
+
+        // ── OTHER EMPLOYEES (Remaining staff) ─────────────────────
+        $otherEmployees = [
+            // Front Office
+            [
+                'first_name' => 'Zander',
+                'last_name' => 'Duhaylungsod',
+                'email' => 'z.duhaylungsod.547209@umindanao.edu.ph',
+                'department' => 'Front Office',
+                'job_category' => 'Front Desk Agent',
+                'shift_sched' => 'Morning',
+                'basic_salary' => 20000,
+            ],
+            [
+                'first_name' => 'Nicole',
+                'last_name' => 'Ednilan',
+                'email' => 'n.ednilan.549690@umindanao.edu.ph',
+                'department' => 'Front Office',
+                'job_category' => 'Guest Service Agent',
+                'shift_sched' => 'Afternoon',
+                'basic_salary' => 20000,
+            ],
+            // Housekeeping
+            [
+                'first_name' => 'DM Rashid',
+                'last_name' => 'Ferrer',
+                'email' => 'd.ferrer.545481@umindanao.edu.ph',
+                'department' => 'Housekeeping',
+                'job_category' => 'Room Attendant',
+                'shift_sched' => 'Morning',
+                'basic_salary' => 17000,
+            ],
+            [
+                'first_name' => 'Karylle Mish',
+                'last_name' => 'Gellica',
+                'email' => 'k.gellica.544337@umindanao.edu.ph',
+                'department' => 'Housekeeping',
+                'job_category' => 'Housekeeping Supervisor',
+                'shift_sched' => 'Morning',
+                'basic_salary' => 25000,
+            ],
+            // Food & Beverage
+            [
+                'first_name' => 'Aaron',
+                'last_name' => 'Jalapon',
+                'email' => 'a.jalapon.548769@umindanao.edu.ph',
+                'department' => 'Food & Beverage',
+                'job_category' => 'Restaurant Server',
+                'shift_sched' => 'Morning',
+                'basic_salary' => 18000,
+            ],
+            [
+                'first_name' => 'Nazlah',
+                'last_name' => 'Nanding',
+                'email' => 'n.nanding.545627@umindanao.edu.ph',
+                'department' => 'Food & Beverage',
+                'job_category' => 'Line Cook',
+                'shift_sched' => 'Afternoon',
+                'basic_salary' => 19000,
+            ],
+            // Sales & Marketing
+            [
+                'first_name' => 'Jan Loren',
+                'last_name' => 'Odiong',
+                'email' => 'j.odiong.544579@umindanao.edu.ph',
+                'department' => 'Sales & Marketing',
+                'job_category' => 'Sales Coordinator',
+                'shift_sched' => 'Morning',
+                'basic_salary' => 23000,
+            ],
+            // Maintenance
+            [
+                'first_name' => 'Eduard Anthony',
+                'last_name' => 'Pechayco',
+                'email' => 'e.pechayco.546282@umindanao.edu.ph',
+                'department' => 'Engineering & Maintenance',
+                'job_category' => 'Maintenance Technician',
+                'shift_sched' => 'Night',
+                'basic_salary' => 22000,
+            ],
+            // Security
+            [
+                'first_name' => 'Julie Anne',
+                'last_name' => 'Pesana',
+                'email' => 'j.pesana.547304@umindanao.edu.ph',
+                'department' => 'Security',
+                'job_category' => 'Security Guard',
+                'shift_sched' => 'Night',
+                'basic_salary' => 19000,
+            ],
+            // Additional employees from your list
+            [
+                'first_name' => 'Fletcher',
+                'last_name' => 'Malazarte',
+                'email' => 'f.malazarte.545483@umindanao.edu.ph',
+                'department' => 'Food & Beverage',
+                'job_category' => 'Bartender',
+                'shift_sched' => 'Afternoon',
+                'basic_salary' => 20000,
+            ],
+            [
+                'first_name' => 'Jan Vincent',
+                'last_name' => 'Oclarit',
+                'email' => 'j.oclarit.543717@umindanao.edu.ph',
+                'department' => 'Front Office',
+                'job_category' => 'Concierge',
+                'shift_sched' => 'Morning',
+                'basic_salary' => 21000,
+            ],
+        ];
+
+        // Build HR employees array
+        foreach ($hrEmployees as $hr) {
+            $employees[] = [
+                'employee' => [
+                    'role' => 'HR',
+                    'status' => 'active',
+                    'first_name' => $hr['first_name'],
+                    'last_name' => $hr['last_name'],
+                    'date_of_birth' => '1998-01-01',
+                    'email' => $hr['email'],
+                    'phone_number' => '0917' . rand(0000000, 9999999),
+                    'home_address' => 'Davao City',
+                    'start_date' => '2024-01-01',
+                    'department' => 'Human Resources',
+                    'job_category' => $hr['job_category'],
+                    'shift_sched' => 'Morning',
+                    'employment_type' => 'regular',
+                    'basic_salary' => $hr['basic_salary'],
+                ],
+                'password' => 'hr123',
+            ];
+        }
+
+        // Build Accountants array
+        foreach ($accountants as $acc) {
+            $employees[] = [
+                'employee' => [
+                    'role' => 'Accountant',
+                    'status' => 'active',
+                    'first_name' => $acc['first_name'],
+                    'last_name' => $acc['last_name'],
+                    'date_of_birth' => '1998-01-01',
+                    'email' => $acc['email'],
+                    'phone_number' => '0917' . rand(0000000, 9999999),
+                    'home_address' => 'Davao City',
+                    'start_date' => '2024-01-01',
+                    'department' => 'Accounting & Finance',
+                    'job_category' => $acc['job_category'],
+                    'shift_sched' => 'Morning',
+                    'employment_type' => 'regular',
+                    'basic_salary' => $acc['basic_salary'],
+                ],
+                'password' => 'acc123',
+            ];
+        }
+
+        // Build Admin employees
+        foreach ($adminEmployees as $admin) {
+            $employees[] = [
+                'employee' => [
+                    'role' => $admin['role'],
+                    'status' => 'active',
+                    'first_name' => $admin['first_name'],
+                    'last_name' => $admin['last_name'],
+                    'date_of_birth' => '1997-01-01',
+                    'email' => $admin['email'],
+                    'phone_number' => '0917' . rand(0000000, 9999999),
+                    'home_address' => 'Davao City',
+                    'start_date' => '2024-01-01',
+                    'department' => 'Executive Office',
+                    'job_category' => $admin['job_category'],
+                    'shift_sched' => 'Morning',
+                    'employment_type' => 'regular',
+                    'basic_salary' => $admin['basic_salary'],
+                ],
+                'password' => $admin['password'],
+            ];
+        }
+
+        // Build Other Employees
+        foreach ($otherEmployees as $emp) {
+            $employees[] = [
+                'employee' => [
+                    'role' => 'Employee',
+                    'status' => 'active',
+                    'first_name' => $emp['first_name'],
+                    'last_name' => $emp['last_name'],
+                    'date_of_birth' => '2000-01-01',
+                    'email' => $emp['email'],
+                    'phone_number' => '0910' . rand(0000000, 9999999),
+                    'home_address' => 'Davao City',
+                    'start_date' => '2024-01-01',
+                    'department' => $emp['department'],
+                    'job_category' => $emp['job_category'],
+                    'shift_sched' => $emp['shift_sched'],
+                    'employment_type' => 'regular',
+                    'basic_salary' => $emp['basic_salary'],
+                ],
+                'password' => 'employee123',
+            ];
+        }
+
         $this->command->info('Seeding employees and user accounts...');
 
-        foreach ($employees as $data) {
+        $employeeCounter = 1;
+        $seededEmployees = [];
 
+        foreach ($employees as $data) {
+            // Generate custom ID (E001, E002, etc.)
+            $customId = 'E' . str_pad($employeeCounter, 3, '0', STR_PAD_LEFT);
+            
             // Random emergency contact data
             $emergencyNames = [
                 'Maria Santos',
@@ -395,17 +353,19 @@ class EmployeeSeeder extends Seeder
             ];
 
             // Auto-fill missing emergency contact fields
-            $data['employee']['emergency_contact_name'] =
-                $data['employee']['emergency_contact_name']
-                ?? $emergencyNames[array_rand($emergencyNames)];
+            $data['employee']['id'] = $customId;
+            $data['employee']['emergency_contact_name'] = $emergencyNames[array_rand($emergencyNames)];
+            $data['employee']['emergency_contact_number'] = '09' . rand(100000000, 999999999);
+            $data['employee']['relationship'] = $relationships[array_rand($relationships)];
+            $data['employee']['middle_name'] = null;
+            $data['employee']['reporting_manager'] = null;
 
-            $data['employee']['emergency_contact_number'] =
-                $data['employee']['emergency_contact_number']
-                ?? '09' . rand(100000000, 999999999);
-
-            $data['employee']['relationship'] =
-                $data['employee']['relationship']
-                ?? $relationships[array_rand($relationships)];
+            // Store for display
+            $seededEmployees[] = [
+                'id' => $customId,
+                'employee' => $data['employee'],
+                'password' => $data['password'],
+            ];
 
             // Create or update employee record
             $employee = Employee::updateOrCreate(
@@ -423,6 +383,8 @@ class EmployeeSeeder extends Seeder
                     'role' => $data['employee']['role'],
                 ]
             );
+
+            $employeeCounter++;
         }
 
         // Print login credentials table
@@ -437,24 +399,33 @@ class EmployeeSeeder extends Seeder
         ];
         
         $this->command->table(
-            ['Name', 'Role', 'Department', 'Job Category', 'Shift', 'Hours', 'Email', 'Password'],
-            collect($employees)->map(fn($d) => [
-                $d['employee']['first_name'] . ' ' . $d['employee']['last_name'],
-                $d['employee']['role'],
-                $d['employee']['department'],
-                $d['employee']['job_category'],
-                $d['employee']['shift_sched'],
-                $shiftHours[$d['employee']['shift_sched']],
-                $d['employee']['email'],
-                $d['password'],
+            ['ID', 'Name', 'Role', 'Department', 'Job Category', 'Shift', 'Hours', 'Email', 'Password'],
+            collect($seededEmployees)->map(fn($item) => [
+                $item['id'],
+                $item['employee']['first_name'] . ' ' . $item['employee']['last_name'],
+                $item['employee']['role'],
+                $item['employee']['department'],
+                $item['employee']['job_category'],
+                $item['employee']['shift_sched'],
+                $shiftHours[$item['employee']['shift_sched']],
+                $item['employee']['email'],
+                $item['password'],
             ])->toArray()
         );
         
-        // Print shift summary
+        // Print summary statistics
+        $this->command->info('');
+        $this->command->info('📊 Employee Summary:');
+        $this->command->info('   👔 HR Employees: ' . count($hrEmployees));
+        $this->command->info('   💰 Accountants: ' . count($accountants));
+        $this->command->info('   👥 Regular Employees: ' . count($otherEmployees));
+        $this->command->info('   👑 Admin: ' . count($adminEmployees));
+        $this->command->info('   📦 TOTAL: ' . ($employeeCounter - 1) . ' employees');
+        
         $this->command->info('');
         $this->command->info('📋 Shift Assignment Summary:');
-        $this->command->info('   🌅 Morning Shift (07:00-15:00): ' . collect($employees)->where('employee.shift_sched', 'Morning')->count() . ' employees');
-        $this->command->info('   ☀️ Afternoon Shift (15:00-23:00): ' . collect($employees)->where('employee.shift_sched', 'Afternoon')->count() . ' employees');
-        $this->command->info('   🌙 Night Shift (23:00-07:00): ' . collect($employees)->where('employee.shift_sched', 'Night')->count() . ' employees');
+        $this->command->info('   🌅 Morning Shift (07:00-15:00): ' . collect($seededEmployees)->where('employee.shift_sched', 'Morning')->count() . ' employees');
+        $this->command->info('   ☀️ Afternoon Shift (15:00-23:00): ' . collect($seededEmployees)->where('employee.shift_sched', 'Afternoon')->count() . ' employees');
+        $this->command->info('   🌙 Night Shift (23:00-07:00): ' . collect($seededEmployees)->where('employee.shift_sched', 'Night')->count() . ' employees');
     }
 }
