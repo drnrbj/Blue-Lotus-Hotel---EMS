@@ -239,7 +239,7 @@ class EmployeeSeeder extends Seeder
                     'last_name' => $hr['last_name'],
                     'date_of_birth' => '1998-01-01',
                     'email' => $hr['email'],
-                    'phone_number' => '0917' . rand(0000000, 9999999),
+                    'phone_number' => '0917' . rand(1000000, 9999999),
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
                     'department' => 'Human Resources',
@@ -262,7 +262,7 @@ class EmployeeSeeder extends Seeder
                     'last_name' => $acc['last_name'],
                     'date_of_birth' => '1998-01-01',
                     'email' => $acc['email'],
-                    'phone_number' => '0917' . rand(0000000, 9999999),
+                    'phone_number' => '0917' . rand(1000000, 9999999),
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
                     'department' => 'Accounting & Finance',
@@ -285,7 +285,7 @@ class EmployeeSeeder extends Seeder
                     'last_name' => $admin['last_name'],
                     'date_of_birth' => '1997-01-01',
                     'email' => $admin['email'],
-                    'phone_number' => '0917' . rand(0000000, 9999999),
+                    'phone_number' => '0917' . rand(1000000, 9999999),
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
                     'department' => 'Executive Office',
@@ -308,7 +308,7 @@ class EmployeeSeeder extends Seeder
                     'last_name' => $emp['last_name'],
                     'date_of_birth' => '2000-01-01',
                     'email' => $emp['email'],
-                    'phone_number' => '0910' . rand(0000000, 9999999),
+                    'phone_number' => '0910' . rand(1000000, 9999999),
                     'home_address' => 'Davao City',
                     'start_date' => '2024-01-01',
                     'department' => $emp['department'],
@@ -323,12 +323,12 @@ class EmployeeSeeder extends Seeder
 
         $this->command->info('Seeding employees and user accounts...');
 
-        $employeeCounter = 1;
+        // Remove the custom ID assignment - let the database auto-increment
         $seededEmployees = [];
 
-        foreach ($employees as $data) {
-            // Generate custom ID (E001, E002, etc.)
-            $customId = 'E' . str_pad($employeeCounter, 3, '0', STR_PAD_LEFT);
+        foreach ($employees as $index => $data) {
+            // Generate custom employee_code (not the primary key)
+            $employeeCode = 'E' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
             
             // Random emergency contact data
             $emergencyNames = [
@@ -352,22 +352,25 @@ class EmployeeSeeder extends Seeder
                 'Cousin',
             ];
 
-            // Auto-fill missing emergency contact fields
-            $data['employee']['id'] = $customId;
+            // Auto-fill missing fields (but NOT the id primary key)
             $data['employee']['emergency_contact_name'] = $emergencyNames[array_rand($emergencyNames)];
             $data['employee']['emergency_contact_number'] = '09' . rand(100000000, 999999999);
             $data['employee']['relationship'] = $relationships[array_rand($relationships)];
             $data['employee']['middle_name'] = null;
             $data['employee']['reporting_manager'] = null;
+            
+            // Add employee_code if your table has this column
+            // Uncomment if you have an employee_code column in your employees table
+            // $data['employee']['employee_code'] = $employeeCode;
 
             // Store for display
             $seededEmployees[] = [
-                'id' => $customId,
+                'code' => $employeeCode,
                 'employee' => $data['employee'],
                 'password' => $data['password'],
             ];
 
-            // Create or update employee record
+            // Create or update employee record (without setting 'id')
             $employee = Employee::updateOrCreate(
                 ['email' => $data['employee']['email']],
                 $data['employee']
@@ -383,8 +386,6 @@ class EmployeeSeeder extends Seeder
                     'role' => $data['employee']['role'],
                 ]
             );
-
-            $employeeCounter++;
         }
 
         // Print login credentials table
@@ -399,9 +400,9 @@ class EmployeeSeeder extends Seeder
         ];
         
         $this->command->table(
-            ['ID', 'Name', 'Role', 'Department', 'Job Category', 'Shift', 'Hours', 'Email', 'Password'],
+            ['Employee Code', 'Name', 'Role', 'Department', 'Job Category', 'Shift', 'Hours', 'Email', 'Password'],
             collect($seededEmployees)->map(fn($item) => [
-                $item['id'],
+                $item['code'],
                 $item['employee']['first_name'] . ' ' . $item['employee']['last_name'],
                 $item['employee']['role'],
                 $item['employee']['department'],
@@ -420,7 +421,7 @@ class EmployeeSeeder extends Seeder
         $this->command->info('   💰 Accountants: ' . count($accountants));
         $this->command->info('   👥 Regular Employees: ' . count($otherEmployees));
         $this->command->info('   👑 Admin: ' . count($adminEmployees));
-        $this->command->info('   📦 TOTAL: ' . ($employeeCounter - 1) . ' employees');
+        $this->command->info('   📦 TOTAL: ' . count($employees) . ' employees');
         
         $this->command->info('');
         $this->command->info('📋 Shift Assignment Summary:');

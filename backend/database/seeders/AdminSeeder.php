@@ -17,10 +17,22 @@ class AdminSeeder extends Seeder
         $users = [
             [
                 'name'     => 'Dranreb Arzadon',
-                'email'    => 'admin@bluelotus.com',
+                'email'    => 'admin1@bluelotus.com',
                 'password' => Hash::make('admin123'),
                 'role'     => 'Admin',
-            ]
+            ],
+            [
+                'name'     => 'Annika Dumalogdog',
+                'email'    => 'admin2@bluelotus.com',
+                'password' => Hash::make('admin123'),
+                'role'     => 'Admin',
+            ],
+            [
+                'name'     => 'Gwen Peralta',
+                'email'    => 'admin3@bluelotus.com',
+                'password' => Hash::make('admin123'),
+                'role'     => 'Admin',
+            ],
         ];
 
         foreach ($users as $userData) {
