@@ -11,7 +11,7 @@ Blue Lotus Hotel EMS is a comprehensive Human Resource Management System designe
 - Role-based access control (Admin, HR, Accountant)
 - Export employee data
 
-### 📋 Recruitment Pipeline
+### 📋 Recruitment & Training
 - Job posting management with department and category
 - Applicant tracking with pipeline stages
 - Interview scheduling with HR interviewers
@@ -143,7 +143,7 @@ npm run dev
 Create `.env` file in backend directory:
 
 ```env
-APP_NAME="HR Harmony Suite"
+APP_NAME="Blue Lotus Hotel"
 APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://localhost:8000
