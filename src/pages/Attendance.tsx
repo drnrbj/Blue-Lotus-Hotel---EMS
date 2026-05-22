@@ -749,17 +749,28 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      // For HR/Admin: fetch ALL leave requests
+      // For regular employees: fetch only their own requests
+      const leaveRequestsUrl = canManage
+        ? "/api/leave-requests?all=true"  // Add ?all=true to get all requests
+        : "/api/leave-requests";
+
       const [reqs, bals] = await Promise.all([
-        apiFetch<LeaveRequest[]>("/api/leave-requests"),
+        apiFetch<{ data: LeaveRequest[] } | LeaveRequest[]>(leaveRequestsUrl).then(data =>
+          Array.isArray(data) ? data : ((data as { data?: LeaveRequest[] }).data ?? [])
+        ),
         apiFetch<LeaveBalance[]>(
-          `/api/leave-balances${currentEmployeeId ? `?employee_id=${currentEmployeeId}` : ""}`
+          `/api/leave-balances${currentEmployeeId && !canManage ? `?employee_id=${currentEmployeeId}` : ""}`
         ).catch(() => [] as LeaveBalance[]),
       ]);
       setRequests(Array.isArray(reqs) ? reqs : []);
       setBalances(Array.isArray(bals) ? bals : []);
-    } catch (e) { toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" }); }
+    } catch (e) {
+      console.error("Failed to load leave data:", e);
+      toast({ title: e instanceof Error ? e.message : "Failed", variant: "destructive" });
+    }
     finally { setLoading(false); }
-  }, [currentEmployeeId]);
+  }, [currentEmployeeId, canManage]); // Add canManage to dependencies
 
   useEffect(() => { load(); }, [load]);
 
@@ -932,7 +943,7 @@ function LeaveManagement({ canManage, canApprove, currentEmployeeId }: {
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
-                <tr><td colSpan={canApprove ? 8 : 7} className="text-center py-12 text-muted-foreground">No requests found</td></tr>
+                <tr><td colSpan={canManage && canApprove ? 8 : canManage ? 7 : canApprove ? 6 : 5} className="text-center py-12 text-muted-foreground">No requests found</td></tr>
               ) : filtered.map(r => (
                 <tr key={r.id} className="hover:bg-muted/20">
                   {canManage && (
