@@ -117,6 +117,15 @@ class EmployeeSeeder extends Seeder
                 'basic_salary' => 55000,
                 'password' => 'admin123',
             ],
+              [
+                'role' => 'Admin',
+                'first_name' => 'Jayrald',
+                'last_name' => 'Dionaldo',
+                'email' => 'j.dionaldo.543766@umindanao.edu.ph',
+                'job_category' => 'Administrative Specialist',
+                'basic_salary' => 90000,
+                'password' => 'admin123',
+            ]
         ];
 
         // ── OTHER EMPLOYEES (Remaining staff) ─────────────────────

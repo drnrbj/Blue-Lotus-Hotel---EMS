@@ -361,7 +361,7 @@ const handleChange = (field: keyof Form, value: string) => {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Emergency Contact</p>
                   <div className="grid grid-cols-3 gap-3">
                     <Field label="Contact Name" field="emergency_contact_name" form={form} onChange={handleChange} required attempted={attempted} />
-                    <Field label="Phone / Landline No." field="emergency_contact_number" form={form} onChange={handleChange} required placeholder="e.g. 09XX or (02) 8XXX" attempted={attempted} />
+                    <Field label="Phone / Landline No." field="emergency_contact_number" form={form} onChange={handleChange} required placeholder="e.g. 09XX or XXXX-8XXX" attempted={attempted} />
                     <Field label="Relationship" field="relationship" form={form} onChange={handleChange} required placeholder="Spouse, Parent…" attempted={attempted} />
                   </div>
                 </div>
