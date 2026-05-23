@@ -32,7 +32,7 @@ class LeaveController extends Controller
             ->orderBy('created_at', 'desc');
 
         // If not admin, only show their own requests
-        if (!in_array($user->role, ['Admin', 'HR Manager'])) {
+        if (!in_array($user->role, ['Admin', 'HR'])) {
             $employee = Employee::where('email', $user->email)->first();
             if ($employee) {
                 $query->where('employee_id', $employee->id);

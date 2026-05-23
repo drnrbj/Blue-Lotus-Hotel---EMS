@@ -17,7 +17,7 @@ class DashboardController extends Controller
     public function stats(): JsonResponse
     {
         $today = now()->toDateString();
-        $year  = now()->year;
+        $year = now()->year;
         $month = now()->month;
 
         // ── Stat cards ────────────────────────────────────────────────────────
@@ -56,7 +56,8 @@ class DashboardController extends Controller
         $openJobs = 0;
         try {
             $openJobs = JobPosting::where('status', 'open')->count();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         // ── Attendance today breakdown ────────────────────────────────────────
 
@@ -67,15 +68,15 @@ class DashboardController extends Controller
             ->mapWithKeys(fn($r) => [strtolower($r->status) => (int) $r->count]);
 
         $attendanceSummary = [
-            ['status' => 'present',  'count' => $attendanceTodayRaw['present']  ?? 0],
-            ['status' => 'absent',   'count' => $attendanceTodayRaw['absent']   ?? 0],
-            ['status' => 'late',     'count' => $attendanceTodayRaw['late']     ?? 0],
+            ['status' => 'present', 'count' => $attendanceTodayRaw['present'] ?? 0],
+            ['status' => 'absent', 'count' => $attendanceTodayRaw['absent'] ?? 0],
+            ['status' => 'late', 'count' => $attendanceTodayRaw['late'] ?? 0],
             ['status' => 'on_leave', 'count' => $attendanceTodayRaw['on leave'] ?? $attendanceTodayRaw['on_leave'] ?? 0],
         ];
 
         // ── Upcoming birthdays (next 30 days) ─────────────────────────────────
 
-        $todayMd  = now()->format('m-d');
+        $todayMd = now()->format('m-d');
         $thirtyMd = now()->addDays(30)->format('m-d');
 
         // SQLite-compatible birthday query using strftime
@@ -92,14 +93,14 @@ class DashboardController extends Controller
                 return $thisYear->between(now(), now()->addDays(30));
             })
             ->map(fn($emp) => [
-                'id'         => $emp->id,
-                'full_name'  => $emp->full_name ?? "{$emp->first_name} {$emp->last_name}",
+                'id' => $emp->id,
+                'full_name' => $emp->full_name ?? "{$emp->first_name} {$emp->last_name}",
                 'department' => $emp->department,
-                'birthday'   => Carbon::parse($emp->date_of_birth)->format('M d'),
+                'birthday' => Carbon::parse($emp->date_of_birth)->format('M d'),
                 'days_until' => (int) now()->diffInDays(
                     Carbon::parse($emp->date_of_birth)->year(now()->year)->isPast()
-                        ? Carbon::parse($emp->date_of_birth)->year(now()->year + 1)
-                        : Carbon::parse($emp->date_of_birth)->year(now()->year),
+                    ? Carbon::parse($emp->date_of_birth)->year(now()->year + 1)
+                    : Carbon::parse($emp->date_of_birth)->year(now()->year),
                     false
                 ),
             ])
@@ -116,11 +117,11 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(fn($emp) => [
-                'id'           => $emp->id,
-                'full_name'    => $emp->full_name ?? "{$emp->first_name} {$emp->last_name}",
-                'department'   => $emp->department,
+                'id' => $emp->id,
+                'full_name' => $emp->full_name ?? "{$emp->first_name} {$emp->last_name}",
+                'department' => $emp->department,
                 'job_category' => $emp->job_category,
-                'start_date'   => $emp->start_date,
+                'start_date' => $emp->start_date,
             ]);
 
         // ── Pending leave requests (for quick action) ─────────────────────────
@@ -131,20 +132,21 @@ class DashboardController extends Controller
             ->take(5)
             ->get()
             ->map(fn($lr) => [
-                'id'         => $lr->id,
-                'employee'   => $lr->employee ? "{$lr->employee->first_name} {$lr->employee->last_name}" : "Unknown",
+                'id' => $lr->id,
+                'employee' => $lr->employee ? "{$lr->employee->first_name} {$lr->employee->last_name}" : "Unknown",
                 'leave_type' => $lr->leave_type,
                 'start_date' => $lr->start_date,
-                'end_date'   => $lr->end_date,
-                'reason'     => $lr->reason,
+                'end_date' => $lr->end_date,
+                'reason' => $lr->reason,
             ]);
 
         // ── Payroll trend (last 6 months) ─────────────────────────────────────
 
         $trend = [];
         for ($i = 5; $i >= 0; $i--) {
-            $date  = now()->subMonths($i);
-            $gross = 0; $net = 0;
+            $date = now()->subMonths($i);
+            $gross = 0;
+            $net = 0;
             try {
                 if (\Illuminate\Support\Facades\Schema::hasTable('payslips')) {
                     $row = \App\Models\Payslip::whereYear('created_at', $date->year)
@@ -152,16 +154,17 @@ class DashboardController extends Controller
                         ->selectRaw('SUM(gross_pay) as gross, SUM(net_pay) as net')
                         ->first();
                     $gross = round((float) ($row->gross ?? 0));
-                    $net   = round((float) ($row->net   ?? 0));
+                    $net = round((float) ($row->net ?? 0));
                 } elseif (\Illuminate\Support\Facades\Schema::hasTable('payrolls')) {
                     $row = Payroll::whereYear('created_at', $date->year)
                         ->whereMonth('created_at', $date->month)
                         ->selectRaw('SUM(gross_salary) as gross, SUM(net_salary) as net')
                         ->first();
                     $gross = round((float) ($row->gross ?? 0));
-                    $net   = round((float) ($row->net   ?? 0));
+                    $net = round((float) ($row->net ?? 0));
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+            }
 
             $trend[] = ['month' => $date->format('M Y'), 'gross' => $gross, 'net' => $net];
         }
@@ -175,24 +178,44 @@ class DashboardController extends Controller
             ->get()
             ->map(fn($r) => [
                 'department' => $r->department ?: 'Unassigned',
-                'count'      => (int) $r->count,
+                'count' => (int) $r->count,
             ]);
+
+        $pendingPayslips = 0;
+        $approvedPayslips = 0;
+        $unpaidPayslips = 0;
+        $avgSalary = 0;
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('payslips')) {
+                $pendingPayslips = \App\Models\Payslip::where('status', 'pending')->count();
+                $approvedPayslips = \App\Models\Payslip::where('status', 'approved')->count();
+                $unpaidPayslips = \App\Models\Payslip::whereNotIn('status', ['paid'])->count();
+            }
+            $avgSalary = Employee::where('status', 'active')->avg('basic_salary') ?? 0;
+        } catch (\Throwable $e) {
+        }
 
         return response()->json([
             'success' => true,
             'data' => [
-                'total_employees'          => $totalEmployees,
-                'present_today'            => $presentToday,
-                'absent_today'             => $absentToday,
-                'pending_leaves'           => $pendingLeaves,
+                'total_employees' => $totalEmployees,
+                'present_today' => $presentToday,
+                'absent_today' => $absentToday,
+                'pending_leaves' => $pendingLeaves,
                 'total_payroll_this_month' => round((float) $payrollThisMonth),
-                'open_jobs'                => $openJobs,
-                'payroll_trend'            => $trend,
-                'attendance_today'         => $attendanceSummary,
-                'dept_headcount'           => $deptHeadcount,
-                'upcoming_birthdays'       => $upcomingBirthdays,
-                'recent_hires'             => $recentHires,
-                'pending_leave_list'       => $pendingLeaveList,
+                'open_jobs' => $openJobs,
+                'payroll_trend' => $trend,
+                'attendance_today' => $attendanceSummary,
+                'dept_headcount' => $deptHeadcount,
+                'upcoming_birthdays' => $upcomingBirthdays,
+                'recent_hires' => $recentHires,
+                'pending_leave_list' => $pendingLeaveList,
+                // Accountant-specific
+                'pending_payslips' => $pendingPayslips,
+                'approved_payslips' => $approvedPayslips,
+                'unpaid_payslips' => $unpaidPayslips,
+                'avg_salary' => round((float) $avgSalary),
             ],
         ]);
     }

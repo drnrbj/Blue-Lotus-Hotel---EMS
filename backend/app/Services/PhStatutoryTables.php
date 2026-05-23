@@ -1,4 +1,5 @@
 <?php
+//PhStatutoryTables.php - Service class for computing Philippine statutory contributions (SSS, PhilHealth, Pag-IBIG, BIR) based on current tables and rules.
 
 namespace App\Services;
 

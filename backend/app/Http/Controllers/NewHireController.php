@@ -1,5 +1,5 @@
 <?php
-
+//backend/app/Http/Controllers/NewHireController.php
 namespace App\Http\Controllers;
 
 use App\Models\Employee;

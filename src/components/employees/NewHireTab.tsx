@@ -29,10 +29,11 @@ const STATUS_COLORS = {
 };
 
 // Required fields for completion check
-const REQUIRED_FIELDS: (keyof EmployeeFormData)[] = [
-  "first_name", "last_name", "email", "phone_number",
-  "home_address", "department", "job_category", "basic_salary",
-  "start_date", "employment_type",
+const REQUIRED_FIELDS = [
+  "first_name", "last_name", "date_of_birth", "email",
+  "phone_number", "home_address",
+  "emergency_contact_name", "emergency_contact_number", "relationship",
+  "start_date", "department", "job_category", "basic_salary", "shift_sched",
 ];
 
 function getCompletionPct(hire: NewHire): number {
